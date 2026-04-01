@@ -1,0 +1,421 @@
+﻿{
+    "version":  1,
+    "lastUpdated":  "2026-03-30T16:23:54+08:00",
+    "objective":  "Rebuild xiuxiuzhushou into a local-first app with persistent repo memory, structural guardrails, and closed-loop verification.",
+    "tasks":  [
+                  {
+                      "id":  "foundation",
+                      "title":  "Reset the repo to a minimal React + TypeScript shell",
+                      "status":  "completed",
+                      "notes":  "Old business files were removed and the app now restarts from a small, auditable surface."
+                  },
+                  {
+                      "id":  "domain",
+                      "title":  "Model plans, habits, rewards, and balance as pure domain commands",
+                      "status":  "completed",
+                      "notes":  "State mutations are now pure and testable in src/domain/model.ts."
+                  },
+                  {
+                      "id":  "verification",
+                      "title":  "Add architecture guardrails and evidence-producing verification scripts",
+                      "status":  "completed",
+                      "notes":  "Scripts block invalid imports and write a verdict plus state snapshots."
+                  },
+                  {
+                      "id":  "ui-v1",
+                      "title":  "Expand the dashboard into richer workflows",
+                      "status":  "pending",
+                      "notes":  "Next work should add editing, filters, and deeper activity exploration without breaking the current guardrails."
+                  },
+                  {
+                      "id":  "requirements-home-dashboard",
+                      "title":  "Capture homepage reference requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "Homepage reference was documented with brand rename to 缁ｇ唬鍔╂墜 and top-right profile switching semantics."
+                  },
+                  {
+                      "id":  "homepage-shell",
+                      "title":  "Rebuild the homepage shell to match the reference dashboard",
+                      "status":  "completed",
+                      "notes":  "The homepage now renders the branded hero, summary-card strip, tab shell, week navigator, date-scoped board states, and persists the active plans/habits tab locally."
+                  },
+                  {
+                      "id":  "requirements-plan-history-board",
+                      "title":  "Capture populated historical plan-board requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The homepage board now documents populated historical cards, per-day dots, board controls, and the click-through detail modal."
+                  },
+                  {
+                      "id":  "requirements-plan-today-board",
+                      "title":  "Capture current-day active plan-board requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The homepage board now documents today\u0027s actionable plan cards, including card-level quick-complete and start-timer buttons."
+                  },
+                  {
+                      "id":  "plan-detail-modal",
+                      "title":  "Implement the study-plan detail modal",
+                      "status":  "completed",
+                      "notes":  "Historical homepage plan cards now open a detail modal with plan summary, creation time, date span, recorded completion sessions, attachment metadata, and footer placeholder actions for edit/delete follow-up flows."
+                  },
+                  {
+                      "id":  "today-plan-card-actions",
+                      "title":  "Implement current-day study-plan card actions",
+                      "status":  "completed",
+                      "notes":  "Today\u0027s homepage study-plan cards now render direct quick-complete and start-timer entry buttons. Quick-complete is wired to the modal flow; start-timer remains a placeholder entry until the dedicated timer page lands."
+                  },
+                  {
+                      "id":  "requirements-quick-complete-modal",
+                      "title":  "Capture quick-complete modal requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The repo now documents the quick-complete modal with duration tabs, preset durations, note field, note attachments, and confirm/cancel footer actions."
+                  },
+                  {
+                      "id":  "quick-complete-modal",
+                      "title":  "Implement the quick-complete task modal",
+                      "status":  "completed",
+                      "notes":  "The homepage now opens a quick-complete modal from today\u0027s plan cards, supports duration entry with presets, note text, local completion attachments, and confirms into the domain completion flow."
+                  },
+                  {
+                      "id":  "requirements-study-timer-page",
+                      "title":  "Capture study-timer page requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The repo now documents the dedicated timer page with elapsed, countdown, and pomodoro modes, plus sound control and learning-recording entry."
+                  },
+                  {
+                      "id":  "study-timer-page",
+                      "title":  "Implement the dedicated study-timer page",
+                      "status":  "pending",
+                      "notes":  "Build the full-page timer workspace opened from today\u0027s plan cards, including mode switching, digital timer display, sound control, and mode-specific helper panels."
+                  },
+                  {
+                      "id":  "requirements-plan-management",
+                      "title":  "Capture plan-management requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The repo now documents the plan-management page, selected-state toolbar, copy-to-date modal, and recurring-task delete-scope modal."
+                  },
+                  {
+                      "id":  "plan-management-page",
+                      "title":  "Implement the dedicated plan-management page",
+                      "status":  "completed",
+                      "notes":  "The homepage `管理` entry now opens a dedicated management page with date navigation, selection bar, instruction panel, drag-handle reordering for the selected day, and save/cancel header actions; copy/share/delete remain placeholder flow entries until their downstream surfaces land."
+                  },
+                  {
+                      "id":  "plan-copy-date-modal",
+                      "title":  "Implement the copy-to-date modal for selected plans",
+                      "status":  "pending",
+                      "notes":  "Build the modal that copies selected plans from the managed date to a chosen target date through a calendar picker."
+                  },
+                  {
+                      "id":  "plan-delete-selected-modal",
+                      "title":  "Implement the delete-selected modal for recurring plans",
+                      "status":  "pending",
+                      "notes":  "Build the modal that lets the user delete only the current date or all recurring occurrences for selected plans."
+                  },
+                  {
+                      "id":  "plan-management-share-flow",
+                      "title":  "Capture the share-plan flow from plan management",
+                      "status":  "pending",
+                      "notes":  "The selected-state toolbar confirms a 鍒嗕韩璁″垝 action exists, but its downstream UI has not been provided yet."
+                  },
+                  {
+                      "id":  "requirements-add-plan",
+                      "title":  "Capture 娣诲姞瀛︿範璁″垝 reference requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The add-plan page now has a dedicated spec for fields, time modes, scoring, attachments, and footer actions."
+                  },
+                  {
+                      "id":  "plan-create-page",
+                      "title":  "Implement the dedicated 娣诲姞瀛︿範璁″垝 page",
+                      "status":  "completed",
+                      "notes":  "The homepage `添加计划` entry now opens a dedicated full-page creation form with date/category/title/content fields, duration vs. fixed-time switching, optional custom stars, local attachment preview, and save/cancel navigation back into the plan board."
+                  },
+                  {
+                      "id":  "plan-category-options",
+                      "title":  "Capture category and repeat-type option lists",
+                      "status":  "completed",
+                      "notes":  "The add-plan screenshots now provide both the repeat-type list and the built-in category list. The form includes the captured subject options; custom-category management remains a separate follow-up flow."
+                  },
+                  {
+                      "id":  "requirements-batch-add",
+                      "title":  "Capture 鎵归噺娣诲姞瀛︿範璁″垝 reference requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The batch-add page is now documented with text parsing rules, shared settings, preview behavior, and attachment limitations."
+                  },
+                  {
+                      "id":  "batch-plan-create-page",
+                      "title":  "Implement the dedicated 鎵归噺娣诲姞瀛︿範璁″垝 page",
+                      "status":  "completed",
+                      "notes":  "The homepage `批量添加` entry now opens a dedicated two-column page with the attachment-warning banner, raw-text input plus unified settings, live preview count, and a save footer that writes each parsed row into local study plans."
+                  },
+                  {
+                      "id":  "batch-parser",
+                      "title":  "Implement text parsing for batch plan input",
+                      "status":  "completed",
+                      "notes":  "The batch-create flow now parses category headers with numbered task rows into previewable plans, ignores blank lines, and reuses shared duration and optional custom-star defaults when saving."
+                  },
+                  {
+                      "id":  "batch-preview-reference",
+                      "title":  "Capture non-empty batch preview states",
+                      "status":  "pending",
+                      "notes":  "Current screenshots only show the zero-item preview; row structure after parsing is still unknown."
+                  },
+                  {
+                      "id":  "requirements-ai-add",
+                      "title":  "Capture AI 鏅鸿兘鍒涘缓 reference requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The AI page is now documented as a chat workspace with history, image upload, prompt chips, and plan conversion into homepage study plans."
+                  },
+                  {
+                      "id":  "ai-plan-assistant-page",
+                      "title":  "Implement the dedicated AI 鏅鸿兘鍒涘缓 page",
+                      "status":  "completed",
+                      "notes":  "The homepage `智能创建` entry now opens a dedicated AI workspace with the screenshot-aligned top bar, trial notice, session-history sidebar, empty-state prompt chips, image upload entry, and a local multi-turn composer that records draft conversations."
+                  },
+                  {
+                      "id":  "ai-plan-conversion",
+                      "title":  "Design and implement AI output to structured plan conversion",
+                      "status":  "pending",
+                      "notes":  "AI responses must resolve into the same study-plan schema used by manual and batch creation."
+                  },
+                  {
+                      "id":  "ai-session-history",
+                      "title":  "Add local session history for AI planning conversations",
+                      "status":  "pending",
+                      "notes":  "The reference page shows 浼氳瘽鍘嗗彶 and 鏂颁細璇? but populated-history visuals are still unknown."
+                  },
+                  {
+                      "id":  "requirements-points-center",
+                      "title":  "Capture 鎴戠殑绉垎鍜屾垚灏?reference requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The points center is now documented with wallet summary, daily earning guidance, achievement/history entry cards, and wishlist states."
+                  },
+                  {
+                      "id":  "points-center-page",
+                      "title":  "Implement the 鎴戠殑绉垎鍜屾垚灏?page",
+                      "status":  "completed",
+                      "notes":  "The homepage `积分成就` entry now opens a dedicated points center with balance summaries, a conditional daily-earning panel, achievement/history entry cards, a local rules popover, and wishlist empty/populated states backed by the existing reward ledger."
+                  },
+                  {
+                      "id":  "wishlist-create-flow",
+                      "title":  "Capture and implement the 娣诲姞鎰挎湜 flow",
+                      "status":  "completed",
+                      "notes":  "The add-wish modal is now documented with icon categories, custom image upload, cost guidance, and all four redemption modes."
+                  },
+                  {
+                      "id":  "wish-modal",
+                      "title":  "Implement the 娣诲姞鎴戠殑鎰挎湜 modal",
+                      "status":  "completed",
+                      "notes":  "The points center now opens a dedicated add-wish modal with icon-category switching, optional local image upload preview, text fields, cost guidance, repeat-mode selection, mode-specific configuration, and local save back into the wishlist."
+                  },
+                  {
+                      "id":  "wish-redemption-modes",
+                      "title":  "Implement wish redemption-mode behavior",
+                      "status":  "pending",
+                      "notes":  "Support single, multi, cycle, and forever modes with their mode-specific validation and counters."
+                  },
+                  {
+                      "id":  "requirements-wish-post-create",
+                      "title":  "Capture wish create/edit/delete/redeem follow-up states",
+                      "status":  "completed",
+                      "notes":  "The repo now documents success toast, populated wish cards, edit reuse of the add modal, delete confirmation, and balance-aware redeem confirmation."
+                  },
+                  {
+                      "id":  "wish-delete-modal",
+                      "title":  "Implement the 鍒犻櫎鎰挎湜 confirmation modal",
+                      "status":  "pending",
+                      "notes":  "Build the destructive confirmation state with irreversible warning and wish summary."
+                  },
+                  {
+                      "id":  "wish-redeem-modal",
+                      "title":  "Implement the 纭鍏戞崲鎰挎湜 modal",
+                      "status":  "pending",
+                      "notes":  "Build the confirm-redeem modal with balance-aware blocked/allowed states and wish summary."
+                  },
+                  {
+                      "id":  "wishlist-toast-feedback",
+                      "title":  "Implement wishlist success toast feedback",
+                      "status":  "pending",
+                      "notes":  "Show non-blocking bottom-right success feedback after wish creation and similar actions when appropriate."
+                  },
+                  {
+                      "id":  "points-subpages-reference",
+                      "title":  "Capture 鎴愬氨绯荤粺 and 绉垎鍘嗗彶 detail pages",
+                      "status":  "completed",
+                      "notes":  "Both detail pages are now represented in the repo-level requirements from provided screenshots."
+                  },
+                  {
+                      "id":  "requirements-achievement-system",
+                      "title":  "Capture 鎴愬氨绯荤粺 reference requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The achievement detail page is now documented with summary metrics, zero-state content, and the instructional tips panel."
+                  },
+                  {
+                      "id":  "achievement-system-page",
+                      "title":  "Implement the dedicated 鎴愬氨绯荤粺 page",
+                      "status":  "completed",
+                      "notes":  "The points-center `成就系统` card now opens a dedicated achievement page with the orange-to-red header, summary metrics, zero-state trophy panel, a populated unlocked-badges fallback, and the persistent tips panel from the screenshot."
+                  },
+                  {
+                      "id":  "points-history-reference",
+                      "title":  "Capture 绉垎鍘嗗彶 detail page",
+                      "status":  "completed",
+                      "notes":  "The points-history page is now documented with range filters, summary cards, tabs, empty state, and grouped records."
+                  },
+                  {
+                      "id":  "points-history-page",
+                      "title":  "Implement the dedicated 绉垎鍘嗗彶 page",
+                      "status":  "completed",
+                      "notes":  "The points-center `积分历史` card now opens a dedicated history page with range filters, derived summary cards, all/gain/spend tabs, date-grouped local ledger rows, an empty-state receipt panel, and persistent tips."
+                  },
+                  {
+                      "id":  "points-history-custom-range",
+                      "title":  "Capture and implement the 鑷畾涔?time-range flow for 绉垎鍘嗗彶",
+                      "status":  "pending",
+                      "notes":  "The range chip exists, but the custom date-picker interaction has not been provided yet."
+                  },
+                  {
+                      "id":  "points-history-spend-state",
+                      "title":  "Capture populated 娑堣垂-tab state for 绉垎鍘嗗彶",
+                      "status":  "pending",
+                      "notes":  "The 娑堣垂 tab is visible, but no screenshot shows a non-empty spending history yet."
+                  },
+                  {
+                      "id":  "requirements-star-rules",
+                      "title":  "Capture 鏄熸槦鑾峰彇/绉垎瑙勫垯 requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The repo now documents both the 濡備綍鑾峰緱 popover and the full 鏄熸槦绉垎瑙勫垯 page with base rules, bonuses, streaks, achievements, and usage guidance."
+                  },
+                  {
+                      "id":  "star-rules-popover",
+                      "title":  "Implement the 濡備綍鑾峰緱 rules popover",
+                      "status":  "completed",
+                      "notes":  "The points-center summary card now exposes an anchored `如何获得?` popover with preview rule rows and a `查看完整规则` handoff into the still-pending full rules page."
+                  },
+                  {
+                      "id":  "star-rules-page",
+                      "title":  "Implement the dedicated 鏄熸槦绉垎瑙勫垯 page",
+                      "status":  "pending",
+                      "notes":  "Build the canonical rules page with base earning cards, bonus sections, streak tiers, achievement bridge, wishlist usage guidance, and tips."
+                  },
+                  {
+                      "id":  "profile-switcher",
+                      "title":  "Add local multi-profile switching from the top-right control",
+                      "status":  "pending",
+                      "notes":  "Profiles are local-only and should swap dashboard state without introducing cloud sync."
+                  },
+                  {
+                      "id":  "habit-tab-reference",
+                      "title":  "Capture and implement the 琛屼负涔犳儻 tab after more screenshots arrive",
+                      "status":  "completed",
+                      "notes":  "The homepage habit tab now follows the provided populated reference with section header, week strip, search/filter toolbar, layout toggle, and local check-in cards."
+                  },
+                  {
+                      "id":  "requirements-habit-empty-state",
+                      "title":  "Capture the 琛屼负涔犳儻 empty-state requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The repo now documents the empty behavior-habit board state, including the centered empty copy and `鍒涘缓涔犳儻` CTA."
+                  },
+                  {
+                      "id":  "habit-board-page",
+                      "title":  "Implement the homepage 琛屼负涔犳儻 board",
+                      "status":  "completed",
+                      "notes":  "The homepage now switches into a dedicated habit board within the shared shell, routes its CTA into habit management, and shows local habit progress when habits exist."
+                  },
+                  {
+                      "id":  "requirements-habit-management-page",
+                      "title":  "Capture habit-management page requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The repo now documents the dedicated behavior-habit management page with header actions, empty state, and create-habit entry points."
+                  },
+                  {
+                      "id":  "habit-management-page",
+                      "title":  "Implement the dedicated habit-management page",
+                      "status":  "completed",
+                      "notes":  "The app now routes into a dedicated habit-management page with back navigation, top actions, empty state, and a local populated-list fallback."
+                  },
+                  {
+                      "id":  "requirements-habit-create-modal",
+                      "title":  "Capture create-habit modal requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The repo now documents the create-habit modal fields, dropdown options, points rules, icon picker, color picker, preview card, and footer actions."
+                  },
+                  {
+                      "id":  "habit-create-modal",
+                      "title":  "Implement the create-habit modal",
+                      "status":  "completed",
+                      "notes":  "The app now opens a create-habit modal from habit management, validates required fields, and creates local habits with frequency, points, approval, icon, and color settings."
+                  },
+                  {
+                      "id":  "requirements-habit-checkin-modal",
+                      "title":  "Capture habit-check-in modal requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The repo now documents the habit check-in modal with note field, per-check-in point adjustment toggle, score summary card, and confirm/cancel actions."
+                  },
+                  {
+                      "id":  "habit-checkin-modal",
+                      "title":  "Implement the habit check-in modal",
+                      "status":  "completed",
+                      "notes":  "The homepage habit board now opens a confirmation modal before writing a check-in, supports optional note text and per-check-in point adjustment, and records the resolved score locally."
+                  },
+                  {
+                      "id":  "requirements-habit-statistics-page",
+                      "title":  "Capture habit-statistics page requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The repo now documents the dedicated habit statistics page with summary cards, week/month/history range chips, and the zero-state CTA back to habit check-ins."
+                  },
+                  {
+                      "id":  "habit-statistics-page",
+                      "title":  "Implement the dedicated habit-statistics page",
+                      "status":  "completed",
+                      "notes":  "The app now routes the homepage habit-board `数据统计` action into a dedicated statistics page with local range switching, computed metrics, and empty/populated states."
+                  },
+                  {
+                      "id":  "habit-create-flow",
+                      "title":  "Capture the 鍒涘缓涔犳儻 flow after more screenshots arrive",
+                      "status":  "completed",
+                      "notes":  "The screenshots now define the full create-habit path: homepage entry to dedicated habit management, then into the new-habit modal with frequency, points, icon, color, and approval settings."
+                  },
+                  {
+                      "id":  "habit-populated-state",
+                      "title":  "Capture populated 琛屼负涔犳儻 states after more screenshots arrive",
+                      "status":  "completed",
+                      "notes":  "The repo now documents and implements both the populated homepage habit board and the populated habit-management list, including filters, selection bar, and delete actions."
+                  },
+                  {
+                      "id":  "requirements-electronic-pet-pages",
+                      "title":  "Capture electronic-pet adoption and interaction requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The repo now documents the first-adoption pet grid, the post-adoption interaction workspace, the growth ladder, need cards, interaction actions, and the switch-pet roster."
+                  },
+                  {
+                      "id":  "electronic-pet-center",
+                      "title":  "Implement the dedicated electronic-pet center",
+                      "status":  "completed",
+                      "notes":  "The homepage `电子宠物` entry now opens a dedicated pet page that supports star-cost adoption, active-pet interaction, local growth stats, and switching between owned pets without leaving the app shell."
+                  },
+                  {
+                      "id":  "requirements-usage-help-page",
+                      "title":  "Capture usage-help page requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The repo now documents the orange-header help center, quick-start card, detailed plan-field explanation card, and the grid of feature how-to cards with `前往功能` actions."
+                  },
+                  {
+                      "id":  "usage-help-page",
+                      "title":  "Implement the dedicated usage-help center",
+                      "status":  "completed",
+                      "notes":  "The homepage `使用帮助` entry now opens a dedicated help page that explains the current product modules, links into implemented areas, and provides placeholder jumps for follow-up modules."
+                  },
+                  {
+                      "id":  "requirements-other-features-page",
+                      "title":  "Capture other-features page requirements from screenshots",
+                      "status":  "completed",
+                      "notes":  "The repo now documents the dark-header `其他功能` page with customer-service card, search bar, grouped feature sections, app-info card, and footer note card."
+                  },
+                  {
+                      "id":  "other-features-page",
+                      "title":  "Implement the dedicated other-features hub",
+                      "status":  "completed",
+                      "notes":  "The homepage `其他` entry now opens a dedicated grouped-navigation page with local search, placeholder routing for pending modules, and direct jumps into implemented areas such as habits, pets, and usage help."
+                  }
+              ]
+}

@@ -1,0 +1,1436 @@
+/* Points center styles. */
+
+.points-page {
+  display: grid;
+  gap: 20px;
+}
+
+.points-hero,
+.points-wallet-card,
+.points-entry-card,
+.points-wishlist-card,
+.points-wish-card,
+.points-rules-popover {
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: 30px;
+  box-shadow: var(--shadow);
+}
+
+.points-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  padding: 18px 24px;
+  color: #fff;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.22), transparent 30%),
+    radial-gradient(circle at top right, rgba(255, 225, 239, 0.24), transparent 24%),
+    linear-gradient(135deg, #ff89be, #f39bdb 54%, #ffc7d8);
+}
+
+.points-back-button {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 24px;
+}
+
+.points-hero-copy h1,
+.points-wishlist-head h2,
+.points-group-head h3,
+.points-wish-copy h4,
+.points-entry-card strong {
+  margin: 0;
+  font-family: "Manrope", sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.points-hero-copy p,
+.points-wishlist-head p,
+.points-wish-copy p,
+.points-rules-row p,
+.points-empty-state p {
+  margin: 0;
+}
+
+.points-hero-copy p {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.points-wallet-card,
+.points-wishlist-card {
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.points-wallet-head,
+.points-metric-row,
+.points-wishlist-head,
+.points-group-head,
+.points-wish-meta {
+  display: flex;
+  gap: 16px;
+}
+
+.points-wallet-head,
+.points-wishlist-head,
+.points-group-head,
+.points-wish-meta {
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.points-balance-block {
+  display: grid;
+  gap: 8px;
+}
+
+.points-balance-label,
+.points-metric-chip span,
+.points-wish-copy p,
+.points-wish-meta span,
+.points-group-count,
+.points-empty-state,
+.points-rules-row p {
+  color: var(--muted);
+}
+
+.points-balance-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.points-balance-value strong {
+  font-family: "Manrope", sans-serif;
+  font-size: clamp(42px, 7vw, 60px);
+  line-height: 1;
+  color: #d08c11;
+}
+
+.points-balance-value span {
+  font-size: 28px;
+}
+
+.points-rules-area {
+  position: relative;
+}
+
+.points-rules-trigger,
+.points-sort-chip,
+.points-primary-button,
+.points-secondary-button,
+.points-redeem-button,
+.points-rules-link {
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 14px;
+  transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
+}
+
+.points-rules-trigger,
+.points-sort-chip,
+.points-secondary-button,
+.points-rules-link {
+  background: color-mix(in srgb, var(--primary) 10%, white);
+  color: var(--primary-strong);
+}
+
+.points-primary-button,
+.points-redeem-button.is-active {
+  background: linear-gradient(135deg, var(--primary), #ff9ccc);
+  color: #fff;
+  box-shadow: 0 16px 30px rgba(243, 107, 178, 0.24);
+}
+
+.points-rules-trigger:hover,
+.points-primary-button:hover,
+.points-secondary-button:hover,
+.points-rules-link:hover,
+.points-entry-card:hover,
+.points-redeem-button.is-active:hover {
+  transform: translateY(-1px);
+}
+
+.points-rules-trigger {
+  min-width: 116px;
+}
+
+.points-rules-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 5;
+  width: min(340px, calc(100vw - 48px));
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.points-rules-popover-head,
+.points-rules-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.points-rules-popover-head {
+  align-items: center;
+}
+
+.points-rules-close {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(18, 49, 100, 0.08);
+  color: var(--ink);
+  font-size: 20px;
+}
+
+.points-rules-list {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.points-rules-row {
+  padding: 14px;
+  border-radius: 18px;
+  background: #f8fbff;
+  border: 1px solid rgba(76, 108, 148, 0.12);
+}
+
+.points-rules-row strong,
+.points-entry-card strong,
+.points-wish-copy h4 {
+  color: var(--ink);
+}
+
+.points-rules-row strong,
+.points-wishlist-head h2,
+.points-group-head h3,
+.points-entry-card strong {
+  display: block;
+}
+
+.points-rules-row span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(143, 77, 255, 0.12);
+  color: #8f4dff;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.points-metric-row {
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.points-metric-chip {
+  min-width: 160px;
+  flex: 1 1 0;
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 240, 248, 0.98), rgba(255, 255, 255, 0.96));
+  border: 1px solid rgba(243, 107, 178, 0.12);
+}
+
+.points-metric-chip strong {
+  font-family: "Manrope", sans-serif;
+  font-size: 28px;
+  color: #d84f97;
+}
+
+.points-daily-card {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(243, 107, 178, 0.16);
+  background: rgba(255, 241, 248, 0.94);
+}
+
+.points-daily-head,
+.points-daily-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.points-daily-head {
+  align-items: center;
+}
+
+.points-daily-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(243, 107, 178, 0.14);
+  color: var(--primary-strong);
+  font-weight: 800;
+}
+
+.points-daily-head strong,
+.points-daily-row strong,
+.points-daily-total {
+  color: var(--primary-strong);
+}
+
+.points-daily-head p,
+.points-daily-row span {
+  color: var(--ink);
+}
+
+.points-daily-list {
+  display: grid;
+  gap: 12px;
+}
+
+.points-daily-row {
+  padding-left: 52px;
+}
+
+.points-daily-total {
+  margin: 0;
+  padding-left: 52px;
+  font-weight: 700;
+}
+
+.points-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+.points-entry-card {
+  width: 100%;
+  display: grid;
+  gap: 10px;
+  padding: 22px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.points-entry-card.is-achievement {
+  background: linear-gradient(180deg, rgba(248, 241, 255, 0.98), rgba(255, 255, 255, 0.96));
+  border-bottom: 4px solid #a051ff;
+}
+
+.points-entry-card.is-history {
+  background: linear-gradient(180deg, rgba(241, 247, 255, 0.98), rgba(255, 255, 255, 0.96));
+  border-bottom: 4px solid #3c7fff;
+}
+
+.points-entry-icon {
+  font-size: 40px;
+}
+
+.points-entry-card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.points-wishlist-head p {
+  margin-top: 8px;
+  color: var(--muted);
+}
+
+.points-wishlist-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.points-sort-chip:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.points-empty-state {
+  margin-top: 22px;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  padding: 44px 24px;
+  border-radius: 24px;
+  border: 1px dashed rgba(143, 77, 255, 0.26);
+  background: linear-gradient(180deg, rgba(250, 247, 255, 0.98), rgba(255, 255, 255, 0.96));
+  text-align: center;
+}
+
+.points-empty-state h3 {
+  margin: 0;
+  font-family: "Manrope", sans-serif;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+}
+
+.points-empty-icon {
+  font-size: 38px;
+}
+
+.points-wishlist-group {
+  display: grid;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.points-group-count {
+  min-height: 28px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: rgba(31, 88, 170, 0.08);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.points-reward-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.points-wish-card {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  background:
+    linear-gradient(180deg, rgba(251, 249, 255, 0.98), rgba(255, 255, 255, 0.98)),
+    rgba(255, 255, 255, 0.98);
+}
+
+.points-wish-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.points-wish-icon {
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(255, 215, 133, 0.62), rgba(255, 240, 205, 0.92));
+  font-size: 34px;
+}
+
+.points-wish-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 18px;
+}
+
+.points-wish-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.points-wish-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(30, 196, 146, 0.12);
+  color: #1a9a74;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.points-wish-copy h4 {
+  font-size: 26px;
+}
+
+.points-wish-meta {
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid rgba(76, 108, 148, 0.12);
+}
+
+.points-wish-meta strong {
+  font-family: "Manrope", sans-serif;
+  font-size: 30px;
+  color: #d79712;
+}
+
+.points-wish-actions {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  gap: 10px;
+}
+
+.points-secondary-button {
+  background: rgba(33, 99, 255, 0.08);
+  color: var(--primary-strong);
+}
+
+.points-secondary-button.is-danger {
+  background: rgba(242, 94, 94, 0.1);
+  color: #da4e4e;
+}
+
+.points-redeem-button {
+  background: rgba(230, 235, 244, 0.92);
+  color: #93a0b3;
+}
+
+.points-redeem-button:disabled {
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.points-wish-status {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.points-wish-status.is-available {
+  background: rgba(25, 161, 112, 0.1);
+  color: var(--green);
+}
+
+.points-wish-status.is-short {
+  background: rgba(255, 102, 102, 0.08);
+  color: #ff5f66;
+}
+
+.wish-modal-card {
+  width: min(720px, calc(100vw - 24px));
+  padding: 0;
+  overflow: hidden;
+}
+
+.wish-modal-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 22px 22px 18px;
+  border-bottom: 1px solid rgba(143, 77, 255, 0.14);
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.8), transparent 36%),
+    linear-gradient(180deg, rgba(250, 245, 255, 0.98), rgba(255, 255, 255, 0.98));
+}
+
+.wish-modal-title-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.wish-modal-title-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #8f4dff, #c04bff);
+  color: #fff;
+  font-size: 24px;
+  box-shadow: 0 16px 28px rgba(143, 77, 255, 0.22);
+}
+
+.wish-modal-title-row h2,
+.wish-modal-section h3,
+.wish-preview-copy strong,
+.wish-repeat-card strong {
+  margin: 0;
+  font-family: "Manrope", sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.wish-modal-title-row p,
+.wish-preview-copy span,
+.wish-upload-helper,
+.wish-repeat-card span,
+.wish-repeat-helper,
+.wish-char-count {
+  margin: 0;
+  color: var(--muted);
+}
+
+.wish-modal-form {
+  display: grid;
+  gap: 18px;
+  padding: 20px 22px 22px;
+}
+
+.wish-modal-section {
+  display: grid;
+  gap: 14px;
+}
+
+.wish-preview-card {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  border-radius: 24px;
+  border: 1px solid rgba(143, 77, 255, 0.14);
+  background: linear-gradient(180deg, rgba(248, 241, 255, 0.98), rgba(255, 255, 255, 0.98));
+}
+
+.wish-preview-visual {
+  width: 120px;
+  height: 88px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 0 0 1px rgba(143, 77, 255, 0.08);
+  overflow: hidden;
+  font-size: 48px;
+}
+
+.wish-preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wish-preview-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.wish-icon-category-tabs,
+.wish-reset-period-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.wish-icon-category-tab,
+.wish-reset-chip {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(18, 49, 100, 0.06);
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.wish-icon-category-tab.is-active,
+.wish-reset-chip.is-active {
+  background: linear-gradient(135deg, #8f4dff, #c04bff);
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(143, 77, 255, 0.18);
+}
+
+.wish-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.wish-icon-button {
+  min-height: 58px;
+  border-radius: 18px;
+  border: 1px solid rgba(18, 49, 100, 0.12);
+  background: #fff;
+  font-size: 28px;
+}
+
+.wish-icon-button.is-active {
+  border-color: #1f2937;
+  box-shadow: 0 0 0 3px rgba(143, 77, 255, 0.08);
+}
+
+.wish-upload-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.wish-upload-button,
+.wish-upload-clear {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 14px;
+}
+
+.wish-upload-button {
+  background: rgba(143, 77, 255, 0.08);
+  color: #8f4dff;
+}
+
+.wish-upload-clear {
+  background: rgba(242, 94, 94, 0.1);
+  color: #da4e4e;
+}
+
+.wish-char-count {
+  justify-self: end;
+  font-size: 13px;
+}
+
+.wish-cost-guide {
+  display: grid;
+  gap: 10px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(244, 193, 59, 0.38);
+  background: linear-gradient(180deg, rgba(255, 249, 236, 0.98), rgba(255, 255, 255, 0.98));
+}
+
+.wish-cost-guide strong {
+  color: #b67a00;
+}
+
+.wish-cost-guide ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 18px;
+  color: #9c6a00;
+}
+
+.wish-repeat-head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.wish-repeat-hint {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(18, 49, 100, 0.08);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.wish-repeat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.wish-repeat-card {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  min-height: 108px;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(18, 49, 100, 0.12);
+  background: #fff;
+  text-align: left;
+}
+
+.wish-repeat-card.is-active {
+  border-color: rgba(143, 77, 255, 0.44);
+  box-shadow: 0 0 0 3px rgba(143, 77, 255, 0.08);
+  background: linear-gradient(180deg, rgba(248, 241, 255, 0.98), rgba(255, 255, 255, 0.98));
+}
+
+.wish-cycle-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.wish-repeat-helper {
+  line-height: 1.7;
+}
+
+.wish-modal-actions {
+  grid-template-columns: 1fr 1fr;
+  position: sticky;
+  bottom: 0;
+  padding-top: 6px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), #fff 26%);
+}
+
+.wish-submit-button {
+  background: linear-gradient(135deg, #8f4dff, #d246f0);
+  box-shadow: 0 18px 34px rgba(143, 77, 255, 0.22);
+}
+
+.achievement-page {
+  display: grid;
+  gap: 20px;
+}
+
+.achievement-hero,
+.achievement-summary-card,
+.achievement-empty-card,
+.achievement-list-card,
+.achievement-tips-card,
+.achievement-badge-card {
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: 30px;
+  box-shadow: var(--shadow);
+}
+
+.achievement-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 18px 24px;
+  color: #fff;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.18), transparent 28%),
+    linear-gradient(135deg, #ff9c1a, #ff5a00 55%, #ef3654);
+}
+
+.achievement-back-button,
+.achievement-settings-button {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 24px;
+}
+
+.achievement-hero-copy h1,
+.achievement-empty-card h2,
+.achievement-list-head h2,
+.achievement-tips-head h2,
+.achievement-badge-copy strong {
+  margin: 0;
+  font-family: "Manrope", sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.achievement-hero-copy h1 {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: clamp(34px, 5vw, 48px);
+}
+
+.achievement-hero-copy p,
+.achievement-empty-card p,
+.achievement-list-head p,
+.achievement-badge-copy p,
+.achievement-tip-row p {
+  margin: 0;
+}
+
+.achievement-hero-copy p {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.achievement-summary-card,
+.achievement-empty-card,
+.achievement-list-card,
+.achievement-tips-card {
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.achievement-summary-card {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  padding: 26px 28px;
+}
+
+.achievement-summary-item {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.achievement-summary-item strong {
+  font-family: "Manrope", sans-serif;
+  font-size: clamp(36px, 5vw, 46px);
+  line-height: 1;
+}
+
+.achievement-summary-item span {
+  color: var(--muted);
+}
+
+.achievement-summary-item.is-blue strong {
+  color: #2371da;
+}
+
+.achievement-summary-item.is-violet strong {
+  color: #bb35cb;
+}
+
+.achievement-summary-item.is-orange strong {
+  color: #e56e00;
+}
+
+.achievement-empty-card {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  min-height: 268px;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.achievement-empty-icon {
+  font-size: 64px;
+}
+
+.achievement-empty-card p,
+.achievement-list-head p,
+.achievement-badge-copy p,
+.achievement-tip-row p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.achievement-list-card,
+.achievement-tips-card {
+  padding: 22px 24px;
+}
+
+.achievement-list-head,
+.achievement-tips-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.achievement-list-head {
+  justify-content: space-between;
+}
+
+.achievement-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.achievement-badge-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 16px 18px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--achievement-accent, #ff8a1f) 7%, #fff 93%), rgba(255, 255, 255, 0.98)),
+    rgba(255, 255, 255, 0.98);
+}
+
+.achievement-badge-icon,
+.achievement-tips-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+}
+
+.achievement-badge-icon {
+  background: color-mix(in srgb, var(--achievement-accent, #ff8a1f) 14%, white);
+  font-size: 24px;
+}
+
+.achievement-badge-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.achievement-badge-copy strong {
+  display: block;
+  font-size: 20px;
+}
+
+.achievement-badge-side {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.achievement-badge-side span {
+  color: #e56e00;
+  font-weight: 700;
+}
+
+.achievement-badge-side small {
+  color: var(--muted);
+}
+
+.achievement-tips-card {
+  border-color: rgba(79, 124, 255, 0.24);
+  background: rgba(235, 243, 255, 0.96);
+}
+
+.achievement-tips-icon {
+  background: rgba(33, 99, 255, 0.12);
+  color: var(--primary-strong);
+  font-size: 24px;
+}
+
+.achievement-tips-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.achievement-tip-row {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.achievement-tip-row span {
+  color: #2f6dff;
+  font-weight: 700;
+}
+
+.points-history-page {
+  display: grid;
+  gap: 20px;
+}
+
+.points-history-hero,
+.points-history-filter-card,
+.points-history-summary-card,
+.points-history-type-bar,
+.points-history-empty-card,
+.points-history-list-card,
+.points-history-tips-card,
+.points-history-group,
+.points-history-record-row {
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: 30px;
+  box-shadow: var(--shadow);
+}
+
+.points-history-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  padding: 18px 24px;
+  color: #fff;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 28%),
+    linear-gradient(135deg, #22a9d7, #2c6ce6 55%, #544ae3);
+}
+
+.points-history-back-button {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 24px;
+}
+
+.points-history-hero-copy h1,
+.points-history-filter-head h2,
+.points-history-group-title h3,
+.points-history-empty-card h2,
+.points-history-tips-head h2,
+.points-history-record-copy strong {
+  margin: 0;
+  font-family: "Manrope", sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.points-history-hero-copy h1 {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: clamp(34px, 5vw, 48px);
+}
+
+.points-history-hero-copy p,
+.points-history-range-label,
+.points-history-empty-card p,
+.points-history-record-meta span,
+.points-history-tip-row p {
+  margin: 0;
+}
+
+.points-history-hero-copy p {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.points-history-filter-card,
+.points-history-summary-card,
+.points-history-type-bar,
+.points-history-empty-card,
+.points-history-list-card,
+.points-history-tips-card,
+.points-history-group {
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.points-history-filter-card,
+.points-history-summary-card,
+.points-history-list-card,
+.points-history-tips-card {
+  padding: 22px 24px;
+}
+
+.points-history-filter-head,
+.points-history-group-head,
+.points-history-group-title,
+.points-history-tips-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.points-history-filter-icon,
+.points-history-group-icon,
+.points-history-tips-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+}
+
+.points-history-filter-icon {
+  background: rgba(47, 109, 255, 0.1);
+  color: #2f6dff;
+}
+
+.points-history-range-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.points-history-range-chip {
+  min-height: 40px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid rgba(18, 49, 100, 0.12);
+  color: var(--ink);
+  transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
+}
+
+.points-history-range-chip:hover,
+.points-history-type-chip:hover {
+  transform: translateY(-1px);
+}
+
+.points-history-range-chip.is-active {
+  background: #181818;
+  border-color: #181818;
+  color: #fff;
+  box-shadow: 0 14px 24px rgba(24, 24, 24, 0.2);
+}
+
+.points-history-range-label {
+  margin-top: 12px;
+  color: var(--muted);
+}
+
+.points-history-summary-card {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.points-history-summary-item {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(76, 108, 148, 0.12);
+  text-align: center;
+}
+
+.points-history-summary-item span {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.points-history-summary-item strong {
+  font-family: "Manrope", sans-serif;
+  font-size: clamp(34px, 5vw, 46px);
+  line-height: 1;
+}
+
+.points-history-summary-item.is-green {
+  background: linear-gradient(180deg, rgba(235, 255, 245, 0.98), rgba(255, 255, 255, 0.98));
+  border-color: rgba(37, 184, 116, 0.18);
+}
+
+.points-history-summary-item.is-green strong {
+  color: #16a15c;
+}
+
+.points-history-summary-item.is-violet {
+  background: linear-gradient(180deg, rgba(247, 238, 255, 0.98), rgba(255, 255, 255, 0.98));
+  border-color: rgba(173, 82, 246, 0.18);
+}
+
+.points-history-summary-item.is-violet strong {
+  color: #9243ff;
+}
+
+.points-history-summary-item.is-blue {
+  background: linear-gradient(180deg, rgba(237, 245, 255, 0.98), rgba(255, 255, 255, 0.98));
+  border-color: rgba(47, 109, 255, 0.18);
+}
+
+.points-history-summary-item.is-blue strong {
+  color: #2f63df;
+}
+
+.points-history-summary-item.is-orange {
+  background: linear-gradient(180deg, rgba(255, 248, 232, 0.98), rgba(255, 255, 255, 0.98));
+  border-color: rgba(229, 132, 24, 0.18);
+}
+
+.points-history-summary-item.is-orange strong {
+  color: #dd7a07;
+}
+
+.points-history-type-bar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px;
+}
+
+.points-history-type-chip {
+  min-height: 44px;
+  border-radius: 18px;
+  background: transparent;
+  color: var(--ink);
+  font-weight: 700;
+  transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
+}
+
+.points-history-type-chip.is-active {
+  color: #fff;
+}
+
+.points-history-type-chip.is-all.is-active {
+  background: linear-gradient(135deg, #3f7de7, #a04ee9);
+  box-shadow: 0 16px 28px rgba(115, 87, 234, 0.24);
+}
+
+.points-history-type-chip.is-gain.is-active {
+  background: linear-gradient(135deg, #27c561, #1fbf8d);
+  box-shadow: 0 16px 28px rgba(39, 197, 97, 0.24);
+}
+
+.points-history-type-chip.is-spend.is-active {
+  background: linear-gradient(135deg, #9a47ff, #e6448d);
+  box-shadow: 0 16px 28px rgba(172, 71, 255, 0.24);
+}
+
+.points-history-empty-card {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  min-height: 320px;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.points-history-empty-icon {
+  font-size: 64px;
+}
+
+.points-history-empty-card p,
+.points-history-record-meta span,
+.points-history-tip-row p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.points-history-group-list {
+  display: grid;
+  gap: 18px;
+}
+
+.points-history-group {
+  padding: 18px;
+}
+
+.points-history-group-head {
+  justify-content: space-between;
+}
+
+.points-history-group-title h3 {
+  font-size: 18px;
+}
+
+.points-history-group-icon {
+  background: rgba(47, 109, 255, 0.12);
+  color: #2f6dff;
+}
+
+.points-history-group-total {
+  min-height: 34px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: rgba(37, 197, 97, 0.12);
+  color: #20a15d;
+  font-weight: 700;
+}
+
+.points-history-group-total.is-spend {
+  background: rgba(154, 71, 255, 0.12);
+  color: #9349f0;
+}
+
+.points-history-record-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.points-history-record-row {
+  display: grid;
+  grid-template-columns: 4px 40px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 18px 16px 18px 0;
+  background: rgba(249, 252, 255, 0.96);
+}
+
+.points-history-record-row.is-gain {
+  background: linear-gradient(180deg, rgba(239, 255, 247, 0.98), rgba(248, 255, 251, 0.98));
+}
+
+.points-history-record-row.is-spend {
+  background: linear-gradient(180deg, rgba(248, 242, 255, 0.98), rgba(253, 248, 255, 0.98));
+}
+
+.points-history-record-rail {
+  align-self: stretch;
+  border-radius: 999px;
+}
+
+.points-history-record-rail.is-gain {
+  background: #34d97c;
+}
+
+.points-history-record-rail.is-spend {
+  background: #b655ff;
+}
+
+.points-history-record-icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  font-weight: 700;
+}
+
+.points-history-record-icon.is-gain {
+  background: rgba(43, 198, 105, 0.12);
+  color: #1ca055;
+}
+
+.points-history-record-icon.is-spend {
+  background: rgba(154, 71, 255, 0.12);
+  color: #9349f0;
+}
+
+.points-history-record-copy {
+  min-width: 0;
+}
+
+.points-history-record-copy strong {
+  display: block;
+  font-size: 18px;
+  color: var(--ink);
+}
+
+.points-history-record-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.points-history-record-badge {
+  min-height: 24px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: rgba(77, 130, 255, 0.14);
+  color: #3872ff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.points-history-record-amount {
+  font-family: "Manrope", sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.points-history-record-amount.is-gain {
+  color: #1fa157;
+}
+
+.points-history-record-amount.is-spend {
+  color: #9243ff;
+}
+
+.points-history-tips-card {
+  border-color: rgba(79, 124, 255, 0.24);
+  background: rgba(235, 243, 255, 0.96);
+}
+
+.points-history-tips-icon {
+  background: rgba(47, 109, 255, 0.12);
+  color: #2f6dff;
+  font-size: 24px;
+}
+
+.points-history-tips-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.points-history-tip-row {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.points-history-tip-row span {
+  color: #2f6dff;
+  font-weight: 700;
+}

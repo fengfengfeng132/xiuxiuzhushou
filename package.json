@@ -5,8 +5,12 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 5420 --strictPort",
     "dev:offline": "vite --host 0.0.0.0 --port 5420 --strictPort",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "build": "tsc -b && vite build --configLoader native",
+    "preview": "vite preview",
+    "scripts:build": "tsc -p tsconfig.scripts.json",
+    "guardrails": "npm run scripts:build -- --pretty false && node .generated/scripts/architecture-guardrails.js",
+    "verify": "npm run scripts:build -- --pretty false && node .generated/scripts/closed-loop-testing.js",
+    "check": "npm run guardrails && npm run verify && npm run build"
   },
   "keywords": [],
   "author": "",
@@ -26,3 +30,4 @@
     "vite": "^8.0.0"
   }
 }
+

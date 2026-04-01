@@ -1,0 +1,685 @@
+/* Cross-module responsive rules stay together to keep breakpoint edits predictable. */
+
+@media (max-width: 1180px) {
+  .metric-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .pet-shop-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .points-entry-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .points-history-summary-card {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .help-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .more-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pet-action-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .habit-stats-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .batch-plan-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-plan-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-management-topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-create-duration-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .plan-card {
+    grid-template-columns: 70px minmax(0, 1fr);
+  }
+
+  .plan-side {
+    grid-column: 2;
+    grid-row: 2;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .app-shell {
+    width: min(100vw, calc(100vw - 20px));
+    padding-top: 18px;
+  }
+
+  .hero-panel,
+  .manager-hero,
+  .plan-create-hero-inner,
+  .batch-plan-shell,
+  .ai-plan-topbar,
+  .plan-management-topbar,
+  .help-hero,
+  .more-hero,
+  .points-hero,
+  .points-history-hero,
+  .achievement-hero,
+  .more-service-card,
+  .pet-layout,
+  .dashboard-extras,
+  .habit-grid,
+  .habit-board-cards-grid,
+  .habit-stats-strip,
+  .habit-manager-grid,
+  .composer-form,
+  .metric-strip,
+  .pet-shop-grid,
+  .pet-need-grid,
+  .pet-action-grid,
+  .day-strip,
+  .habit-day-strip,
+  .picker-grid,
+  .plan-create-time-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-complete-time-grid,
+  .quick-complete-preset-grid,
+  .wish-repeat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-side {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .manager-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .points-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .points-history-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .achievement-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .help-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .more-hero,
+  .more-service-card {
+    grid-template-columns: 1fr;
+  }
+
+  .pet-topbar {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .week-head,
+  .board-head,
+  .extra-head,
+  .plan-create-hero-inner,
+  .ai-plan-sidebar-head,
+  .ai-plan-example-row,
+  .plan-management-selection-bar,
+  .plan-management-select-toggle,
+  .plan-management-action-group,
+  .plan-management-tips-head,
+  .batch-plan-banner,
+  .batch-plan-note-row,
+  .batch-plan-approval-row,
+  .batch-plan-preview-top,
+  .batch-plan-footer,
+  .plan-create-section-head,
+  .plan-create-meta-row,
+  .plan-create-toggle-row,
+  .plan-create-tone-head,
+  .plan-create-footer,
+  .plan-create-attachment-row,
+  .section-head,
+  .points-wallet-head,
+  .points-daily-head,
+  .points-daily-row,
+  .points-wishlist-head,
+  .points-group-head,
+  .points-wish-meta,
+  .points-history-group-head,
+  .points-history-group-title,
+  .achievement-list-head,
+  .manager-summary-bar,
+  .habit-stats-row,
+  .habit-section-head,
+  .habit-week-head,
+  .habit-toolbar,
+  .habit-selection-bar,
+  .habit-manager-row,
+  .pet-showcase-head,
+  .pet-side-head,
+  .pet-need-head,
+  .pet-roster-row,
+  .more-feature-entry-head,
+  .more-feature-entry-foot,
+  .more-info-row {
+    flex-direction: column;
+  }
+
+  .habit-board-card {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .hero-panel,
+  .manager-hero,
+  .plan-create-card,
+  .ai-plan-shell,
+  .plan-management-selection-bar,
+  .plan-management-tips,
+  .plan-management-card,
+  .plan-management-empty,
+  .batch-plan-banner,
+  .batch-plan-panel,
+  .batch-plan-preview-panel,
+  .batch-plan-footer,
+  .surface-card,
+  .extra-panel,
+  .points-wallet-card,
+  .points-wishlist-card,
+  .points-history-filter-card,
+  .points-history-summary-card,
+  .points-history-type-bar,
+  .points-history-empty-card,
+  .points-history-list-card,
+  .points-history-tips-card,
+  .achievement-summary-card,
+  .achievement-empty-card,
+  .achievement-list-card,
+  .achievement-tips-card,
+  .metric-card,
+  .habit-stats-card,
+  .week-panel,
+  .composer-panel,
+  .board-section,
+  .manager-surface,
+  .manager-empty-card,
+  .modal-card,
+  .plan-card,
+  .reward-card,
+  .activity-row,
+  .habit-card,
+  .habit-board-card,
+  .habit-manager-row,
+  .habit-board-panel {
+    border-radius: 24px;
+  }
+
+  .hero-panel,
+  .plan-create-card,
+  .ai-plan-shell,
+  .plan-management-selection-bar,
+  .plan-management-tips,
+  .plan-management-card,
+  .plan-management-empty,
+  .batch-plan-banner,
+  .batch-plan-panel,
+  .batch-plan-preview-panel,
+  .batch-plan-footer,
+  .surface-card,
+  .extra-panel,
+  .manager-surface,
+  .help-summary-card,
+  .help-feature-card,
+  .more-service-card,
+  .more-info-card,
+  .more-note-card,
+  .more-empty-state {
+    padding: 18px;
+  }
+
+  .pet-topbar,
+  .points-hero,
+  .points-history-hero,
+  .achievement-hero,
+  .help-hero,
+  .more-hero,
+  .pet-shop-card,
+  .pet-showcase,
+  .pet-need-card,
+  .pet-action-card,
+  .pet-growth-card,
+  .pet-roster-card,
+  .points-entry-card,
+  .points-wish-card,
+  .points-rules-popover,
+  .points-history-group,
+  .points-history-record-row,
+  .achievement-badge-card,
+  .more-feature-entry {
+    border-radius: 24px;
+  }
+
+  .hero-side {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-plan-topbar {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .ai-plan-topbar h1 {
+    justify-self: start;
+  }
+
+  .plan-management-topbar {
+    justify-items: start;
+  }
+
+  .plan-management-top-button.is-primary,
+  .plan-management-top-button.is-ghost {
+    justify-self: start;
+  }
+
+  .batch-plan-footer {
+    position: static;
+  }
+
+  .quick-complete-header,
+  .quick-complete-header-main,
+  .quick-complete-summary-top,
+  .ai-plan-composer-row,
+  .quick-complete-section-title,
+  .quick-complete-attachment-chip,
+  .plan-management-date-bar,
+  .plan-detail-header,
+  .plan-detail-header-main,
+  .plan-detail-info-main,
+  .plan-detail-inline-actions,
+  .plan-detail-record-head,
+  .plan-detail-record-top,
+  .plan-detail-record-row,
+  .plan-detail-attachment-item,
+  .wish-modal-head,
+  .wish-modal-title-row,
+  .wish-upload-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tab-bar {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tab-button,
+  .chip-button,
+  .icon-button,
+  .filter-chip,
+  .card-action,
+  .inline-primary-button,
+  .ghost-inline-button,
+  .reset-button,
+  .back-button {
+    width: 100%;
+  }
+
+  .plan-card,
+  .reward-card,
+  .activity-row {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .plan-rail {
+    min-height: 68px;
+  }
+
+  .plan-side,
+  .board-actions,
+  .week-actions,
+  .section-tools,
+  .composer-actions,
+  .ai-plan-example-row,
+  .plan-management-action-group,
+  .batch-plan-footer,
+  .plan-create-footer,
+  .pet-card-foot,
+  .habit-card-actions,
+  .manager-actions,
+  .habit-section-actions,
+  .habit-week-actions,
+  .habit-selection-actions,
+  .habit-toolbar-actions,
+  .habit-manager-row-actions {
+    width: 100%;
+    grid-template-columns: 1fr;
+  }
+
+  .manager-actions,
+  .habit-card-actions,
+  .modal-actions,
+  .ai-plan-example-row,
+  .plan-management-action-group,
+  .batch-plan-footer,
+  .plan-create-footer,
+  .points-wish-actions,
+  .points-history-summary-card,
+  .achievement-summary-card,
+  .habit-stats-range-row,
+  .help-feature-head,
+  .pet-card-foot,
+  .habit-section-actions,
+  .habit-week-actions,
+  .habit-selection-actions,
+  .habit-toolbar-actions,
+  .habit-manager-row-actions {
+    display: grid;
+  }
+
+  .modal-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-create-time-grid,
+  .plan-create-duration-grid,
+  .plan-create-custom-row,
+  .ai-plan-composer-row,
+  .plan-management-card,
+  .wish-preview-card {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-detail-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-complete-time-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-complete-separator {
+    display: none;
+  }
+
+  .help-feature-head {
+    align-items: stretch;
+  }
+
+  .habit-stats-range-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .habit-stats-range-chip {
+    width: 100%;
+  }
+
+  .habit-search-field,
+  .habit-toolbar-button,
+  .manager-utility-button,
+  .manager-danger-button,
+  .ai-plan-top-button,
+  .ai-plan-new-session,
+  .ai-plan-upload-button,
+  .plan-management-top-button,
+  .plan-management-action,
+  .batch-plan-ai-button,
+  .plan-create-cancel,
+  .plan-create-submit,
+  .plan-create-upload,
+  .plan-create-attachment-remove,
+  .pet-card-button,
+  .pet-roster-button,
+  .points-primary-button,
+  .points-secondary-button,
+  .points-redeem-button,
+  .points-history-back-button,
+  .achievement-back-button,
+  .achievement-settings-button,
+  .more-feature-entry {
+    width: 100%;
+  }
+
+  .habit-board-card-side {
+    justify-items: stretch;
+  }
+
+  .pet-card-figure {
+    min-height: 150px;
+    font-size: 92px;
+  }
+
+  .pet-stage-frame {
+    min-height: 260px;
+  }
+
+  .pet-stage-figure {
+    min-height: 180px;
+    font-size: 120px;
+  }
+
+  .pet-roster-side {
+    width: 100%;
+    justify-items: stretch;
+  }
+
+  .habit-checkin-button {
+    width: 100%;
+  }
+
+  .icon-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .wish-icon-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .activity-row span {
+    white-space: normal;
+  }
+
+  .more-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .more-service-qr {
+    margin: 0 auto;
+  }
+
+  .points-wish-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .points-history-summary-card,
+  .points-history-range-row,
+  .points-history-type-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .points-history-record-row {
+    grid-template-columns: 4px 1fr;
+    padding: 16px;
+  }
+
+  .points-history-record-icon,
+  .points-history-record-amount {
+    grid-column: 2;
+  }
+
+  .points-history-record-copy,
+  .points-history-record-amount {
+    width: 100%;
+  }
+
+  .points-daily-row,
+  .points-daily-total {
+    padding-left: 0;
+  }
+
+  .achievement-summary-card {
+    grid-template-columns: 1fr;
+  }
+
+  .achievement-badge-card {
+    grid-template-columns: 1fr;
+  }
+
+  .achievement-badge-side {
+    justify-items: start;
+  }
+}
+
+@media (min-width: 820px) and (max-width: 1180px) {
+  .app-shell {
+    width: min(100vw, calc(100vw - 28px));
+    padding-top: 22px;
+  }
+
+  .hero-panel {
+    grid-template-columns: minmax(0, 1.18fr) minmax(300px, 0.82fr);
+    gap: 20px;
+    padding: 30px;
+    min-height: 336px;
+  }
+
+  .hero-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    align-content: start;
+  }
+
+  .reset-button {
+    grid-column: 1 / -1;
+  }
+
+  .metric-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .surface-card {
+    padding: 26px;
+  }
+
+  .dashboard-extras {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  }
+
+  .points-entry-grid,
+  .help-grid,
+  .points-reward-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .more-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
+  }
+
+  .points-entry-icon {
+    font-size: 34px;
+  }
+
+  .points-wish-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 28px;
+  }
+
+  .wish-icon-button {
+    min-height: 54px;
+    font-size: 24px;
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1400px) {
+  .app-shell {
+    width: min(100vw, calc(100vw - 40px));
+    padding-top: 22px;
+  }
+
+  .hero-panel {
+    grid-template-columns: minmax(0, 1.22fr) minmax(320px, 0.9fr);
+    gap: 22px;
+    min-height: 312px;
+  }
+
+  .hero-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    align-content: start;
+  }
+
+  .reset-button {
+    grid-column: 1 / -1;
+  }
+
+  .metric-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .metric-card {
+    min-height: 132px;
+  }
+
+  .profile-avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
+  }
+
+  .points-entry-icon {
+    font-size: 34px;
+  }
+
+  .points-wish-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 28px;
+  }
+
+  .pet-card-figure {
+    min-height: 164px;
+    font-size: 92px;
+  }
+
+  .pet-stage-figure {
+    min-height: 220px;
+    font-size: clamp(124px, 14vw, 172px);
+  }
+
+  .wish-icon-button {
+    min-height: 54px;
+    font-size: 24px;
+  }
+}

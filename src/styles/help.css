@@ -1,0 +1,144 @@
+/* Help center styles. */
+
+.help-page {
+  display: grid;
+  gap: 20px;
+}
+
+.help-hero,
+.help-summary-card,
+.help-feature-card {
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: 30px;
+  box-shadow: var(--shadow);
+}
+
+.help-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  padding: 18px 24px;
+  color: #fff;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.22), transparent 30%),
+    radial-gradient(circle at top right, rgba(255, 228, 239, 0.28), transparent 26%),
+    linear-gradient(135deg, #ff96c7, #ffb8d5 56%, #ffd0b8);
+}
+
+.help-back-button {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 24px;
+}
+
+.help-hero-copy h1,
+.help-summary-head h2,
+.help-feature-title h3 {
+  margin: 0;
+  font-family: "Manrope", sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.help-hero-copy p,
+.help-field-copy p,
+.help-list,
+.help-feature-body strong {
+  margin: 0;
+}
+
+.help-hero-copy p {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.help-summary-card {
+  padding: 24px 26px;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.help-summary-head,
+.help-feature-head,
+.help-feature-title {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.help-summary-head,
+.help-feature-head {
+  justify-content: space-between;
+}
+
+.help-summary-icon,
+.help-feature-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--primary-strong);
+  background: color-mix(in srgb, var(--primary) 12%, white);
+}
+
+.help-summary-icon-warm {
+  color: #e28a66;
+  background: rgba(255, 193, 168, 0.22);
+}
+
+.help-list-ordered,
+.help-list {
+  margin: 18px 0 0;
+  padding-left: 22px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.help-field-copy {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.help-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.help-feature-card {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--help-accent, #4f7cff) 7%, #fff 93%), rgba(255, 255, 255, 0.96)),
+    rgba(255, 255, 255, 0.96);
+}
+
+.help-feature-icon {
+  color: var(--help-accent, var(--primary-strong));
+  background: color-mix(in srgb, var(--help-accent, #4f7cff) 12%, white);
+}
+
+.help-feature-button {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.help-feature-body {
+  display: grid;
+  gap: 12px;
+}
+
+.help-feature-body strong {
+  color: var(--ink);
+}
