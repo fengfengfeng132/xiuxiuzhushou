@@ -14,6 +14,7 @@ import type {
   CompletePlanInput,
   CreateHabitInput,
   CreateRewardInput,
+  UpdatePlanInput,
   Habit,
   HabitFrequency,
   HabitFrequencyOption,
@@ -893,6 +894,50 @@ export function addPlan(
     ok: true,
     nextState,
     message: `已添加计划：${title}`,
+  };
+}
+
+export function updatePlan(state: AppState, planId: string, input: UpdatePlanInput, now: string = new Date().toISOString()): CommandResult {
+  const nextState = cloneState(state);
+  const plan = nextState.plans.find((item) => item.id === planId);
+
+  if (!plan) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "计划不存在。",
+    };
+  }
+
+  const title = input.title.trim();
+  const subject = input.subject.trim();
+  const repeatType = input.repeatType;
+  const minutes = Math.max(5, Math.round(input.minutes));
+  const stars = input.stars === undefined ? Math.max(1, Math.round(minutes / 10)) : Math.round(Number(input.stars));
+
+  if (!title || !subject || !isPlanRepeatType(repeatType) || !Number.isFinite(minutes) || !Number.isFinite(stars) || stars <= 0) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "请填写完整且有效的计划信息。",
+    };
+  }
+
+  plan.title = title;
+  plan.subject = subject;
+  plan.repeatType = repeatType;
+  plan.minutes = minutes;
+  plan.stars = stars;
+  if (typeof input.createdAt === "string" && input.createdAt) {
+    plan.createdAt = input.createdAt;
+  }
+  nextState.meta.lastUpdatedAt = now;
+  pushActivity(nextState, "system", `编辑计划：${title}`, now);
+
+  return {
+    ok: true,
+    nextState,
+    message: `已更新计划：${title}`,
   };
 }
 

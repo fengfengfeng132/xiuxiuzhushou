@@ -5,6 +5,7 @@ import type { PlanAttachmentDraft, PlanDraft, PlanRepeatType, PlanTimeMode } fro
 import { PLAN_REPEAT_OPTIONS, formatPlanRepeatHelper, formatPlanRepeatOptionLabel } from "./plan-repeat.js";
 
 interface PlanCreateScreenProps {
+  mode: "create" | "edit";
   today: string;
   draft: PlanDraft;
   canSubmit: boolean;
@@ -76,6 +77,7 @@ function getAttachmentHint(count: number): string {
 }
 
 export function PlanCreateScreen({
+  mode,
   today,
   draft,
   canSubmit,
@@ -102,11 +104,11 @@ export function PlanCreateScreen({
             ←
           </button>
           <div className="plan-create-hero-copy">
-            <h1>添加学习计划</h1>
+            <h1>{mode === "edit" ? "编辑学习计划" : "添加学习计划"}</h1>
             <div className="plan-create-breadcrumb">
               <span>正在为</span>
               <strong>{effectiveDate}</strong>
-              <span>添加计划</span>
+              <span>{mode === "edit" ? "编辑计划" : "添加计划"}</span>
             </div>
           </div>
         </div>
@@ -438,7 +440,7 @@ export function PlanCreateScreen({
             取消
           </button>
           <button type="submit" className="plan-create-submit" disabled={!canSubmit}>
-            保存计划
+            {mode === "edit" ? "保存修改" : "保存计划"}
           </button>
         </footer>
       </form>

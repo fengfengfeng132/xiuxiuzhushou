@@ -230,6 +230,15 @@ export interface CreateRewardInput {
   };
 }
 
+export interface UpdatePlanInput {
+  title: string;
+  subject: string;
+  repeatType: PlanRepeatType;
+  minutes: number;
+  stars?: number;
+  createdAt?: string;
+}
+
 export interface CheckInHabitInput {
   note?: string;
   useCustomPoints?: boolean;

@@ -1,4 +1,5 @@
 import { currentDateKey } from "../domain/model.js";
+import type { StudyPlan } from "../domain/model.js";
 import type {
   AiPlanComposerDraft,
   AppInfoItem,
@@ -28,6 +29,24 @@ export function createInitialPlanDraft(dateKey: string = currentDateKey()): Plan
     endTime: "20:30",
     useCustomPoints: false,
     customPoints: "3",
+    attachments: [],
+  };
+}
+
+export function createPlanDraftFromPlan(plan: StudyPlan): PlanDraft {
+  const estimatedStars = Math.max(1, Math.round(plan.minutes / 10));
+  return {
+    startDate: plan.createdAt.slice(0, 10),
+    category: plan.subject,
+    title: plan.title,
+    content: "",
+    repeatType: plan.repeatType,
+    timeMode: "duration",
+    durationMinutes: String(plan.minutes),
+    startTime: plan.createdAt.slice(11, 16) || "08:00",
+    endTime: "20:30",
+    useCustomPoints: plan.stars !== estimatedStars,
+    customPoints: String(plan.stars),
     attachments: [],
   };
 }

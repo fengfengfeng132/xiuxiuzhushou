@@ -19,6 +19,7 @@ import {
   redeemReward,
   switchActivePet,
   summarizeState,
+  updatePlan,
   type AppState,
   type Habit,
   type PlanCompletionAttachment,
@@ -40,6 +41,7 @@ import {
   INITIAL_AI_PLAN_COMPOSER_DRAFT,
   createInitialBatchPlanDraft,
   createInitialPlanDraft,
+  createPlanDraftFromPlan,
   createInitialWishDraft,
   INITIAL_HABIT_CHECKIN_DRAFT,
   INITIAL_HABIT_DRAFT,
@@ -170,6 +172,7 @@ function AppShell(): JSX.Element {
   const [state, setState] = useState<AppState>(() => loadAppState());
   const [selectedDateKey, setSelectedDateKey] = useState<string>(() => currentDateKey());
   const [planDraft, setPlanDraft] = useState<PlanDraft>(() => createInitialPlanDraft(currentDateKey()));
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [batchPlanDraft, setBatchPlanDraft] = useState<BatchPlanDraft>(() => createInitialBatchPlanDraft(currentDateKey()));
   const [aiPlanComposerDraft, setAiPlanComposerDraft] = useState<AiPlanComposerDraft>(INITIAL_AI_PLAN_COMPOSER_DRAFT);
   const [aiPlanSessions, setAiPlanSessions] = useState<AiPlanSession[]>([]);
@@ -645,12 +648,14 @@ function AppShell(): JSX.Element {
   function openPlanCreate(dateKey: string = selectedDateKey): void {
     const nextDateKey = isValidDateKey(dateKey) ? dateKey : today;
     setPlanDraft(createInitialPlanDraft(nextDateKey));
+    setEditingPlanId(null);
     setActiveTab("plans");
     setScreen("plan-create");
   }
 
   function closePlanCreate(): void {
     setPlanDraft(createInitialPlanDraft(selectedDateKey));
+    setEditingPlanId(null);
     setScreen("home");
     setActiveTab("plans");
   }
@@ -861,11 +866,29 @@ function AppShell(): JSX.Element {
   }
 
   function handleEditPlanFromDetail(_plan: StudyPlan): void {
-    openFutureFlow("计划编辑流程仍在开发中。");
+    setPlanDraft(createPlanDraftFromPlan(_plan));
+    setEditingPlanId(_plan.id);
+    closePlanDetailModal();
+    setScreen("plan-create");
+    setActiveTab("plans");
   }
 
-  function handleDeleteRepeatFromDetail(_plan: StudyPlan): void {
-    openFutureFlow("重复任务删除流程仍在开发中。");
+  function handleDeleteRepeatFromDetail(plan: StudyPlan): void {
+    const deleteLabel = plan.repeatType === "once" ? "这个计划" : "这个重复计划";
+    if (!window.confirm(`确定删除${deleteLabel}吗？`)) {
+      return;
+    }
+
+    applyMutation(
+      deletePlans(state, [plan.id]),
+      () => {
+        closePlanDetailModal();
+        if (selectedDateKey === currentDateKey(plan.completedAt ?? plan.createdAt)) {
+          setSelectedDateKey(selectedDateKey);
+        }
+      },
+      `已删除计划：${plan.title}`,
+    );
   }
 
   function handleDictationFromDetail(_plan: StudyPlan): void {
@@ -901,6 +924,32 @@ function AppShell(): JSX.Element {
 
     if (planDraft.useCustomPoints && (!Number.isInteger(parsedPlanCustomPoints) || parsedPlanCustomPoints <= 0)) {
       setNotice("自定义积分必须是大于 0 的整数。");
+      return;
+    }
+
+    if (editingPlanId) {
+      applyMutation(
+        updatePlan(
+          state,
+          editingPlanId,
+          {
+            title,
+            subject: category,
+            repeatType: planDraft.repeatType,
+            minutes: resolvedMinutesForSave,
+            stars: planDraft.useCustomPoints ? parsedPlanCustomPoints : undefined,
+            createdAt: buildPlanDateTime(startDate, startTimeForSave),
+          },
+        ),
+        () => {
+          setPlanDraft(createInitialPlanDraft(startDate));
+          setEditingPlanId(null);
+          setSelectedDateKey(startDate);
+          setScreen("home");
+          setActiveTab("plans");
+        },
+        `已更新计划：${title}`,
+      );
       return;
     }
 
@@ -1530,6 +1579,7 @@ function AppShell(): JSX.Element {
     if (screen === "plan-create") {
       return (
         <PlanCreateScreen
+          mode={editingPlanId ? "edit" : "create"}
           today={today}
           draft={planDraft}
           canSubmit={canSubmitPlan}
