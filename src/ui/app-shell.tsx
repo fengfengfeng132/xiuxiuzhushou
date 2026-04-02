@@ -9,6 +9,7 @@ import {
   completePlan,
   createHabit,
   createReward,
+  deletePlans,
   currentDateKey,
   getActivePetCompanion,
   getHabitFrequencyOption,
@@ -75,6 +76,7 @@ import type {
   QuickCompleteAttachmentDraft,
   QuickCompleteDraft,
   QuickCompleteMode,
+  PlanDeleteScope,
   Screen,
   WishDraft,
 } from "./app-types.js";
@@ -93,7 +95,7 @@ import { AiPlanAssistantScreen } from "./plans/ai-plan-assistant-screen.js";
 import { resolveBatchCustomStars, resolveBatchDurationMinutes, parseBatchPlanInput } from "./plans/batch-plan-helpers.js";
 import { BatchPlanCreateScreen } from "./plans/batch-plan-create-screen.js";
 import { applyManagedPlanOrder, createManagedPlanOrder, reorderManagedPlanIds } from "./plans/plan-management-helpers.js";
-import { PlanManagementScreen } from "./plans/plan-management-screen.js";
+import { PlanDeleteSelectedModal, PlanManagementScreen } from "./plans/plan-management-screen.js";
 import { PlanCreateScreen } from "./plans/plan-create-screen.js";
 import { formatPlanRepeatSaveNotice } from "./plans/plan-repeat.js";
 import { PlanBoard, PlanDetailModal, QuickCompleteModal } from "./plans/plans-module.js";
@@ -191,6 +193,7 @@ function AppShell(): JSX.Element {
   const [planManagementDateKey, setPlanManagementDateKey] = useState<string>(() => currentDateKey());
   const [planManagementOrderIds, setPlanManagementOrderIds] = useState<string[]>([]);
   const [selectedManagedPlanIds, setSelectedManagedPlanIds] = useState<string[]>([]);
+  const [planDeleteModalOpen, setPlanDeleteModalOpen] = useState(false);
   const [activeTimerPlanId, setActiveTimerPlanId] = useState<string | null>(null);
   const [planDetailPlanId, setPlanDetailPlanId] = useState<string | null>(null);
   const quickCompleteFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -238,6 +241,8 @@ function AppShell(): JSX.Element {
   const isPlanManagementDirty =
     savedPlanManagementOrderIds.length !== planManagementOrderIds.length ||
     savedPlanManagementOrderIds.some((planId, index) => planId !== planManagementOrderIds[index]);
+  const selectedManagedPlans = managedPlans.filter((plan) => selectedManagedPlanIds.includes(plan.id));
+  const hasRecurringManagedSelection = selectedManagedPlans.some((plan) => plan.repeatType !== "once");
   const resolvedPlanMinutes = resolvePlanDurationMinutes(planDraft);
   const parsedPlanCustomPoints = Math.round(Number(planDraft.customPoints));
   const resolvedBatchPlanMinutes = resolveBatchDurationMinutes(batchPlanDraft.defaultDurationMinutes);
@@ -340,7 +345,7 @@ function AppShell(): JSX.Element {
   }, [habitTypeMenuOpen]);
 
   useEffect(() => {
-    if (!habitModalOpen && !wishModalOpen && !checkInHabitTarget && !quickCompletePlanTarget && !planDetailPlanTarget) {
+    if (!habitModalOpen && !wishModalOpen && !planDeleteModalOpen && !checkInHabitTarget && !quickCompletePlanTarget && !planDetailPlanTarget) {
       return undefined;
     }
     const handleEscape = (event: KeyboardEvent): void => {
@@ -351,6 +356,10 @@ function AppShell(): JSX.Element {
         }
         if (planDetailPlanTarget) {
           closePlanDetailModal();
+          return;
+        }
+        if (planDeleteModalOpen) {
+          closePlanDeleteModal();
           return;
         }
         if (wishModalOpen) {
@@ -366,7 +375,7 @@ function AppShell(): JSX.Element {
     };
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
-  }, [habitModalOpen, wishModalOpen, checkInHabitTarget, planDetailPlanTarget, quickCompletePlanTarget]);
+  }, [habitModalOpen, wishModalOpen, planDeleteModalOpen, checkInHabitTarget, planDetailPlanTarget, quickCompletePlanTarget]);
 
   function updatePlanDraft(field: keyof PlanDraft, value: string | boolean | PlanRepeatType | PlanTimeMode | PlanAttachmentDraft[]): void {
     setPlanDraft((current) => ({ ...current, [field]: value }));
@@ -664,7 +673,7 @@ function AppShell(): JSX.Element {
     const nextOrderIds = createManagedPlanOrder(state.plans, nextDateKey);
     setPlanManagementDateKey(nextDateKey);
     setPlanManagementOrderIds(nextOrderIds);
-    setSelectedManagedPlanIds(nextOrderIds);
+    setSelectedManagedPlanIds([]);
     setActiveTab("plans");
     setScreen("plan-management");
   }
@@ -673,6 +682,14 @@ function AppShell(): JSX.Element {
     setSelectedDateKey(planManagementDateKey);
     setScreen("home");
     setActiveTab("plans");
+  }
+
+  function openPlanDeleteModal(): void {
+    setPlanDeleteModalOpen(true);
+  }
+
+  function closePlanDeleteModal(): void {
+    setPlanDeleteModalOpen(false);
   }
 
   function openAiPlanAssistant(): void {
@@ -832,6 +849,7 @@ function AppShell(): JSX.Element {
     setPlanManagementDateKey(today);
     setPlanManagementOrderIds([]);
     setSelectedManagedPlanIds([]);
+    setPlanDeleteModalOpen(false);
     setActiveTimerPlanId(null);
     setWishModalOpen(false);
     setHabitCheckInDraft(INITIAL_HABIT_CHECKIN_DRAFT);
@@ -1042,14 +1060,14 @@ function AppShell(): JSX.Element {
     const nextOrderIds = createManagedPlanOrder(state.plans, nextDateKey);
     setPlanManagementDateKey(nextDateKey);
     setPlanManagementOrderIds(nextOrderIds);
-    setSelectedManagedPlanIds(nextOrderIds);
+    setSelectedManagedPlanIds([]);
   }
 
   function handleJumpPlanManagementToToday(): void {
     const nextOrderIds = createManagedPlanOrder(state.plans, today);
     setPlanManagementDateKey(today);
     setPlanManagementOrderIds(nextOrderIds);
-    setSelectedManagedPlanIds(nextOrderIds);
+    setSelectedManagedPlanIds([]);
   }
 
   function handleToggleManagedPlanSelection(planId: string): void {
@@ -1090,7 +1108,24 @@ function AppShell(): JSX.Element {
       setNotice("请先选择要删除的计划。");
       return;
     }
-    openFutureFlow("删除选中流程仍在开发中。");
+    openPlanDeleteModal();
+  }
+
+  function handleConfirmDeleteManagedPlans(_scope: PlanDeleteScope): void {
+    const targetIds = [...selectedManagedPlanIds];
+    applyMutation(
+      deletePlans(state, targetIds),
+      () => {
+        const nextOrderIds = createManagedPlanOrder(
+          state.plans.filter((plan) => !targetIds.includes(plan.id)),
+          planManagementDateKey,
+        );
+        setPlanManagementOrderIds(nextOrderIds);
+        setSelectedManagedPlanIds([]);
+        closePlanDeleteModal();
+      },
+      `已删除 ${targetIds.length} 个计划。`,
+    );
   }
 
   function handleAddBatchPlans(event: FormEvent<HTMLFormElement>): void {
@@ -1784,6 +1819,15 @@ function AppShell(): JSX.Element {
         onClose={closeHabitCheckInModal}
         onSubmit={handleSubmitHabitCheckIn}
         onUpdateDraft={updateHabitCheckInDraft}
+      />
+      <PlanDeleteSelectedModal
+        open={planDeleteModalOpen}
+        managedDateKey={planManagementDateKey}
+        today={today}
+        selectedCount={selectedManagedPlanIds.length}
+        hasRecurringSelection={hasRecurringManagedSelection}
+        onClose={closePlanDeleteModal}
+        onConfirmDelete={handleConfirmDeleteManagedPlans}
       />
       <WishModal
         open={wishModalOpen}

@@ -143,6 +143,8 @@ export interface WishDraft {
   redemptionsPerPeriod: string;
 }
 
+export type PlanDeleteScope = "currentDateOnly" | "allOccurrences";
+
 export interface SubjectStyle {
   accent: string;
   tint: string;

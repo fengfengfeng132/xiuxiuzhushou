@@ -2,6 +2,7 @@ import type { CSSProperties, DragEvent, JSX } from "react";
 import type { StudyPlan } from "../../domain/model.js";
 import { WEEKDAY_LABELS } from "../app-content.js";
 import { formatDateLabel, getSubjectStyle, parseDateKey } from "../app-helpers.js";
+import type { PlanDeleteScope } from "../app-types.js";
 import { formatPlanRepeatBadgeLabel } from "./plan-repeat.js";
 
 interface PlanManagementScreenProps {
@@ -20,6 +21,16 @@ interface PlanManagementScreenProps {
   onCopySelected: () => void;
   onShareSelected: () => void;
   onDeleteSelected: () => void;
+}
+
+interface PlanDeleteSelectedModalProps {
+  open: boolean;
+  managedDateKey: string;
+  today: string;
+  selectedCount: number;
+  hasRecurringSelection: boolean;
+  onClose: () => void;
+  onConfirmDelete: (scope: PlanDeleteScope) => void;
 }
 
 const MANAGEMENT_TIPS = [
@@ -214,6 +225,78 @@ export function PlanManagementScreen({
             <p>可以切换日期查看其他任务，或返回首页先创建新的学习计划。</p>
           </section>
         )}
+      </div>
+    </div>
+  );
+}
+
+function formatDeleteDateLabel(dateKey: string, today: string): string {
+  if (dateKey === today) {
+    return "今天";
+  }
+  return formatDateLabel(dateKey);
+}
+
+export function PlanDeleteSelectedModal({
+  open,
+  managedDateKey,
+  today,
+  selectedCount,
+  hasRecurringSelection,
+  onClose,
+  onConfirmDelete,
+}: PlanDeleteSelectedModalProps) {
+  if (!open) {
+    return null;
+  }
+
+  const scopedDateLabel = formatDeleteDateLabel(managedDateKey, today);
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-card plan-delete-modal-card" onClick={(event) => event.stopPropagation()}>
+        <div className="modal-head plan-delete-modal-head">
+          <div>
+            <h2>删除任务</h2>
+            <p>{selectedCount === 1 ? "你选中了 1 个任务。" : `你选中了 ${selectedCount} 个任务。`}</p>
+          </div>
+          <button type="button" className="modal-close" onClick={onClose} aria-label="关闭删除任务弹窗">
+            ×
+          </button>
+        </div>
+
+        <div className="plan-delete-modal-body">
+          <p className="plan-delete-modal-copy">
+            {hasRecurringSelection
+              ? "已选任务中包含重复任务，请明确选择删除范围。"
+              : "请选择删除范围。当前页面展示的是所选日期下的学习计划。"}
+          </p>
+
+          <div className="plan-delete-modal-options">
+            <button type="button" className="plan-delete-option" onClick={() => onConfirmDelete("currentDateOnly")}>
+              <strong>仅删除 {scopedDateLabel}</strong>
+              <span>只删除当前管理日期下的所选计划</span>
+            </button>
+
+            <button type="button" className="plan-delete-option is-danger" onClick={() => onConfirmDelete("allOccurrences")}>
+              <strong>删除所有重复任务</strong>
+              <span>删除这些计划的全部记录与后续日期</span>
+            </button>
+          </div>
+
+          <div className="plan-delete-modal-warning">
+            <strong>注意</strong>
+            <p>
+              删除后无法恢复。当前版本重复任务还没有展开成多日期实例，因此两个选项都会删除当前选中的计划本体。
+            </p>
+          </div>
+
+          <div className="modal-actions">
+            <button type="button" className="modal-cancel" onClick={onClose}>
+              取消
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

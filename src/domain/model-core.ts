@@ -983,6 +983,38 @@ export function createReward(state: AppState, input: CreateRewardInput, now: str
   };
 }
 
+export function deletePlans(state: AppState, planIds: string[], now: string = new Date().toISOString()): CommandResult {
+  const targetIds = [...new Set(planIds.map((planId) => planId.trim()).filter(Boolean))];
+
+  if (targetIds.length === 0) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "请先选择要删除的计划。",
+    };
+  }
+
+  const deletablePlans = state.plans.filter((plan) => targetIds.includes(plan.id));
+  if (deletablePlans.length === 0) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "没有找到可删除的计划。",
+    };
+  }
+
+  const nextState = cloneState(state);
+  nextState.plans = nextState.plans.filter((plan) => !targetIds.includes(plan.id));
+  nextState.meta.lastUpdatedAt = now;
+  pushActivity(nextState, "system", `删除计划：${deletablePlans.map((plan) => plan.title).join("、")}`, now);
+
+  return {
+    ok: true,
+    nextState,
+    message: `已删除 ${deletablePlans.length} 个计划。`,
+  };
+}
+
 export function createHabit(
   state: AppState,
   input: CreateHabitInput,
