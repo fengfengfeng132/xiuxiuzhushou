@@ -2,7 +2,7 @@
 
 @media (max-width: 1180px) {
   .metric-strip {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
   }
 
   .pet-shop-grid {
@@ -103,8 +103,10 @@
   }
 
   .hero-side {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
+    max-width: none;
   }
 
   .manager-hero {
@@ -280,8 +282,95 @@
     border-radius: 24px;
   }
 
+  .hero-panel {
+    gap: 14px;
+    padding: 16px 16px 14px;
+    border-radius: 22px;
+  }
+
+  .hero-copy h1 {
+    font-size: clamp(22px, 8vw, 34px);
+    max-width: none;
+  }
+
+  .hero-summary {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
   .hero-side {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    display: grid;
+    max-width: none;
+  }
+
+  .profile-chip,
+  .balance-chip,
+  .reset-button {
+    width: 100%;
+  }
+
+  .profile-chip,
+  .balance-chip {
+    padding: 12px;
+    border-radius: 18px;
+  }
+
+  .profile-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    font-size: 16px;
+  }
+
+  .balance-chip strong {
+    font-size: 24px;
+  }
+
+  .reset-button {
+    min-height: 42px;
+    border-radius: 18px;
+  }
+
+  .metric-strip {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(128px, 1fr);
+    grid-template-columns: none;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 2px 2px 8px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+  }
+
+  .metric-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .metric-card {
+    min-height: 98px;
+    padding: 14px;
+    border-radius: 20px;
+    scroll-snap-align: start;
+  }
+
+  .metric-card::after {
+    top: 12px;
+    right: 12px;
+    width: 8px;
+    height: 8px;
+    box-shadow: 0 14px 0 var(--paper-dot), 0 28px 0 var(--paper-dot);
+  }
+
+  .metric-card strong {
+    font-size: 18px;
+  }
+
+  .metric-card small {
+    font-size: 12px;
   }
 
   .ai-plan-topbar {
@@ -335,9 +424,6 @@
   }
 
   .tab-button,
-  .chip-button,
-  .icon-button,
-  .filter-chip,
   .card-action,
   .inline-primary-button,
   .ghost-inline-button,
@@ -346,7 +432,6 @@
     width: 100%;
   }
 
-  .plan-card,
   .reward-card,
   .activity-row {
     grid-template-columns: 1fr;
@@ -359,9 +444,6 @@
   }
 
   .plan-side,
-  .board-actions,
-  .week-actions,
-  .section-tools,
   .composer-actions,
   .ai-plan-example-row,
   .plan-management-action-group,
@@ -377,6 +459,26 @@
   .habit-manager-row-actions {
     width: 100%;
     grid-template-columns: 1fr;
+  }
+
+  .board-actions,
+  .week-actions,
+  .section-tools {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .board-actions .chip-button,
+  .week-actions .icon-button,
+  .section-tools .filter-chip {
+    width: auto;
+    flex: 1 1 calc(50% - 8px);
+    min-width: 0;
+    min-height: 40px;
+    padding-inline: 12px;
+    font-size: 14px;
   }
 
   .manager-actions,
@@ -568,9 +670,11 @@
   }
 
   .hero-side {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
     align-content: start;
+    max-width: none;
   }
 
   .reset-button {
@@ -578,7 +682,7 @@
   }
 
   .metric-strip {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(102px, 1fr));
     gap: 16px;
   }
 
@@ -635,9 +739,11 @@
   }
 
   .hero-side {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
     align-content: start;
+    max-width: none;
   }
 
   .reset-button {
@@ -645,7 +751,7 @@
   }
 
   .metric-strip {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
   }
 
   .metric-card {
