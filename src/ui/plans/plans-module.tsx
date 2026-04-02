@@ -583,7 +583,7 @@ export function PlanDetailModal({
                 <span className="plan-detail-info-icon">↻</span>
                 <div>
                   <strong>计划类型</strong>
-                  <p>{describePlanKind(plan)}</p>
+                  <p>{formatPlanRepeatBadgeLabel(plan.repeatType)}</p>
                 </div>
               </div>
             </article>
