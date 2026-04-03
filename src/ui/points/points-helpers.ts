@@ -254,7 +254,7 @@ function isDateKeyWithinRange(dateKey: string, range: PointsHistoryRange): boole
 
 function getTotalRecordedStudyMinutes(state: AppState): number {
   return state.plans
-    .filter((plan) => plan.status === "done")
+    .filter((plan) => plan.status === "done" || plan.completionRecords.length > 0)
     .reduce((total, plan) => {
       if (plan.completionRecords.length === 0) {
         return total + plan.minutes;
@@ -273,8 +273,11 @@ function getLongestAchievementStreak(state: AppState): { count: number; latestDa
   const dateKeys = new Set<string>();
 
   for (const plan of state.plans) {
-    if (plan.status === "done" && plan.completedAt) {
+    if (plan.completedAt) {
       dateKeys.add(createDateKey(new Date(plan.completedAt)));
+    }
+    for (const record of plan.completionRecords) {
+      dateKeys.add(createDateKey(new Date(record.completedAt)));
     }
   }
 
@@ -418,7 +421,9 @@ export function buildRewardWishlistGroups(rewards: Reward[], starBalance: number
 }
 
 export function buildAchievementOverview(state: AppState): AchievementOverview {
-  const completedPlans = state.plans.filter((plan) => plan.status === "done");
+  const completedPlans = state.plans.flatMap((plan) =>
+    plan.completionRecords.length > 0 ? plan.completionRecords.map((record) => ({ plan, completedAt: record.completedAt })) : [],
+  );
   const completedPlanCount = completedPlans.length;
   const totalStudyMinutes = getTotalRecordedStudyMinutes(state);
   const totalHabitCheckIns = getTotalHabitCheckIns(state);
