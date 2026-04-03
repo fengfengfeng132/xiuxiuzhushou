@@ -90,5 +90,5 @@ export function formatPlanRepeatSaveNotice(repeatType: PlanRepeatType, title: st
     return `已添加计划：${title}`;
   }
 
-  return `已添加计划：${title}。当前已记录“${formatPlanRepeatBadgeLabel(repeatType)}”重复类型，跨日期自动展开仍在开发中。`;
+  return `已添加计划：${title}。已按“${formatPlanRepeatBadgeLabel(repeatType)}”安排到对应日期。`;
 }

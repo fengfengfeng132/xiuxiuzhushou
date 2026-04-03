@@ -1750,11 +1750,7 @@ function AppShell(): JSX.Element {
         completedPlans={completedPlans}
         onSetSelectedDateKey={setSelectedDateKey}
         onJumpToToday={() => setSelectedDateKey(today)}
-        onShiftSelectedDate={(offset) => {
-          const currentIndex = weekDates.indexOf(selectedDateKey);
-          const nextDate = currentIndex === -1 ? today : getWeekDates(selectedDateKey)[Math.min(Math.max(currentIndex + offset, 0), 6)];
-          setSelectedDateKey(nextDate);
-        }}
+        onShiftSelectedDate={(offset) => setSelectedDateKey(shiftDateKey(selectedDateKey, offset))}
         onOpenAiPlanAssistant={handleOpenAiPlanAssistantFromHome}
         onOpenPlanManagement={handleOpenPlanManagementFromHome}
         onOpenPlanCreate={handleOpenPlanCreateFromHome}

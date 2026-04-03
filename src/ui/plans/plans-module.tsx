@@ -9,6 +9,7 @@ import {
   formatWeekLabel,
   getCompletedPlansForDate,
   getLatestPlanCompletionRecord,
+  getPendingPlansForDate,
   getRecordedPlanMinutes,
   getSubjectStyle,
   parseDateKey,
@@ -61,6 +62,7 @@ interface PlanDetailModalProps {
 }
 
 interface PlanCardProps {
+  today: string;
   plan: StudyPlan;
   variant: "active" | "history";
   selectedDateKey: string;
@@ -95,13 +97,6 @@ function formatPlanDateRange(plan: StudyPlan): string {
   return `${start} → ${end}`;
 }
 
-function describePlanKind(plan: StudyPlan): string {
-  if (!plan.completedAt) {
-    return "待完成计划";
-  }
-  return plan.createdAt.slice(0, 10) === plan.completedAt.slice(0, 10) ? "单次计划" : "跨日计划";
-}
-
 function describeAttachmentType(type: string): string {
   if (type.startsWith("audio/")) {
     return "音频";
@@ -120,6 +115,7 @@ function getRecordedSeconds(plan: StudyPlan): number {
 }
 
 function PlanCard({
+  today,
   plan,
   variant,
   selectedDateKey,
@@ -163,7 +159,7 @@ function PlanCard({
         <div className="plan-badges">
           <span className="plan-tag">{plan.subject}</span>
           <span className="plan-tag">{formatPlanRepeatBadgeLabel(plan.repeatType)}</span>
-          <span className="plan-tag plan-tag-muted">{variant === "active" ? "今日计划" : formatDateLabel(selectedDateKey)}</span>
+          <span className="plan-tag plan-tag-muted">{variant === "active" && selectedDateKey === today ? "今日计划" : formatDateLabel(selectedDateKey)}</span>
           {variant === "history" ? <span className="status-pill">已完成</span> : null}
         </div>
         <h3>{plan.title}</h3>
@@ -271,7 +267,7 @@ export function PlanBoard({
           {weekDates.map((dateKey, index) => {
             const isSelected = dateKey === selectedDateKey;
             const isToday = dateKey === today;
-            const doneCount = getCompletedPlansForDate(plans, dateKey).length;
+            const visiblePlanCount = getPendingPlansForDate(plans, dateKey).length + getCompletedPlansForDate(plans, dateKey).length;
             return (
               <button
                 key={dateKey}
@@ -281,7 +277,7 @@ export function PlanBoard({
               >
                 <span>{WEEKDAY_LABELS[index]}</span>
                 <strong>{parseDateKey(dateKey).getDate()}</strong>
-                <small>{doneCount > 0 ? `${doneCount} 条记录` : isToday ? "今天" : "空白"}</small>
+                <small>{visiblePlanCount > 0 ? `${visiblePlanCount} 条计划` : isToday ? "今天" : "空白"}</small>
               </button>
             );
           })}
@@ -318,6 +314,7 @@ export function PlanBoard({
             {pendingPlans.map((plan) => (
               <PlanCard
                 key={plan.id}
+                today={today}
                 plan={plan}
                 variant="active"
                 selectedDateKey={selectedDateKey}
@@ -329,6 +326,7 @@ export function PlanBoard({
             {completedPlans.map((plan) => (
               <PlanCard
                 key={plan.id}
+                today={today}
                 plan={plan}
                 variant="history"
                 selectedDateKey={selectedDateKey}
