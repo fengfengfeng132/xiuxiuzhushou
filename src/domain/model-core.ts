@@ -105,6 +105,162 @@ function getWeekDateKeys(dateKey: string): string[] {
   });
 }
 
+function getStartDateKey(plan: StudyPlan): string {
+  return createDateKey(new Date(plan.createdAt));
+}
+
+function getDayDiff(fromDateKey: string, toDateKey: string): number {
+  const from = parseDateKey(fromDateKey);
+  const to = parseDateKey(toDateKey);
+  return Math.floor((to.getTime() - from.getTime()) / 86400000);
+}
+
+function getWeekStartDateKey(dateKey: string): string {
+  return getWeekDateKeys(dateKey)[0];
+}
+
+function getEndOfMonthDateKey(dateKey: string): string {
+  const date = parseDateKey(dateKey);
+  return createDateKey(new Date(date.getFullYear(), date.getMonth() + 1, 0));
+}
+
+function addDays(dateKey: string, days: number): string {
+  const date = parseDateKey(dateKey);
+  date.setDate(date.getDate() + days);
+  return createDateKey(date);
+}
+
+function isSameMonth(leftDateKey: string, rightDateKey: string): boolean {
+  const left = parseDateKey(leftDateKey);
+  const right = parseDateKey(rightDateKey);
+  return left.getFullYear() === right.getFullYear() && left.getMonth() === right.getMonth();
+}
+
+function getBiweeklyCycleStartDateKey(startDateKey: string, dateKey: string): string {
+  const dayDiff = Math.max(0, getDayDiff(startDateKey, dateKey));
+  const cycleOffset = Math.floor(dayDiff / 14) * 14;
+  return addDays(startDateKey, cycleOffset);
+}
+
+function getPlanPeriodRange(plan: StudyPlan, dateKey: string): { startDateKey: string; endDateKey: string } | null {
+  const startDateKey = getStartDateKey(plan);
+
+  switch (plan.repeatType) {
+    case "current-week-cross-day-once": {
+      const periodStart = getWeekStartDateKey(startDateKey);
+      return {
+        startDateKey: periodStart,
+        endDateKey: addDays(periodStart, 6),
+      };
+    }
+    case "current-biweekly-cross-day-once": {
+      const periodStart = getBiweeklyCycleStartDateKey(startDateKey, dateKey);
+      return {
+        startDateKey: periodStart,
+        endDateKey: addDays(periodStart, 13),
+      };
+    }
+    case "current-month-cross-day-once":
+      return {
+        startDateKey,
+        endDateKey: getEndOfMonthDateKey(startDateKey),
+      };
+    case "weekly-cross-day-once": {
+      const periodStart = getWeekStartDateKey(dateKey);
+      return {
+        startDateKey: periodStart,
+        endDateKey: addDays(periodStart, 6),
+      };
+    }
+    case "biweekly-cross-day-once": {
+      const periodStart = getBiweeklyCycleStartDateKey(startDateKey, dateKey);
+      return {
+        startDateKey: periodStart,
+        endDateKey: addDays(periodStart, 13),
+      };
+    }
+    case "monthly-cross-day-once": {
+      const currentStart = parseDateKey(dateKey);
+      const periodStart = createDateKey(new Date(currentStart.getFullYear(), currentStart.getMonth(), 1));
+      return {
+        startDateKey: periodStart,
+        endDateKey: getEndOfMonthDateKey(dateKey),
+      };
+    }
+    default:
+      return null;
+  }
+}
+
+function getEbbinghausOffsets(): number[] {
+  return [0, 1, 2, 4, 7, 15, 30];
+}
+
+export function isPlanScheduledForDate(plan: StudyPlan, dateKey: string): boolean {
+  const startDateKey = getStartDateKey(plan);
+  if (dateKey < startDateKey || plan.excludedDateKeys.includes(dateKey)) {
+    return false;
+  }
+
+  const dayDiff = getDayDiff(startDateKey, dateKey);
+  if (dayDiff < 0) {
+    return false;
+  }
+
+  switch (plan.repeatType) {
+    case "once":
+      return dateKey === startDateKey;
+    case "daily":
+      return true;
+    case "weekly-custom":
+      return dayDiff % 7 === 0;
+    case "biweekly-custom":
+      return dayDiff % 14 === 0;
+    case "ebbinghaus":
+      return getEbbinghausOffsets().includes(dayDiff);
+    case "current-week-cross-day-once": {
+      const range = getPlanPeriodRange(plan, dateKey);
+      return range !== null && dateKey >= range.startDateKey && dateKey <= range.endDateKey;
+    }
+    case "current-biweekly-cross-day-once": {
+      const range = getPlanPeriodRange(plan, dateKey);
+      return range !== null && dateKey >= range.startDateKey && dateKey <= range.endDateKey;
+    }
+    case "current-month-cross-day-once": {
+      const range = getPlanPeriodRange(plan, dateKey);
+      return range !== null && dateKey >= range.startDateKey && dateKey <= range.endDateKey;
+    }
+    case "weekly-cross-day-once":
+      return true;
+    case "biweekly-cross-day-once":
+      return true;
+    case "monthly-cross-day-once":
+      return isSameMonth(dateKey, startDateKey) || dateKey >= startDateKey;
+    default:
+      return false;
+  }
+}
+
+export function isPlanCompletedForDate(plan: StudyPlan, dateKey: string): boolean {
+  if (!isPlanScheduledForDate(plan, dateKey)) {
+    return false;
+  }
+
+  if (plan.repeatType === "once") {
+    return plan.status === "done" && plan.completedAt !== null && currentDateKey(plan.completedAt) === dateKey;
+  }
+
+  const range = getPlanPeriodRange(plan, dateKey);
+  if (range) {
+    return plan.completionRecords.some((record) => {
+      const recordDateKey = currentDateKey(record.completedAt);
+      return recordDateKey >= range.startDateKey && recordDateKey <= range.endDateKey;
+    });
+  }
+
+  return plan.completionRecords.some((record) => currentDateKey(record.completedAt) === dateKey);
+}
+
 function nextEntityId(state: AppState, prefix: string): string {
   const id = `${prefix}_${state.meta.nextId}`;
   state.meta.nextId += 1;
@@ -250,6 +406,9 @@ function normalizePlan(value: unknown, fallbackTime: string): StudyPlan | null {
     status,
     createdAt,
     completedAt,
+    excludedDateKeys: Array.isArray(value.excludedDateKeys)
+      ? value.excludedDateKeys.filter((dateKey): dateKey is string => typeof dateKey === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateKey))
+      : [],
     completionRecords,
   };
 }
@@ -781,6 +940,7 @@ export function createInitialState(now: string = new Date().toISOString()): AppS
         status: "pending",
         createdAt: now,
         completedAt: null,
+        excludedDateKeys: [],
         completionRecords: [],
       },
       {
@@ -793,6 +953,7 @@ export function createInitialState(now: string = new Date().toISOString()): AppS
         status: "pending",
         createdAt: now,
         completedAt: null,
+        excludedDateKeys: [],
         completionRecords: [],
       },
     ],
@@ -885,6 +1046,7 @@ export function addPlan(
     status: "pending",
     createdAt: now,
     completedAt: null,
+    excludedDateKeys: [],
     completionRecords: [],
   });
   nextState.meta.lastUpdatedAt = now;
@@ -1379,6 +1541,7 @@ export function completePlan(
   const durationSeconds = rawDurationSeconds === undefined ? Math.round(plan.minutes * 60) : Math.round(Number(rawDurationSeconds));
   const note = typeof input.note === "string" ? input.note.trim() : "";
   const attachments = Array.isArray(input.attachments) ? input.attachments.slice(0, 15) : [];
+  const completionDateKey = currentDateKey(effectiveNow);
 
   if (!Number.isFinite(durationSeconds) || durationSeconds <= 0) {
     return {
@@ -1396,7 +1559,17 @@ export function completePlan(
     };
   }
 
-  plan.status = "done";
+  if (plan.repeatType !== "once" && isPlanCompletedForDate(plan, completionDateKey)) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "当前日期的这次重复计划已经完成过了。",
+    };
+  }
+
+  if (plan.repeatType === "once") {
+    plan.status = "done";
+  }
   plan.completedAt = effectiveNow;
   plan.completionRecords.unshift({
     id: nextEntityId(nextState, "plan_completion"),
@@ -1653,11 +1826,13 @@ export function deserializeState(raw: string): AppState {
 export function summarizeState(state: AppState, dateKey: string): Summary {
   const todayHabitCheckins = state.habits.reduce((total, habit) => total + (habit.completions[dateKey] ?? 0), 0);
   const balance = calculateStarBalance(state);
+  const visiblePendingPlans = state.plans.filter((plan) => isPlanScheduledForDate(plan, dateKey) && !isPlanCompletedForDate(plan, dateKey));
+  const visibleCompletedPlans = state.plans.filter((plan) => isPlanCompletedForDate(plan, dateKey));
 
   return {
     starBalance: balance,
-    pendingPlans: state.plans.filter((plan) => plan.status === "pending").length,
-    completedPlans: state.plans.filter((plan) => plan.status === "done").length,
+    pendingPlans: visiblePendingPlans.length,
+    completedPlans: visibleCompletedPlans.length,
     todayHabitCheckins,
     redeemableRewards: state.rewards.filter((reward) => getRewardRedeemSummary(reward, balance).canRedeem).length,
   };

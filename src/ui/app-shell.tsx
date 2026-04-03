@@ -15,6 +15,8 @@ import {
   getHabitFrequencyOption,
   getPetDefinition,
   getPetLevelTier,
+  isPlanCompletedForDate,
+  isPlanScheduledForDate,
   interactWithPet,
   redeemReward,
   switchActivePet,
@@ -239,7 +241,7 @@ function AppShell(): JSX.Element {
       if (!plan) {
         return false;
       }
-      return plan.status === "pending" && currentDateKey(plan.createdAt) === planManagementDateKey;
+      return isPlanScheduledForDate(plan, planManagementDateKey) && !isPlanCompletedForDate(plan, planManagementDateKey);
     });
   const isPlanManagementDirty =
     savedPlanManagementOrderIds.length !== planManagementOrderIds.length ||

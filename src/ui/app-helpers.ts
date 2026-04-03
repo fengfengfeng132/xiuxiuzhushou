@@ -3,6 +3,8 @@ import {
   currentDateKey,
   getActivePetCompanion,
   getHabitProgress,
+  isPlanCompletedForDate,
+  isPlanScheduledForDate,
   getPetDefinition,
   summarizeState,
   type ActivityEntry,
@@ -99,11 +101,11 @@ export function getSubjectStyle(subject: string): SubjectStyle {
 }
 
 export function getCompletedPlansForDate(plans: StudyPlan[], dateKey: string): StudyPlan[] {
-  return plans.filter((plan) => plan.status === "done" && plan.completedAt && currentDateKey(plan.completedAt) === dateKey);
+  return plans.filter((plan) => isPlanCompletedForDate(plan, dateKey));
 }
 
 export function getPendingPlansForDate(plans: StudyPlan[], dateKey: string): StudyPlan[] {
-  return plans.filter((plan) => plan.status === "pending" && currentDateKey(plan.createdAt) === dateKey);
+  return plans.filter((plan) => isPlanScheduledForDate(plan, dateKey) && !isPlanCompletedForDate(plan, dateKey));
 }
 
 export function buildHeroSummary(state: AppState, today: string): string {

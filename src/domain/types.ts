@@ -35,6 +35,7 @@ export interface StudyPlan {
   status: PlanStatus;
   createdAt: string;
   completedAt: string | null;
+  excludedDateKeys: string[];
   completionRecords: PlanCompletionRecord[];
 }
 

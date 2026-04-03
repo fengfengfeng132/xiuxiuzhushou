@@ -1,7 +1,7 @@
-import { currentDateKey, type StudyPlan } from "../../domain/model.js";
+import { isPlanCompletedForDate, isPlanScheduledForDate, type StudyPlan } from "../../domain/model.js";
 
 export function createManagedPlanOrder(plans: StudyPlan[], dateKey: string): string[] {
-  return plans.filter((plan) => plan.status === "pending" && currentDateKey(plan.createdAt) === dateKey).map((plan) => plan.id);
+  return plans.filter((plan) => isPlanScheduledForDate(plan, dateKey) && !isPlanCompletedForDate(plan, dateKey)).map((plan) => plan.id);
 }
 
 export function reorderManagedPlanIds(planIds: string[], draggedId: string, targetId: string): string[] {
@@ -29,7 +29,7 @@ export function applyManagedPlanOrder(plans: StudyPlan[], dateKey: string, manag
       if (!plan) {
         return false;
       }
-      return plan.status === "pending" && currentDateKey(plan.createdAt) === dateKey;
+      return isPlanScheduledForDate(plan, dateKey) && !isPlanCompletedForDate(plan, dateKey);
     });
   const managedPlanIdSet = new Set(orderedManagedPlans.map((plan) => plan.id));
   const nextPlans: StudyPlan[] = [];
