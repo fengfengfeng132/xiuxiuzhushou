@@ -9,6 +9,7 @@ import {
   completePlan,
   createHabit,
   createReward,
+  deletePlansForDate,
   deletePlans,
   currentDateKey,
   getActivePetCompanion,
@@ -637,10 +638,14 @@ function AppShell(): JSX.Element {
     setHabitDraft((current) => ({ ...current, [field]: value }));
   }
 
-  function applyMutation(result: { ok: boolean; nextState: AppState; message: string }, onSuccess?: () => void, successMessage?: string): void {
+  function applyMutation(
+    result: { ok: boolean; nextState: AppState; message: string },
+    onSuccess?: (nextState: AppState) => void,
+    successMessage?: string,
+  ): void {
     if (result.ok) {
       setState(result.nextState);
-      onSuccess?.();
+      onSuccess?.(result.nextState);
       setNotice(successMessage ?? result.message);
       return;
     }
@@ -1162,20 +1167,24 @@ function AppShell(): JSX.Element {
     openPlanDeleteModal();
   }
 
-  function handleConfirmDeleteManagedPlans(_scope: PlanDeleteScope): void {
+  function handleConfirmDeleteManagedPlans(scope: PlanDeleteScope): void {
     const targetIds = [...selectedManagedPlanIds];
+    const isDeleteCurrentDateOnly = scope === "currentDateOnly";
+    const mutation = isDeleteCurrentDateOnly
+      ? deletePlansForDate(state, targetIds, planManagementDateKey)
+      : deletePlans(state, targetIds);
+
     applyMutation(
-      deletePlans(state, targetIds),
-      () => {
-        const nextOrderIds = createManagedPlanOrder(
-          state.plans.filter((plan) => !targetIds.includes(plan.id)),
-          planManagementDateKey,
-        );
+      mutation,
+      (nextState) => {
+        const nextOrderIds = createManagedPlanOrder(nextState.plans, planManagementDateKey);
         setPlanManagementOrderIds(nextOrderIds);
         setSelectedManagedPlanIds([]);
         closePlanDeleteModal();
       },
-      `已删除 ${targetIds.length} 个计划。`,
+      isDeleteCurrentDateOnly
+        ? `已处理 ${targetIds.length} 个计划：仅删除 ${planManagementDateKey}。`
+        : `已删除 ${targetIds.length} 个计划。`,
     );
   }
 

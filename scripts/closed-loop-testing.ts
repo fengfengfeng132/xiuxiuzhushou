@@ -8,8 +8,10 @@ import {
   createHabit,
   createInitialState,
   currentDateKey,
+  deletePlansForDate,
   deserializeState,
   evaluateInvariants,
+  isPlanScheduledForDate,
   redeemReward,
   serializeState,
   type AppState,
@@ -25,6 +27,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", ".
 const OUTPUT_DIR = path.join(ROOT, "artifacts", "evidence", "latest");
 const FIXED_NOW = "2026-03-20T09:00:00.000Z";
 const FIXED_TODAY = currentDateKey(FIXED_NOW);
+const FIXED_TOMORROW = currentDateKey("2026-03-21T09:00:00.000Z");
 
 function assert(condition: boolean, message: string): void {
   if (!condition) {
@@ -73,6 +76,36 @@ function runAddPlanScenario(baseState: AppState): { result: ScenarioResult; stat
       details: "Adding a plan survives JSON serialization and deserialization.",
     },
     state: roundTrip,
+  };
+}
+
+function runScopedDeleteScenario(baseState: AppState): { result: ScenarioResult; state: AppState } {
+  const addRecurringMutation = addPlan(
+    baseState,
+    { title: "英语听力循环", subject: "英语", repeatType: "daily", minutes: 20 },
+    FIXED_NOW,
+  );
+  const recurringPlan = addRecurringMutation.nextState.plans.find((plan) => plan.title === "英语听力循环");
+
+  assert(addRecurringMutation.ok, "Recurring plan setup should succeed.");
+  assert(Boolean(recurringPlan), "Recurring plan should exist before scoped delete.");
+
+  const scopedDeleteMutation = deletePlansForDate(addRecurringMutation.nextState, [recurringPlan!.id], FIXED_TODAY, FIXED_NOW);
+  const scopedPlan = scopedDeleteMutation.nextState.plans.find((plan) => plan.id === recurringPlan!.id);
+
+  assert(scopedDeleteMutation.ok, "Scoped delete should succeed.");
+  assert(Boolean(scopedPlan), "Scoped delete must keep recurring plan entity.");
+  assert(scopedPlan!.excludedDateKeys.includes(FIXED_TODAY), "Scoped date should be added to excludedDateKeys.");
+  assert(!isPlanScheduledForDate(scopedPlan!, FIXED_TODAY), "Recurring plan should be hidden on the scoped date.");
+  assert(isPlanScheduledForDate(scopedPlan!, FIXED_TOMORROW), "Recurring plan should remain scheduled on future dates.");
+
+  return {
+    result: {
+      id: "plan-scoped-delete",
+      passed: true,
+      details: "Scoped delete excludes only the chosen date and keeps recurring plans for other dates.",
+    },
+    state: scopedDeleteMutation.nextState,
   };
 }
 
@@ -158,7 +191,11 @@ async function main(): Promise<void> {
     scenarioResults.push(addPlanScenario.result);
     await writeJson("state-after-add-plan.json", addPlanScenario.state);
 
-    const habitScenario = runHabitScenario(addPlanScenario.state);
+    const scopedDeleteScenario = runScopedDeleteScenario(addPlanScenario.state);
+    scenarioResults.push(scopedDeleteScenario.result);
+    await writeJson("state-after-scoped-delete.json", scopedDeleteScenario.state);
+
+    const habitScenario = runHabitScenario(scopedDeleteScenario.state);
     scenarioResults.push(habitScenario.result);
     await writeJson("state-after-habit.json", habitScenario.state);
 

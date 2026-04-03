@@ -287,7 +287,7 @@ export function PlanDeleteSelectedModal({
           <div className="plan-delete-modal-warning">
             <strong>注意</strong>
             <p>
-              删除后无法恢复。当前版本重复任务还没有展开成多日期实例，因此两个选项都会删除当前选中的计划本体。
+              删除后无法恢复。仅删除当前日期会保留重复计划本体并排除该日期，删除所有重复任务会彻底移除该计划。
             </p>
           </div>
 

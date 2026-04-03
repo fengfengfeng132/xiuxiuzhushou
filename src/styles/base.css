@@ -417,6 +417,10 @@ button {
   gap: 10px;
 }
 
+.date-jump {
+  position: relative;
+}
+
 .chip-button,
 .icon-button,
 .filter-chip,
@@ -509,6 +513,64 @@ button {
 
 .day-pill.is-today:not(.is-selected) {
   border-color: rgba(243, 107, 178, 0.3);
+}
+
+.date-jump-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 8;
+  width: min(280px, calc(100vw - 48px));
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background:
+    radial-gradient(circle at top right, rgba(255, 228, 240, 0.46), transparent 46%),
+    rgba(255, 255, 255, 0.98);
+  box-shadow: var(--shadow-soft);
+}
+
+.date-jump-title {
+  margin: 0;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.date-jump-input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+}
+
+.date-jump-input:focus {
+  outline: none;
+  border-color: rgba(243, 107, 178, 0.42);
+  box-shadow: 0 0 0 4px rgba(243, 107, 178, 0.12);
+}
+
+.date-jump-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.date-jump-action {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 10%, white);
+  color: var(--primary-strong);
+}
+
+.date-jump-action.is-quiet {
+  background: rgba(18, 49, 100, 0.08);
+  color: var(--muted);
 }
 
 .section-head {

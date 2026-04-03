@@ -14,6 +14,7 @@ import {
   WEEKDAY_LABELS,
 } from "../app-content.js";
 import { formatMonthDayLabel, formatSignedPoints, formatWeekLabel } from "../app-helpers.js";
+import { DateJumpPopover } from "../date-jump-popover.js";
 import type {
   HabitBoardFilter,
   HabitBoardLayout,
@@ -252,9 +253,14 @@ export function HabitBoard({
             <button type="button" className="icon-button habit-nav-button" onClick={() => onShiftSelectedDate(1)} aria-label="下一天">
               后一天
             </button>
-            <button type="button" className="icon-button habit-nav-button" onClick={() => onOpenFutureFlow("日历选择器仍在开发中。")} aria-label="打开日历">
-              日历
-            </button>
+            <DateJumpPopover
+              valueDateKey={selectedDateKey}
+              todayDateKey={_today}
+              onSelectDate={onSetSelectedDateKey}
+              buttonClassName="icon-button habit-nav-button"
+              buttonLabel="日历"
+              buttonAriaLabel="打开日历跳转日期"
+            />
           </div>
         </div>
 

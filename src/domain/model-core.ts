@@ -1222,6 +1222,101 @@ export function deletePlans(state: AppState, planIds: string[], now: string = ne
   };
 }
 
+export function deletePlansForDate(
+  state: AppState,
+  planIds: string[],
+  dateKey: string,
+  now: string = new Date().toISOString(),
+): CommandResult {
+  const scopedDateKey = typeof dateKey === "string" ? dateKey.trim() : "";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(scopedDateKey)) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "请选择有效的管理日期。",
+    };
+  }
+
+  const targetIds = [...new Set(planIds.map((planId) => planId.trim()).filter(Boolean))];
+  if (targetIds.length === 0) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "请先选择要删除的计划。",
+    };
+  }
+
+  const targetPlans = state.plans.filter((plan) => targetIds.includes(plan.id));
+  if (targetPlans.length === 0) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "没有找到可删除的计划。",
+    };
+  }
+
+  const nextState = cloneState(state);
+  const removedPlanTitles: string[] = [];
+  const excludedPlanTitles: string[] = [];
+
+  nextState.plans = nextState.plans.filter((plan) => {
+    if (!targetIds.includes(plan.id)) {
+      return true;
+    }
+
+    if (plan.repeatType === "once") {
+      removedPlanTitles.push(plan.title);
+      return false;
+    }
+
+    if (!plan.excludedDateKeys.includes(scopedDateKey)) {
+      plan.excludedDateKeys.push(scopedDateKey);
+    }
+    excludedPlanTitles.push(plan.title);
+    return true;
+  });
+
+  if (removedPlanTitles.length === 0 && excludedPlanTitles.length === 0) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "没有找到可删除的计划。",
+    };
+  }
+
+  nextState.meta.lastUpdatedAt = now;
+  const activityParts: string[] = [];
+  if (excludedPlanTitles.length > 0) {
+    activityParts.push(`仅删除 ${scopedDateKey} 的计划：${excludedPlanTitles.join("、")}`);
+  }
+  if (removedPlanTitles.length > 0) {
+    activityParts.push(`删除计划：${removedPlanTitles.join("、")}`);
+  }
+  pushActivity(nextState, "system", activityParts.join("；"), now);
+
+  if (excludedPlanTitles.length > 0 && removedPlanTitles.length > 0) {
+    return {
+      ok: true,
+      nextState,
+      message: `已在 ${scopedDateKey} 删除 ${excludedPlanTitles.length} 个重复计划，并删除 ${removedPlanTitles.length} 个仅当天计划。`,
+    };
+  }
+
+  if (excludedPlanTitles.length > 0) {
+    return {
+      ok: true,
+      nextState,
+      message: `已在 ${scopedDateKey} 删除 ${excludedPlanTitles.length} 个重复计划。`,
+    };
+  }
+
+  return {
+    ok: true,
+    nextState,
+    message: `已删除 ${removedPlanTitles.length} 个计划。`,
+  };
+}
+
 export function createHabit(
   state: AppState,
   input: CreateHabitInput,

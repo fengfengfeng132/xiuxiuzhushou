@@ -481,6 +481,17 @@
     font-size: 14px;
   }
 
+  .week-actions .date-jump,
+  .habit-week-actions .date-jump {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 0;
+  }
+
+  .week-actions .date-jump .icon-button,
+  .habit-week-actions .date-jump .icon-button {
+    width: 100%;
+  }
+
   .manager-actions,
   .habit-card-actions,
   .modal-actions,

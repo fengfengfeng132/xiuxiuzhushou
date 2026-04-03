@@ -15,6 +15,7 @@ import {
   parseDateKey,
 } from "../app-helpers.js";
 import type { QuickCompleteAttachmentDraft, QuickCompleteDraft, QuickCompleteMode } from "../app-types.js";
+import { DateJumpPopover } from "../date-jump-popover.js";
 import { formatPlanRepeatBadgeLabel } from "./plan-repeat.js";
 
 interface PlanBoardProps {
@@ -258,9 +259,14 @@ export function PlanBoard({
             <button type="button" className="icon-button" onClick={() => onShiftSelectedDate(1)}>
               后一天
             </button>
-            <button type="button" className="icon-button" onClick={() => onOpenFutureFlow("日历选择器仍在开发中。")}>
-              日历
-            </button>
+            <DateJumpPopover
+              valueDateKey={selectedDateKey}
+              todayDateKey={today}
+              onSelectDate={onSetSelectedDateKey}
+              buttonClassName="icon-button"
+              buttonLabel="日历"
+              buttonAriaLabel="打开日历跳转日期"
+            />
           </div>
         </div>
         <div className="day-strip" role="tablist" aria-label="本周日期">
