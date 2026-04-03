@@ -55,11 +55,12 @@ interface QuickCompleteModalProps {
 
 interface PlanDetailModalProps {
   plan: StudyPlan | null;
+  selectedDateKey: string;
+  completedForSelectedDate: boolean;
+  completionRecordsForSelectedDate: StudyPlan["completionRecords"];
   onClose: () => void;
   onEditPlan: (plan: StudyPlan) => void;
   onDeleteRepeat: (plan: StudyPlan) => void;
-  onOpenDictation: (plan: StudyPlan) => void;
-  onPlayRecord: (plan: StudyPlan) => void;
 }
 
 interface PlanCardProps {
@@ -523,18 +524,26 @@ export function QuickCompleteModal({
 
 export function PlanDetailModal({
   plan,
+  selectedDateKey,
+  completedForSelectedDate,
+  completionRecordsForSelectedDate,
   onClose,
   onEditPlan,
   onDeleteRepeat,
-  onOpenDictation,
-  onPlayRecord,
 }: PlanDetailModalProps) {
   if (!plan) {
     return null;
   }
 
   const style = getSubjectStyle(plan.subject);
-  const totalSeconds = getRecordedSeconds(plan);
+  const fallbackRecords = plan.completionRecords;
+  const scopedRecords = completionRecordsForSelectedDate.length > 0 ? completionRecordsForSelectedDate : fallbackRecords;
+  const visibleRecords = scopedRecords.slice(0, 12);
+  const hiddenRecordCount = Math.max(0, scopedRecords.length - visibleRecords.length);
+  const scopedTotalSeconds = scopedRecords.reduce((sum, record) => sum + record.durationSeconds, 0);
+  const totalSeconds = scopedRecords.length > 0 ? scopedTotalSeconds : getRecordedSeconds(plan);
+  const statusLabel = completedForSelectedDate ? "已完成" : "待完成";
+  const statusClassName = completedForSelectedDate ? "plan-detail-status-badge" : "plan-detail-status-badge is-pending";
   const detailStyle = {
     "--subject-tint": style.tint,
     "--subject-glow": style.glow,
@@ -553,7 +562,7 @@ export function PlanDetailModal({
               <h2>{plan.title}</h2>
               <div className="plan-detail-badges">
                 <span className="plan-detail-subject-badge">{plan.subject}</span>
-                <span className="plan-detail-status-badge">{plan.status === "done" ? "已完成" : "待完成"}</span>
+                <span className={statusClassName}>{statusLabel}</span>
               </div>
             </div>
           </div>
@@ -573,10 +582,10 @@ export function PlanDetailModal({
                 </div>
               </div>
               <div className="plan-detail-inline-actions">
-                <button type="button" className="plan-detail-chip plan-detail-chip-active" onClick={() => onOpenDictation(plan)}>
+                <button type="button" className="plan-detail-chip is-disabled" disabled title="功能开发中">
                   听写
                 </button>
-                <button type="button" className="plan-detail-chip" onClick={() => onPlayRecord(plan)}>
+                <button type="button" className="plan-detail-chip is-disabled" disabled title="功能开发中">
                   播放
                 </button>
               </div>
@@ -630,13 +639,17 @@ export function PlanDetailModal({
             <div className="plan-detail-record-head">
               <div>
                 <strong>完成记录与备注</strong>
-                <p>共 {plan.completionRecords.length} 次记录，累计 {formatDurationSummary(totalSeconds)}</p>
+                <p>
+                  {completionRecordsForSelectedDate.length > 0
+                    ? `${formatDateLabel(selectedDateKey)} 共 ${completionRecordsForSelectedDate.length} 次，累计 ${formatDurationSummary(totalSeconds)}`
+                    : `共 ${plan.completionRecords.length} 次记录，累计 ${formatDurationSummary(totalSeconds)}`}
+                </p>
               </div>
             </div>
 
-            {plan.completionRecords.length > 0 ? (
+            {visibleRecords.length > 0 ? (
               <div className="plan-detail-record-list">
-                {plan.completionRecords.map((record) => (
+                {visibleRecords.map((record) => (
                   <article key={record.id} className="plan-detail-record-item">
                     <div className="plan-detail-record-top">
                       <strong>{formatRecordDate(record.completedAt)}</strong>
@@ -668,6 +681,7 @@ export function PlanDetailModal({
                     ) : null}
                   </article>
                 ))}
+                {hiddenRecordCount > 0 ? <div className="plan-detail-record-hint">已折叠 {hiddenRecordCount} 条更早记录。</div> : null}
               </div>
             ) : (
               <div className="plan-detail-empty-records">这条计划还没有完成记录。</div>

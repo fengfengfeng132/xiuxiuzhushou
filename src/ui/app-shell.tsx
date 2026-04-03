@@ -233,6 +233,10 @@ function AppShell(): JSX.Element {
   const quickCompletePlanTarget = state.plans.find((plan) => plan.id === quickCompleteDraft.planId) ?? null;
   const activeTimerPlan = state.plans.find((plan) => plan.id === activeTimerPlanId) ?? null;
   const planDetailPlanTarget = state.plans.find((plan) => plan.id === planDetailPlanId) ?? null;
+  const planDetailCompletedForSelectedDate = planDetailPlanTarget ? isPlanCompletedForDate(planDetailPlanTarget, selectedDateKey) : false;
+  const planDetailCompletionRecordsForSelectedDate = planDetailPlanTarget
+    ? planDetailPlanTarget.completionRecords.filter((record) => currentDateKey(record.completedAt) === selectedDateKey)
+    : [];
   const activeAiPlanSession = aiPlanSessions.find((session) => session.id === activeAiPlanSessionId) ?? null;
   const parsedBatchPlans = parseBatchPlanInput(batchPlanDraft.rawText);
   const savedPlanManagementOrderIds = createManagedPlanOrder(state.plans, planManagementDateKey);
@@ -896,14 +900,6 @@ function AppShell(): JSX.Element {
       },
       `已删除计划：${plan.title}`,
     );
-  }
-
-  function handleDictationFromDetail(_plan: StudyPlan): void {
-    openFutureFlow("听写功能仍在开发中。");
-  }
-
-  function handlePlayFromDetail(_plan: StudyPlan): void {
-    openFutureFlow("播放功能仍在开发中。");
   }
 
   function handleTabChange(nextTab: DashboardTab): void {
@@ -1846,11 +1842,12 @@ function AppShell(): JSX.Element {
       />
       <PlanDetailModal
         plan={planDetailPlanTarget}
+        selectedDateKey={selectedDateKey}
+        completedForSelectedDate={planDetailCompletedForSelectedDate}
+        completionRecordsForSelectedDate={planDetailCompletionRecordsForSelectedDate}
         onClose={closePlanDetailModal}
         onEditPlan={handleEditPlanFromDetail}
         onDeleteRepeat={handleDeleteRepeatFromDetail}
-        onOpenDictation={handleDictationFromDetail}
-        onPlayRecord={handlePlayFromDetail}
       />
       <HabitModal
         open={habitModalOpen}
