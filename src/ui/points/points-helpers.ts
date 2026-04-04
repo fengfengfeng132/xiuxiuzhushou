@@ -1,4 +1,13 @@
-import { getHabitProgress, getRewardRedeemSummary, type AppState, type Reward } from "../../domain/model.js";
+import {
+  STAR_RULES,
+  estimateSystemPlanStars,
+  getHabitProgress,
+  getRewardRedeemSummary,
+  isPlanCompletedForDate,
+  isPlanScheduledForDate,
+  type AppState,
+  type Reward,
+} from "../../domain/model.js";
 import { formatWishCategoryLabel, formatWishRepeatModeLabel } from "./wish-config.js";
 
 export interface PointsSummaryMetrics {
@@ -347,14 +356,28 @@ export function summarizePointsMetrics(state: AppState, referenceDateKey: string
 
 export function buildDailyPointOpportunities(state: AppState, referenceDateKey: string): DailyPointOpportunity[] {
   const opportunities: DailyPointOpportunity[] = [];
-  const pendingPlans = state.plans.filter((plan) => plan.status === "pending");
-  const pendingPlanStars = pendingPlans.reduce((total, plan) => total + plan.stars, 0);
+  const scheduledPlans = state.plans.filter((plan) => isPlanScheduledForDate(plan, referenceDateKey));
+  const pendingPlans = scheduledPlans.filter((plan) => !isPlanCompletedForDate(plan, referenceDateKey));
+  const pendingPlanStars = pendingPlans.reduce((total, plan) => {
+    return total + (plan.customStarsEnabled ? plan.stars : estimateSystemPlanStars(plan.minutes));
+  }, 0);
 
   if (pendingPlans.length > 0 && pendingPlanStars > 0) {
     opportunities.push({
       id: "plans",
       label: `完成剩余 ${pendingPlans.length} 个任务`,
       stars: pendingPlanStars,
+    });
+  }
+
+  const fullAttendanceAwardedToday = state.starTransactions.some(
+    (transaction) => transaction.reason.startsWith("每日全勤奖励") && createDateKey(new Date(transaction.createdAt)) === referenceDateKey,
+  );
+  if (scheduledPlans.length > 0 && pendingPlans.length > 0 && !fullAttendanceAwardedToday && STAR_RULES.dailyFullAttendanceBonusStars > 0) {
+    opportunities.push({
+      id: "full-attendance",
+      label: "完成今日全部任务（全勤）",
+      stars: STAR_RULES.dailyFullAttendanceBonusStars,
     });
   }
 
@@ -431,9 +454,9 @@ export function buildAchievementOverview(state: AppState): AchievementOverview {
 
   const definitions = [
     {
-      id: "first-plan",
-      title: "完成第一项任务",
-      description: "解锁你的第一个学习任务成就。",
+      id: "task-master",
+      title: "任务达人",
+      description: "完成第一项学习任务。",
       rewardStars: 2,
       icon: "🏁",
       accent: "#2f6dff",
@@ -441,8 +464,8 @@ export function buildAchievementOverview(state: AppState): AchievementOverview {
       unlocked: completedPlanCount >= 1,
     },
     {
-      id: "focus-rookie",
-      title: "专注两小时",
+      id: "study-master",
+      title: "学霸之路",
       description: "累计学习时长达到 120 分钟。",
       rewardStars: 4,
       icon: "⏳",
@@ -451,8 +474,8 @@ export function buildAchievementOverview(state: AppState): AchievementOverview {
       unlocked: totalStudyMinutes >= 120,
     },
     {
-      id: "habit-runner",
-      title: "习惯打卡达人",
+      id: "growth-star",
+      title: "进步之星",
       description: "累计完成 7 次习惯打卡。",
       rewardStars: 3,
       icon: "✅",
@@ -461,8 +484,8 @@ export function buildAchievementOverview(state: AppState): AchievementOverview {
       unlocked: totalHabitCheckIns >= 7,
     },
     {
-      id: "streak-keeper",
-      title: "连续坚持三天",
+      id: "persistent-runner",
+      title: "坚持不懈",
       description: "连续三天都完成学习或习惯任务。",
       rewardStars: 5,
       icon: "🔥",
@@ -486,7 +509,7 @@ export function buildAchievementOverview(state: AppState): AchievementOverview {
 
   return {
     unlockedCount: badges.length,
-    totalCount: badges.length,
+    totalCount: definitions.length,
     rewardStars: badges.reduce((total, badge) => total + badge.rewardStars, 0),
     badges,
   };

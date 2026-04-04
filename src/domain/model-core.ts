@@ -4,6 +4,7 @@ import {
   PET_CATALOG,
   PET_INTERACTION_ACTIONS,
   PET_LEVEL_TIERS,
+  STAR_RULES,
   VERSION,
 } from "./reference-data.js";
 import type {
@@ -261,6 +262,160 @@ export function isPlanCompletedForDate(plan: StudyPlan, dateKey: string): boolea
   return plan.completionRecords.some((record) => currentDateKey(record.completedAt) === dateKey);
 }
 
+function getSystemDurationBonusStars(durationMinutes: number): number {
+  if (!Number.isFinite(durationMinutes) || durationMinutes <= 0) {
+    return 0;
+  }
+
+  for (const threshold of STAR_RULES.durationBonusThresholds) {
+    if (durationMinutes >= threshold.minimumMinutes) {
+      return threshold.bonusStars;
+    }
+  }
+
+  return 0;
+}
+
+export function estimateSystemPlanStars(minutes: number): number {
+  const safeMinutes = Math.max(1, Math.round(minutes));
+  return STAR_RULES.planBaseStars + getSystemDurationBonusStars(safeMinutes);
+}
+
+function getPlanCompletionMultiplier(completedAt: string): number {
+  const completedDate = new Date(completedAt);
+  const completedHour = completedDate.getHours();
+  const isMorning =
+    completedHour >= STAR_RULES.morningBonus.startHour &&
+    completedHour < STAR_RULES.morningBonus.endHour;
+  const isWeekend = completedDate.getDay() === 0 || completedDate.getDay() === 6;
+
+  let multiplier = 1;
+  if (isMorning) {
+    multiplier *= STAR_RULES.morningBonus.multiplier;
+  }
+  if (isWeekend) {
+    multiplier *= STAR_RULES.weekendBonusMultiplier;
+  }
+
+  return multiplier;
+}
+
+function hasTransactionWithReasonOnDate(state: AppState, reasonPrefix: string, dateKey: string): boolean {
+  return state.starTransactions.some((transaction) => transaction.reason.startsWith(reasonPrefix) && currentDateKey(transaction.createdAt) === dateKey);
+}
+
+function hasTransactionWithReasonPrefix(state: AppState, reasonPrefix: string): boolean {
+  return state.starTransactions.some((transaction) => transaction.reason.startsWith(reasonPrefix));
+}
+
+function hasAnyTaskCompletionOnDate(state: AppState, dateKey: string): boolean {
+  const hasCompletedPlan = state.plans.some((plan) => isPlanCompletedForDate(plan, dateKey));
+  if (hasCompletedPlan) {
+    return true;
+  }
+
+  return state.habits.some((habit) => habit.points > 0 && (habit.completions[dateKey] ?? 0) > 0);
+}
+
+function getCurrentTaskStreakDays(state: AppState, endDateKey: string): number {
+  if (!hasAnyTaskCompletionOnDate(state, endDateKey)) {
+    return 0;
+  }
+
+  let streak = 0;
+  let cursor = endDateKey;
+  while (hasAnyTaskCompletionOnDate(state, cursor)) {
+    streak += 1;
+    cursor = addDays(cursor, -1);
+  }
+
+  return streak;
+}
+
+function getTotalCompletedPlanCount(state: AppState): number {
+  return state.plans.reduce((total, plan) => total + plan.completionRecords.length, 0);
+}
+
+function getTotalRecordedStudyMinutes(state: AppState): number {
+  return state.plans.reduce((total, plan) => {
+    if (plan.completionRecords.length === 0) {
+      return total;
+    }
+
+    const recordMinutes = plan.completionRecords.reduce((recordTotal, record) => {
+      return recordTotal + Math.max(1, Math.round(record.durationSeconds / 60));
+    }, 0);
+    return total + recordMinutes;
+  }, 0);
+}
+
+function getTotalHabitCheckIns(state: AppState): number {
+  return state.habits.reduce((total, habit) => total + Object.values(habit.completions).reduce((sum, count) => sum + count, 0), 0);
+}
+
+function awardDailyFullAttendanceIfReached(state: AppState, dateKey: string, now: string): number {
+  const scheduledPlans = state.plans.filter((plan) => isPlanScheduledForDate(plan, dateKey));
+  if (scheduledPlans.length === 0) {
+    return 0;
+  }
+
+  const allCompleted = scheduledPlans.every((plan) => isPlanCompletedForDate(plan, dateKey));
+  if (!allCompleted) {
+    return 0;
+  }
+
+  if (hasTransactionWithReasonOnDate(state, "每日全勤奖励", dateKey)) {
+    return 0;
+  }
+
+  pushTransaction(state, STAR_RULES.dailyFullAttendanceBonusStars, `每日全勤奖励：${dateKey}`, now);
+  return STAR_RULES.dailyFullAttendanceBonusStars;
+}
+
+function awardStreakBonusIfReached(state: AppState, dateKey: string, now: string): number {
+  const streakDays = getCurrentTaskStreakDays(state, dateKey);
+  if (streakDays <= 0) {
+    return 0;
+  }
+
+  let awarded = 0;
+  for (const tier of STAR_RULES.streakRewards) {
+    if (streakDays >= tier.days && !hasTransactionWithReasonPrefix(state, `连续打卡奖励：${tier.days}天`)) {
+      pushTransaction(state, tier.stars, `连续打卡奖励：${tier.days}天`, now);
+      awarded += tier.stars;
+    }
+  }
+
+  return awarded;
+}
+
+function awardAchievementBonusIfReached(state: AppState, dateKey: string, now: string): number {
+  const completedPlanCount = getTotalCompletedPlanCount(state);
+  const totalStudyMinutes = getTotalRecordedStudyMinutes(state);
+  const totalHabitCheckIns = getTotalHabitCheckIns(state);
+  const currentStreakDays = getCurrentTaskStreakDays(state, dateKey);
+  const achievementRewards = [
+    { id: "任务达人", stars: 2, reached: completedPlanCount >= 1 },
+    { id: "学霸之路", stars: 4, reached: totalStudyMinutes >= 120 },
+    { id: "进步之星", stars: 3, reached: totalHabitCheckIns >= 7 },
+    { id: "坚持不懈", stars: 5, reached: currentStreakDays >= 3 },
+  ];
+
+  let awarded = 0;
+  for (const achievement of achievementRewards) {
+    const reason = `成就奖励：${achievement.id}`;
+    if (!achievement.reached || hasTransactionWithReasonPrefix(state, reason)) {
+      continue;
+    }
+
+    pushTransaction(state, achievement.stars, reason, now);
+    pushActivity(state, "system", `解锁成就：${achievement.id}，奖励 ${achievement.stars} 星`, now);
+    awarded += achievement.stars;
+  }
+
+  return awarded;
+}
+
 function nextEntityId(state: AppState, prefix: string): string {
   const id = `${prefix}_${state.meta.nextId}`;
   state.meta.nextId += 1;
@@ -371,6 +526,9 @@ function normalizePlan(value: unknown, fallbackTime: string): StudyPlan | null {
   const repeatType: PlanRepeatType = isPlanRepeatType(value.repeatType) ? value.repeatType : "once";
   const minutes = Number(value.minutes);
   const stars = Number(value.stars);
+  const legacyEstimatedStars = Math.max(1, Math.round(minutes / 10));
+  const customStarsEnabled =
+    typeof value.customStarsEnabled === "boolean" ? value.customStarsEnabled : Number.isFinite(stars) && Math.round(stars) !== legacyEstimatedStars;
   const status = value.status === "done" ? "done" : "pending";
   const createdAt = typeof value.createdAt === "string" ? value.createdAt : fallbackTime;
   const completedAt = typeof value.completedAt === "string" ? value.completedAt : null;
@@ -403,6 +561,7 @@ function normalizePlan(value: unknown, fallbackTime: string): StudyPlan | null {
     repeatType,
     minutes: Math.round(minutes),
     stars: Math.round(stars),
+    customStarsEnabled,
     status,
     createdAt,
     completedAt,
@@ -937,6 +1096,7 @@ export function createInitialState(now: string = new Date().toISOString()): AppS
         subject: "数学",
         minutes: 25,
         stars: 3,
+        customStarsEnabled: false,
         status: "pending",
         createdAt: now,
         completedAt: null,
@@ -950,6 +1110,7 @@ export function createInitialState(now: string = new Date().toISOString()): AppS
         subject: "英语",
         minutes: 20,
         stars: 2,
+        customStarsEnabled: false,
         status: "pending",
         createdAt: now,
         completedAt: null,
@@ -1018,14 +1179,15 @@ export function createInitialState(now: string = new Date().toISOString()): AppS
 
 export function addPlan(
   state: AppState,
-  input: { title: string; subject: string; repeatType?: PlanRepeatType; minutes: number; stars?: number },
+  input: { title: string; subject: string; repeatType?: PlanRepeatType; minutes: number; stars?: number; customStarsEnabled?: boolean },
   now: string = new Date().toISOString(),
 ): CommandResult {
   const title = input.title.trim();
   const subject = input.subject.trim();
   const repeatType = input.repeatType ?? "once";
   const minutes = Math.max(5, Math.round(input.minutes));
-  const stars = input.stars === undefined ? Math.max(1, Math.round(minutes / 10)) : Math.round(Number(input.stars));
+  const customStarsEnabled = input.customStarsEnabled ?? input.stars !== undefined;
+  const stars = input.stars === undefined ? estimateSystemPlanStars(minutes) : Math.round(Number(input.stars));
 
   if (!title || !subject || !isPlanRepeatType(repeatType) || !Number.isFinite(minutes) || !Number.isFinite(stars) || stars <= 0) {
     return {
@@ -1043,6 +1205,7 @@ export function addPlan(
     repeatType,
     minutes,
     stars,
+    customStarsEnabled,
     status: "pending",
     createdAt: now,
     completedAt: null,
@@ -1075,7 +1238,8 @@ export function updatePlan(state: AppState, planId: string, input: UpdatePlanInp
   const subject = input.subject.trim();
   const repeatType = input.repeatType;
   const minutes = Math.max(5, Math.round(input.minutes));
-  const stars = input.stars === undefined ? Math.max(1, Math.round(minutes / 10)) : Math.round(Number(input.stars));
+  const customStarsEnabled = input.customStarsEnabled ?? input.stars !== undefined;
+  const stars = input.stars === undefined ? estimateSystemPlanStars(minutes) : Math.round(Number(input.stars));
 
   if (!title || !subject || !isPlanRepeatType(repeatType) || !Number.isFinite(minutes) || !Number.isFinite(stars) || stars <= 0) {
     return {
@@ -1090,6 +1254,7 @@ export function updatePlan(state: AppState, planId: string, input: UpdatePlanInp
   plan.repeatType = repeatType;
   plan.minutes = minutes;
   plan.stars = stars;
+  plan.customStarsEnabled = customStarsEnabled;
   if (typeof input.createdAt === "string" && input.createdAt) {
     plan.createdAt = input.createdAt;
   }
@@ -1515,6 +1680,7 @@ export function switchActivePet(state: AppState, definitionId: string, now: stri
 }
 
 export function interactWithPet(state: AppState, actionId: PetInteractionId, now: string = new Date().toISOString()): CommandResult {
+  const interactionCost = 1;
   const action = PET_INTERACTION_ACTIONS.find((candidate) => candidate.id === actionId);
   if (!action) {
     return {
@@ -1543,6 +1709,14 @@ export function interactWithPet(state: AppState, actionId: PetInteractionId, now
   }
 
   const nextState = cloneState(state);
+  const balance = calculateStarBalance(nextState);
+  if (balance < interactionCost) {
+    return {
+      ok: false,
+      nextState: state,
+      message: `星星不足，还差 ${interactionCost - balance} 颗才能和${definition.name}互动。`,
+    };
+  }
   const companion = nextState.pets.companions.find((item) => item.definitionId === activeCompanion.definitionId);
   if (!companion) {
     return {
@@ -1560,12 +1734,13 @@ export function interactWithPet(state: AppState, actionId: PetInteractionId, now
   companion.lastInteractionAt = now;
   nextState.meta.lastUpdatedAt = now;
 
-  pushActivity(nextState, "pet-interacted", `${definition.name}${action.activityMessage}`, now);
+  pushTransaction(nextState, -interactionCost, `宠物互动：${definition.name} · ${action.title}`, now);
+  pushActivity(nextState, "pet-interacted", `${definition.name}${action.activityMessage}（消耗 ${interactionCost} 星星）`, now);
 
   return {
     ok: true,
     nextState,
-    message: `${definition.name}${action.successMessage}`,
+    message: `${definition.name}${action.successMessage}（消耗 ${interactionCost} 星星）`,
   };
 }
 
@@ -1679,16 +1854,41 @@ export function completePlan(
     completedAt: effectiveNow,
   });
   nextState.meta.lastUpdatedAt = effectiveNow;
-  pushTransaction(nextState, plan.stars, `完成计划：${plan.title}`, effectiveNow);
   const durationMinutes = Math.max(1, Math.round(durationSeconds / 60));
+  const durationBonusStars = getSystemDurationBonusStars(durationMinutes);
+  const completionMultiplier = getPlanCompletionMultiplier(effectiveNow);
+  const systemSubtotalStars = STAR_RULES.planBaseStars + durationBonusStars;
+  const basePlanStars = plan.customStarsEnabled ? plan.stars : Math.max(1, Math.round(systemSubtotalStars * completionMultiplier));
+  const multiplierLabel = completionMultiplier > 1 ? `x${completionMultiplier.toFixed(2).replace(/\.?0+$/, "")}` : null;
+  const planRewardReason = plan.customStarsEnabled
+    ? `完成计划：${plan.title}（自定义奖励）`
+    : `完成计划：${plan.title}（基础${STAR_RULES.planBaseStars}+时长${durationBonusStars}${multiplierLabel ? `，加成 ${multiplierLabel}` : ""}）`;
+  pushTransaction(nextState, basePlanStars, planRewardReason, effectiveNow);
+  const fullAttendanceBonus = awardDailyFullAttendanceIfReached(nextState, completionDateKey, effectiveNow);
+  const streakBonus = awardStreakBonusIfReached(nextState, completionDateKey, effectiveNow);
+  const achievementBonus = awardAchievementBonusIfReached(nextState, completionDateKey, effectiveNow);
+  const totalAwardedStars = basePlanStars + fullAttendanceBonus + streakBonus + achievementBonus;
   const noteSuffix = note ? `，备注：${note}` : "";
   const attachmentSuffix = attachments.length > 0 ? `，附件 ${attachments.length} 个` : "";
-  pushActivity(nextState, "plan-completed", `完成计划：${plan.title}，记录 ${durationMinutes} 分钟，获得 ${plan.stars} 星${noteSuffix}${attachmentSuffix}`, effectiveNow);
+  const rewardBreakdown = [
+    `任务奖励 ${basePlanStars} 星`,
+    fullAttendanceBonus > 0 ? `全勤奖励 ${fullAttendanceBonus} 星` : null,
+    streakBonus > 0 ? `连续打卡奖励 ${streakBonus} 星` : null,
+    achievementBonus > 0 ? `成就奖励 ${achievementBonus} 星` : null,
+  ]
+    .filter(Boolean)
+    .join(" + ");
+  pushActivity(
+    nextState,
+    "plan-completed",
+    `完成计划：${plan.title}，记录 ${durationMinutes} 分钟，获得 ${totalAwardedStars} 星（${rewardBreakdown}）${noteSuffix}${attachmentSuffix}`,
+    effectiveNow,
+  );
 
   return {
     ok: true,
     nextState,
-    message: `计划已完成，记录 ${durationMinutes} 分钟，获得 ${plan.stars} 星。`,
+    message: `计划已完成，记录 ${durationMinutes} 分钟，获得 ${totalAwardedStars} 星。`,
   };
 }
 
@@ -1756,31 +1956,55 @@ export function checkInHabit(
     };
   }
 
+  let streakBonus = 0;
+  let achievementBonus = 0;
   if (awardedPoints !== 0) {
     pushTransaction(nextState, awardedPoints, useCustomPoints ? `习惯打卡调整积分：${habit.name}` : `习惯打卡：${habit.name}`, effectiveNow);
   }
-  pushActivity(nextState, "habit-checked", `习惯打卡：${habit.name}，积分 ${formatPoints(awardedPoints)}${noteSuffix}`, effectiveNow);
+  streakBonus = awardStreakBonusIfReached(nextState, dateKey, effectiveNow);
+  achievementBonus = awardAchievementBonusIfReached(nextState, dateKey, effectiveNow);
+  const streakSuffix = streakBonus > 0 ? `，连续打卡奖励 +${streakBonus}` : "";
+  const achievementSuffix = achievementBonus > 0 ? `，成就奖励 +${achievementBonus}` : "";
+  pushActivity(
+    nextState,
+    "habit-checked",
+    `习惯打卡：${habit.name}，积分 ${formatPoints(awardedPoints)}${streakSuffix}${achievementSuffix}${noteSuffix}`,
+    effectiveNow,
+  );
 
   if (awardedPoints > 0) {
     return {
       ok: true,
       nextState,
-      message: `已记录习惯打卡，获得 ${awardedPoints} 星。`,
+      message: `已记录习惯打卡，获得 ${awardedPoints + streakBonus + achievementBonus} 星。`,
     };
   }
 
   if (awardedPoints < 0) {
+    const bonusMessage = [streakBonus > 0 ? `连续打卡奖励 ${streakBonus} 星` : null, achievementBonus > 0 ? `成就奖励 ${achievementBonus} 星` : null]
+      .filter(Boolean)
+      .join("，");
     return {
       ok: true,
       nextState,
-      message: `已记录习惯打卡，扣除 ${Math.abs(awardedPoints)} 星。`,
+      message: bonusMessage
+        ? `已记录习惯打卡，扣除 ${Math.abs(awardedPoints)} 星，并触发${bonusMessage}。`
+        : `已记录习惯打卡，扣除 ${Math.abs(awardedPoints)} 星。`,
     };
   }
 
   return {
     ok: true,
     nextState,
-    message: "已记录习惯打卡。",
+    message:
+      streakBonus > 0 || achievementBonus > 0
+        ? `已记录习惯打卡，并触发${[
+            streakBonus > 0 ? `连续打卡奖励 ${streakBonus} 星` : null,
+            achievementBonus > 0 ? `成就奖励 ${achievementBonus} 星` : null,
+          ]
+            .filter(Boolean)
+            .join("，")}。`
+        : "已记录习惯打卡。",
   };
 }
 
@@ -1791,88 +2015,7 @@ export function submitHabitCheckIn(
   input: CheckInHabitInput = {},
   now: string = new Date().toISOString(),
 ): CommandResult {
-  const nextState = cloneState(state);
-  const habit = nextState.habits.find((item) => item.id === habitId);
-
-  if (!habit) {
-    return {
-      ok: false,
-      nextState: state,
-      message: "习惯不存在。",
-    };
-  }
-
-  if (habit.status === "archived") {
-    return {
-      ok: false,
-      nextState: state,
-      message: "已归档的习惯不能再打卡。",
-    };
-  }
-
-  const progress = getHabitProgress(habit, dateKey);
-  if (progress.count >= progress.limit) {
-    return {
-      ok: false,
-      nextState: state,
-      message: progress.period === "day" ? "今天已经达到该习惯的打卡上限。" : "本周已经达到该习惯的打卡上限。",
-    };
-  }
-
-  const note = typeof input.note === "string" ? input.note.trim() : "";
-  const useCustomPoints = input.useCustomPoints === true;
-  const customPoints = Number(input.customPoints);
-
-  if (useCustomPoints && (!Number.isInteger(customPoints) || customPoints < -1000 || customPoints > 1000)) {
-    return {
-      ok: false,
-      nextState: state,
-      message: "本次积分调整必须是 -1000 到 1000 之间的整数。",
-    };
-  }
-
-  const awardedPoints = useCustomPoints ? customPoints : habit.points;
-  const noteSuffix = note ? `，备注：${note}` : "";
-
-  habit.completions[dateKey] = (habit.completions[dateKey] ?? 0) + 1;
-  nextState.meta.lastUpdatedAt = now;
-
-  if (habit.approvalRequired) {
-    pushActivity(nextState, "habit-checked", `记录习惯打卡：${habit.name}，待家长审定积分 ${formatPoints(awardedPoints)}${noteSuffix}`, now);
-    return {
-      ok: true,
-      nextState,
-      message: "已记录打卡，待家长审定后发放积分。",
-    };
-  }
-
-  if (awardedPoints !== 0) {
-    pushTransaction(nextState, awardedPoints, useCustomPoints ? `习惯打卡调整积分：${habit.name}` : `习惯打卡：${habit.name}`, now);
-  }
-
-  pushActivity(nextState, "habit-checked", `习惯打卡：${habit.name}，积分 ${formatPoints(awardedPoints)}${noteSuffix}`, now);
-
-  if (awardedPoints > 0) {
-    return {
-      ok: true,
-      nextState,
-      message: `已记录习惯打卡，获得 ${awardedPoints} 星。`,
-    };
-  }
-
-  if (awardedPoints < 0) {
-    return {
-      ok: true,
-      nextState,
-      message: `已记录习惯打卡，扣除 ${Math.abs(awardedPoints)} 星。`,
-    };
-  }
-
-  return {
-    ok: true,
-    nextState,
-    message: "已记录习惯打卡。",
-  };
+  return checkInHabit(state, habitId, dateKey, input, now);
 }
 
 export function redeemReward(state: AppState, rewardId: string, now: string = new Date().toISOString()): CommandResult {

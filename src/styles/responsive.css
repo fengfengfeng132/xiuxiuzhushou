@@ -13,6 +13,10 @@
     grid-template-columns: 1fr;
   }
 
+  .star-rules-achievement-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .points-history-summary-card {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -75,6 +79,7 @@
   .help-hero,
   .more-hero,
   .points-hero,
+  .star-rules-hero,
   .points-history-hero,
   .achievement-hero,
   .more-service-card,
@@ -114,6 +119,10 @@
   }
 
   .points-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .star-rules-hero {
     grid-template-columns: 1fr;
   }
 
@@ -167,6 +176,8 @@
   .points-wishlist-head,
   .points-group-head,
   .points-wish-meta,
+  .star-rules-title-row,
+  .star-rules-rule-head,
   .points-history-group-head,
   .points-history-group-title,
   .achievement-list-head,
@@ -189,6 +200,10 @@
 
   .habit-board-card {
     min-height: 0;
+  }
+
+  .habit-week-actions {
+    flex-wrap: wrap;
   }
 }
 
@@ -215,6 +230,9 @@
   .points-history-empty-card,
   .points-history-list-card,
   .points-history-tips-card,
+  .star-rules-quick-card,
+  .star-rules-section,
+  .star-rules-tips-card,
   .achievement-summary-card,
   .achievement-empty-card,
   .achievement-list-card,
@@ -256,12 +274,16 @@
   .more-service-card,
   .more-info-card,
   .more-note-card,
-  .more-empty-state {
+  .more-empty-state,
+  .star-rules-quick-card,
+  .star-rules-section,
+  .star-rules-tips-card {
     padding: 18px;
   }
 
   .pet-topbar,
   .points-hero,
+  .star-rules-hero,
   .points-history-hero,
   .achievement-hero,
   .help-hero,
@@ -275,6 +297,9 @@
   .points-entry-card,
   .points-wish-card,
   .points-rules-popover,
+  .star-rules-rule-card,
+  .star-rules-streak-card,
+  .star-rules-achievement-card,
   .points-history-group,
   .points-history-record-row,
   .achievement-badge-card,
@@ -571,6 +596,7 @@
   .points-secondary-button,
   .points-redeem-button,
   .points-history-back-button,
+  .star-rules-back-button,
   .achievement-back-button,
   .achievement-settings-button,
   .more-feature-entry {
@@ -630,7 +656,9 @@
 
   .points-history-summary-card,
   .points-history-range-row,
-  .points-history-type-bar {
+  .points-history-type-bar,
+  .star-rules-streak-grid,
+  .star-rules-achievement-grid {
     grid-template-columns: 1fr;
   }
 

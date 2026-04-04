@@ -20,6 +20,7 @@ export type Screen =
   | "more-features"
   | "achievement-system"
   | "points-center"
+  | "star-rules"
   | "points-history"
   | "study-timer";
 

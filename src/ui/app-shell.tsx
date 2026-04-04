@@ -93,6 +93,7 @@ import { PetCenterScreen } from "./pets/pet-center-screen.js";
 import { AchievementSystemScreen } from "./points/achievement-system-screen.js";
 import { PointsCenterScreen } from "./points/points-center-screen.js";
 import { PointsHistoryScreen } from "./points/points-history-screen.js";
+import { StarRulesScreen } from "./points/star-rules-screen.js";
 import { WishModal } from "./points/wish-modal.js";
 import { getWishIconCategory } from "./points/wish-config.js";
 import { buildAchievementOverview, buildDailyPointOpportunities, summarizePointsMetrics } from "./points/points-helpers.js";
@@ -799,6 +800,10 @@ function AppShell(): JSX.Element {
 
   function openPointsHistory(): void {
     setScreen("points-history");
+  }
+
+  function openStarRulesPage(): void {
+    setScreen("star-rules");
   }
 
   function openHelpCenter(): void {
@@ -1705,9 +1710,13 @@ function AppShell(): JSX.Element {
           onAddWish={openWishModal}
           onEditWish={() => openFutureFlow("愿望编辑流程仍在开发中。")}
           onDeleteWish={() => openFutureFlow("愿望删除流程仍在开发中。")}
-          onOpenRulesPage={() => openFutureFlow("完整积分规则页面仍在开发中。")}
+          onOpenRulesPage={openStarRulesPage}
         />
       );
+    }
+
+    if (screen === "star-rules") {
+      return <StarRulesScreen onBack={handleBackToPointsCenter} onOpenAchievements={openAchievementSystem} onOpenWishlist={handleBackToPointsCenter} />;
     }
 
     if (screen === "achievement-system") {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Reward } from "../../domain/model.js";
 import { buildRewardWishlistGroups, type DailyPointOpportunity, type PointsSummaryMetrics } from "./points-helpers.js";
 
@@ -33,8 +33,24 @@ export function PointsCenterScreen({
   onOpenRulesPage,
 }: PointsCenterScreenProps) {
   const [rulesOpen, setRulesOpen] = useState(false);
+  const rulesAreaRef = useRef<HTMLDivElement | null>(null);
   const wishlistGroups = buildRewardWishlistGroups(rewards, starBalance);
   const totalPotential = dailyOpportunities.reduce((total, item) => total + item.stars, 0);
+
+  useEffect(() => {
+    if (!rulesOpen) {
+      return undefined;
+    }
+
+    const handlePointerDown = (event: MouseEvent): void => {
+      if (rulesAreaRef.current && !rulesAreaRef.current.contains(event.target as Node)) {
+        setRulesOpen(false);
+      }
+    };
+
+    window.addEventListener("mousedown", handlePointerDown);
+    return () => window.removeEventListener("mousedown", handlePointerDown);
+  }, [rulesOpen]);
 
   return (
     <div className="points-page">
@@ -58,8 +74,14 @@ export function PointsCenterScreen({
             </div>
           </div>
 
-          <div className="points-rules-area">
-            <button type="button" className="points-rules-trigger" onClick={() => setRulesOpen((current) => !current)}>
+          <div className="points-rules-area" ref={rulesAreaRef}>
+            <button
+              type="button"
+              className="points-rules-trigger"
+              aria-expanded={rulesOpen}
+              aria-label="查看星星获取规则"
+              onClick={() => setRulesOpen((current) => !current)}
+            >
               如何获得?
             </button>
 
@@ -74,27 +96,42 @@ export function PointsCenterScreen({
                 <div className="points-rules-list">
                   <div className="points-rules-row">
                     <div>
-                      <strong>完成学习计划</strong>
-                      <p>每个计划都会按设定发放星星。</p>
+                      <strong>完成学习任务</strong>
+                      <p>每完成一个学习任务，获得基础 1 星。</p>
                     </div>
-                    <span>基础奖励</span>
+                    <span>基础 1⭐</span>
                   </div>
                   <div className="points-rules-row">
                     <div>
-                      <strong>完成正向习惯打卡</strong>
-                      <p>习惯卡片里的加分项目会进入积分账本。</p>
+                      <strong>学习时长奖励</strong>
+                      <p>学习 30 分钟 +1 星，学习 60 分钟 +2 星。</p>
                     </div>
-                    <span>日常积累</span>
+                    <span>+1~2⭐</span>
                   </div>
                   <div className="points-rules-row">
                     <div>
-                      <strong>星星可用于兑换愿望</strong>
-                      <p>积分余额和愿望清单会始终保持一致。</p>
+                      <strong>每日全勤奖励</strong>
+                      <p>完成当天所有学习任务后，发放额外奖励。</p>
                     </div>
-                    <span>本地账本</span>
+                    <span>+可配置⭐</span>
+                  </div>
+                  <div className="points-rules-row">
+                    <div>
+                      <strong>连续打卡奖励</strong>
+                      <p>连续 7 天可获得 10 星，天数更高奖励更多。</p>
+                    </div>
+                    <span>+10⭐ 起</span>
                   </div>
                 </div>
-                <button type="button" className="points-rules-link" onClick={onOpenRulesPage}>
+                <p className="points-rules-footnote">提示：早起学习和周末学习还有额外倍率加成。</p>
+                <button
+                  type="button"
+                  className="points-rules-link"
+                  onClick={() => {
+                    setRulesOpen(false);
+                    onOpenRulesPage();
+                  }}
+                >
                   查看完整规则
                 </button>
               </div>
