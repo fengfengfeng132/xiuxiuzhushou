@@ -22,7 +22,6 @@
   --shadow-soft: 0 16px 38px rgba(177, 118, 157, 0.1);
   --paper-line: rgba(233, 183, 208, 0.16);
   --paper-dot: rgba(212, 142, 182, 0.24);
-  --tape: rgba(255, 235, 243, 0.8);
 }
 
 * {
@@ -93,30 +92,6 @@ button {
     radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.24), transparent 34%),
     radial-gradient(circle at 82% 18%, rgba(255, 224, 241, 0.3), transparent 26%),
     linear-gradient(135deg, #ff8ebd, #ffb8d5 52%, #ffd0b8);
-}
-
-.hero-panel::before,
-.surface-card::before,
-.extra-panel::before {
-  content: "";
-  position: absolute;
-  top: 14px;
-  width: 88px;
-  height: 18px;
-  border-radius: 999px;
-  background: var(--tape);
-  opacity: 0.78;
-}
-
-.hero-panel::before {
-  right: 32px;
-  transform: rotate(6deg);
-}
-
-.surface-card::before,
-.extra-panel::before {
-  left: 28px;
-  transform: rotate(-6deg);
 }
 
 .hero-kicker,

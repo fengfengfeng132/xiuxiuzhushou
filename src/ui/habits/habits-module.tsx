@@ -1,4 +1,4 @@
-﻿import type { CSSProperties, FormEvent, RefObject } from "react";
+import type { CSSProperties, FormEvent, ReactNode, RefObject } from "react";
 import {
   HABIT_FREQUENCY_OPTIONS,
   getHabitFrequencyOption,
@@ -91,6 +91,18 @@ interface HabitCheckInModalProps {
   onClose: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onUpdateDraft: (field: keyof HabitCheckInDraft, value: string | boolean) => void;
+}
+
+function HabitControlIcon({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return (
+    <svg className="habit-control-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      {children}
+    </svg>
+  );
 }
 
 function HabitBoardCard({ habit, layout, selectedDateKey, onCheckIn }: { habit: Habit; layout: HabitBoardLayout; selectedDateKey: string; onCheckIn: (habitId: string) => void }) {
@@ -241,24 +253,38 @@ export function HabitBoard({
             <strong>按周查看打卡记录</strong>
           </div>
           <div className="habit-week-actions">
-            <button type="button" className="filter-chip" onClick={() => onOpenFutureFlow("补打卡规则仍在开发中。")}>
-              补打卡
+            <button type="button" className="filter-chip habit-week-pill" onClick={() => onOpenFutureFlow("补打卡规则仍在开发中。")}>
+              <HabitControlIcon>
+                <circle cx="12" cy="12" r="9" />
+                <circle cx="12" cy="12" r="5" />
+                <circle cx="12" cy="12" r="2" />
+              </HabitControlIcon>
+              可补打卡
             </button>
-            <button type="button" className="icon-button icon-button-strong" onClick={onJumpToToday}>
+            <button type="button" className="icon-button icon-button-strong habit-week-pill habit-week-pill-today" onClick={onJumpToToday}>
               今天
             </button>
             <button type="button" className="icon-button habit-nav-button" onClick={() => onShiftSelectedDate(-1)} aria-label="上一天">
-              前一天
+              <HabitControlIcon>
+                <path d="M14.5 6.5L9 12l5.5 5.5" />
+              </HabitControlIcon>
             </button>
             <button type="button" className="icon-button habit-nav-button" onClick={() => onShiftSelectedDate(1)} aria-label="下一天">
-              后一天
+              <HabitControlIcon>
+                <path d="M9.5 6.5L15 12l-5.5 5.5" />
+              </HabitControlIcon>
             </button>
             <DateJumpPopover
               valueDateKey={selectedDateKey}
               todayDateKey={_today}
               onSelectDate={onSetSelectedDateKey}
               buttonClassName="icon-button habit-nav-button"
-              buttonLabel="日历"
+              buttonLabel={
+                <HabitControlIcon>
+                  <rect x="4" y="6" width="16" height="14" rx="2" />
+                  <path d="M8 4v4M16 4v4M4 10h16" />
+                </HabitControlIcon>
+              }
               buttonAriaLabel="打开日历跳转日期"
             />
           </div>
@@ -280,19 +306,37 @@ export function HabitBoard({
 
         <div className="habit-toolbar">
           <label className="habit-search-field">
-            <span>搜索</span>
-            <input value={search} onChange={(event) => onSearchChange(event.target.value)} placeholder="搜索习惯..." />
+            <span className="habit-search-icon" aria-hidden="true">
+              <HabitControlIcon>
+                <circle cx="11" cy="11" r="6" />
+                <path d="M16 16L20 20" />
+              </HabitControlIcon>
+            </span>
+            <input value={search} onChange={(event) => onSearchChange(event.target.value)} placeholder="搜索习惯名称或描述..." />
           </label>
-          <div className="habit-toolbar-actions">
+          <div className="habit-toolbar-actions" role="group" aria-label="习惯列表工具">
             <button type="button" className="habit-toolbar-button" onClick={onResetFilters} aria-label="重置习惯筛选">
-              重置
+              <HabitControlIcon>
+                <path d="M20 12a8 8 0 10-2.2 5.5" />
+                <path d="M20 5v7h-7" />
+              </HabitControlIcon>
             </button>
-            <button type="button" className={`habit-toolbar-button${layout === "grid" ? " is-active" : ""}`} onClick={() => onSetLayout("grid")} aria-label="宫格视图">
-              宫格
-            </button>
-            <button type="button" className={`habit-toolbar-button${layout === "list" ? " is-active" : ""}`} onClick={() => onSetLayout("list")} aria-label="列表视图">
-              列表
-            </button>
+            <div className="habit-layout-toggle" role="group" aria-label="切换布局">
+              <button type="button" className={`habit-toolbar-button habit-layout-option${layout === "grid" ? " is-active" : ""}`} onClick={() => onSetLayout("grid")} aria-label="宫格视图">
+                <HabitControlIcon>
+                  <rect x="5" y="5" width="5" height="5" rx="1" />
+                  <rect x="14" y="5" width="5" height="5" rx="1" />
+                  <rect x="5" y="14" width="5" height="5" rx="1" />
+                  <rect x="14" y="14" width="5" height="5" rx="1" />
+                </HabitControlIcon>
+              </button>
+              <button type="button" className={`habit-toolbar-button habit-layout-option${layout === "list" ? " is-active" : ""}`} onClick={() => onSetLayout("list")} aria-label="列表视图">
+                <HabitControlIcon>
+                  <path d="M9 7h10M9 12h10M9 17h10" />
+                  <path d="M5 7h.01M5 12h.01M5 17h.01" />
+                </HabitControlIcon>
+              </button>
+            </div>
           </div>
         </div>
 

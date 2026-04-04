@@ -32,6 +32,7 @@ export interface StudyPlan {
   repeatType: PlanRepeatType;
   minutes: number;
   stars: number;
+  customStarsEnabled: boolean;
   status: PlanStatus;
   createdAt: string;
   completedAt: string | null;
@@ -237,6 +238,7 @@ export interface UpdatePlanInput {
   repeatType: PlanRepeatType;
   minutes: number;
   stars?: number;
+  customStarsEnabled?: boolean;
   createdAt?: string;
 }
 

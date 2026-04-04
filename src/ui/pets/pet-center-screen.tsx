@@ -1,4 +1,5 @@
-﻿import type { CSSProperties } from "react";
+import type { CSSProperties, ReactElement } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   PET_CATALOG,
   PET_INTERACTION_ACTIONS,
@@ -8,6 +9,7 @@ import {
   type PetLevelTier,
 } from "../../domain/model.js";
 import { buildPetStatusCopy, createPetNeedCards } from "../app-helpers.js";
+import { getPetArtSrc } from "./pet-art.js";
 
 interface PetCenterScreenProps {
   starBalance: number;
@@ -20,6 +22,28 @@ interface PetCenterScreenProps {
   onAdoptPet: (definitionId: string) => void;
   onSwitchPet: (definitionId: string) => void;
   onInteract: (actionId: "feed" | "bathe" | "park" | "sleep") => void;
+}
+
+function renderPetFigure(definition: PetDefinition, variant: "card" | "stage" | "roster"): ReactElement {
+  const imageSrc = getPetArtSrc(definition.id);
+  if (imageSrc) {
+    return (
+      <img
+        className={`pet-art-image pet-art-image-${variant}`}
+        src={imageSrc}
+        alt=""
+        aria-hidden="true"
+        loading={variant === "stage" ? "eager" : "lazy"}
+        decoding="async"
+      />
+    );
+  }
+
+  return (
+    <span className={`pet-art-fallback pet-art-fallback-${variant}`} aria-hidden="true">
+      {definition.emoji}
+    </span>
+  );
 }
 
 // Pets module isolates the pet center so future work can extend care loops without reopening AppShell.
@@ -35,12 +59,38 @@ export function PetCenterScreen({
   onSwitchPet,
   onInteract,
 }: PetCenterScreenProps) {
+  const interactionCost = 1;
+  const canInteract = starBalance >= interactionCost;
+  const [isPetReacting, setIsPetReacting] = useState(false);
+  const previousInteractionAtRef = useRef<string | null>(activePetCompanion?.lastInteractionAt ?? null);
+  const activeInteractionAt = activePetCompanion?.lastInteractionAt ?? null;
+  const activeInteractionId = activePetCompanion?.lastInteractionId ?? null;
+  const interactionMotionClass = isPetReacting && activeInteractionId ? ` is-reacting is-reacting-${activeInteractionId}` : "";
+
+  useEffect(() => {
+    if (!activePetCompanion) {
+      previousInteractionAtRef.current = null;
+      setIsPetReacting(false);
+      return;
+    }
+
+    if (activeInteractionAt && activeInteractionAt !== previousInteractionAtRef.current) {
+      setIsPetReacting(true);
+      previousInteractionAtRef.current = activeInteractionAt;
+      const timer = window.setTimeout(() => setIsPetReacting(false), 760);
+      return () => window.clearTimeout(timer);
+    }
+
+    previousInteractionAtRef.current = activeInteractionAt;
+    return;
+  }, [activeInteractionAt, activePetCompanion?.definitionId]);
+
   if (!activePetCompanion || !activePetDefinition || !activePetLevel) {
     return (
       <div className="pet-page">
         <header className="pet-topbar">
-          <button type="button" className="pet-back-button" onClick={onBack}>
-            返回
+          <button type="button" className="pet-back-button" onClick={onBack} aria-label="返回首页">
+            ←
           </button>
           <div className="pet-topbar-copy">
             <h1>电子宠物中心</h1>
@@ -66,7 +116,7 @@ export function PetCenterScreen({
               return (
                 <article key={definition.id} className="pet-shop-card" style={cardStyle}>
                   <div className="pet-card-figure" aria-hidden="true">
-                    {definition.emoji}
+                    {renderPetFigure(definition, "card")}
                   </div>
                   <div className="pet-card-copy">
                     <h3>{definition.name}</h3>
@@ -97,8 +147,8 @@ export function PetCenterScreen({
   return (
     <div className="pet-page">
       <header className="pet-topbar">
-        <button type="button" className="pet-back-button" onClick={onBack}>
-          返回
+        <button type="button" className="pet-back-button" onClick={onBack} aria-label="返回首页">
+          ←
         </button>
         <div className="pet-topbar-copy">
           <h1>电子宠物中心</h1>
@@ -121,8 +171,8 @@ export function PetCenterScreen({
             </div>
             <div className="pet-stage">
               <div className="pet-stage-frame">
-                <div className="pet-stage-figure" aria-hidden="true">
-                  {activePetDefinition.emoji}
+                <div className={`pet-stage-figure${interactionMotionClass}`} aria-hidden="true">
+                  {renderPetFigure(activePetDefinition, "stage")}
                 </div>
                 <p>{statusCopy}</p>
               </div>
@@ -146,6 +196,9 @@ export function PetCenterScreen({
             ))}
           </section>
 
+          <p className={`pet-interaction-note${canInteract ? "" : " is-warning"}`}>
+            {canInteract ? `互动每次消耗 ${interactionCost} 星星。` : `星星不足，互动需要 ${interactionCost} 星星。`}
+          </p>
           <section className="pet-action-grid">
             {PET_INTERACTION_ACTIONS.map((action) => {
               const actionStyle = {
@@ -154,10 +207,18 @@ export function PetCenterScreen({
               } as CSSProperties;
 
               return (
-                <button key={action.id} type="button" className="pet-action-card" style={actionStyle} onClick={() => onInteract(action.id)}>
+                <button
+                  key={action.id}
+                  type="button"
+                  className={`pet-action-card is-${action.id}${isPetReacting && activeInteractionId === action.id ? " is-triggered" : ""}`}
+                  style={actionStyle}
+                  onClick={() => onInteract(action.id)}
+                  disabled={!canInteract}
+                >
                   <span className="pet-action-badge">{action.badge}</span>
                   <strong>{action.title}</strong>
                   <p>{action.description}</p>
+                  <span className="pet-action-cost">消耗 {interactionCost} 星星</span>
                 </button>
               );
             })}
@@ -211,7 +272,7 @@ export function PetCenterScreen({
                 return (
                   <article key={definition.id} className={`pet-roster-row${isActive ? " is-active" : ""}`} style={itemStyle}>
                     <div className="pet-roster-avatar" aria-hidden="true">
-                      {definition.emoji}
+                      {renderPetFigure(definition, "roster")}
                     </div>
                     <div className="pet-roster-copy">
                       <strong>{definition.name}</strong>
@@ -244,4 +305,5 @@ export function PetCenterScreen({
     </div>
   );
 }
+
 

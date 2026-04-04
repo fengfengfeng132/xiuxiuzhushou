@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 
 interface DateJumpPopoverProps {
@@ -5,7 +6,7 @@ interface DateJumpPopoverProps {
   todayDateKey: string;
   onSelectDate: (dateKey: string) => void;
   buttonClassName?: string;
-  buttonLabel?: string;
+  buttonLabel?: ReactNode;
   buttonAriaLabel?: string;
 }
 
