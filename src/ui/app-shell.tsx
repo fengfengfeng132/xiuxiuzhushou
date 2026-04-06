@@ -376,10 +376,12 @@ function AppShell(): JSX.Element {
       habit.description.toLowerCase().includes(habitSearchKeyword);
     return matchesSearch && matchesHabitFilter(habit, habitFilter, selectedDateKey);
   });
-  const visibleMoreFeatureSections = MORE_FEATURE_SECTIONS.map((section) => ({
-    ...section,
-    cards: section.cards.filter((card) => matchesMoreFeatureCard(card, moreFeaturesKeyword)),
-  })).filter((section) => section.cards.length > 0);
+  const visibleMoreFeatureSections = MORE_FEATURE_SECTIONS.filter((section) => section.id !== "membership")
+    .map((section) => ({
+      ...section,
+      cards: section.cards.filter((card) => matchesMoreFeatureCard(card, moreFeaturesKeyword)),
+    }))
+    .filter((section) => section.cards.length > 0);
   const habitStats = summarizeHabitStats(state, activeHabits, habitStatsRange, selectedDateKey);
   const pointsMetrics = summarizePointsMetrics(state, today);
   const dailyPointOpportunities = buildDailyPointOpportunities(state, today);

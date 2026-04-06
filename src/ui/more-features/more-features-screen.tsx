@@ -15,19 +15,19 @@ export function MoreFeaturesScreen({ search, visibleSections, onBack, onSearchCh
   return (
     <div className="more-page">
       <header className="more-hero">
-        <button type="button" className="more-back-button" onClick={onBack}>
-          返回
+        <button type="button" className="more-back-button" onClick={onBack} aria-label="返回上一页">
+          ←
         </button>
         <div className="more-hero-copy">
           <h1>其他功能</h1>
-          <p>浏览已实现模块，以及后续待开发的功能入口。</p>
+          <p>更多工具和管理功能</p>
         </div>
       </header>
 
       <section className="more-search-card">
-        <label className="more-search-field">
-          <span>搜索</span>
-          <input value={search} onChange={(event) => onSearchChange(event.target.value)} placeholder="搜索功能模块..." />
+        <label className="more-search-field" aria-label="搜索功能">
+          <span className="more-search-icon">⌕</span>
+          <input value={search} onChange={(event) => onSearchChange(event.target.value)} placeholder="搜索功能（例如：宠物、习惯、备份...）" />
         </label>
       </section>
 
@@ -71,7 +71,7 @@ export function MoreFeaturesScreen({ search, visibleSections, onBack, onSearchCh
       ) : (
         <section className="more-search-empty">
           <h2>未找到匹配功能</h2>
-          <p>请修改关键词，或清空搜索框查看完整导航列表。</p>
+          <p>请调整关键词，或清空搜索框查看完整导航列表。</p>
         </section>
       )}
 

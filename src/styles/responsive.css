@@ -151,6 +151,11 @@
     grid-template-columns: 1fr;
   }
 
+  .more-hero {
+    flex-direction: row;
+    align-items: center;
+  }
+
   .reading-summary-grid,
   .reading-toolbar,
   .reading-hero,
@@ -284,7 +289,9 @@
   .habit-manager-row,
   .habit-board-panel,
   .interest-class-card,
-  .interest-empty-card {
+  .interest-empty-card,
+  .more-feature-card,
+  .more-search-empty {
     border-radius: 24px;
   }
 
@@ -308,6 +315,7 @@
   .more-info-card,
   .more-note-card,
   .more-empty-state,
+  .more-search-empty,
   .interest-class-card,
   .interest-empty-card,
   .star-rules-quick-card,
@@ -340,7 +348,8 @@
   .points-history-group,
   .points-history-record-row,
   .achievement-badge-card,
-  .more-feature-entry {
+  .more-feature-entry,
+  .more-feature-card {
     border-radius: 24px;
   }
 
@@ -696,6 +705,27 @@
 
   .more-card-grid {
     grid-template-columns: 1fr;
+  }
+
+  .more-hero {
+    gap: 12px;
+    padding: 18px 16px 20px;
+    border-radius: 0 0 28px 28px;
+  }
+
+  .more-back-button {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+
+  .more-feature-card {
+    min-height: 148px;
+    padding: 14px;
+  }
+
+  .more-feature-card strong {
+    font-size: 19px;
   }
 
   .interest-class-grid {
