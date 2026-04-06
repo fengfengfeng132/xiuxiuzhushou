@@ -18,6 +18,9 @@ export type Screen =
   | "pet-center"
   | "help-center"
   | "more-features"
+  | "interest-class"
+  | "reading-journey"
+  | "reading-book-detail"
   | "achievement-system"
   | "points-center"
   | "star-rules"
@@ -202,12 +205,20 @@ export interface HelpFeatureCard {
   title: string;
   icon: string;
   accent: string;
-  action: "plans" | "habits" | "habit-stats" | "help-placeholder";
+  action: "plans" | "habits" | "habit-stats" | "reading-journey" | "help-placeholder";
   howTo: string[];
   tips: string[];
 }
 
-export type MoreFeatureAction = "habit-management" | "habit-statistics" | "pet-center" | "help-center" | "home-habits" | "placeholder";
+export type MoreFeatureAction =
+  | "habit-management"
+  | "habit-statistics"
+  | "pet-center"
+  | "help-center"
+  | "reading-journey"
+  | "interest-class"
+  | "home-habits"
+  | "placeholder";
 
 export interface MoreFeatureCard {
   id: string;

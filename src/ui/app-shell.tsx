@@ -41,6 +41,22 @@ import {
   type DashboardTab,
 } from "../persistence/storage.js";
 import {
+  loadInterestClassState,
+  resetInterestClassState,
+  saveInterestClassState,
+  type InterestClassItem,
+  type InterestClassRecord,
+  type InterestClassState,
+} from "../persistence/interest-storage.js";
+import {
+  loadReadingJourneyState,
+  resetReadingJourneyState,
+  saveReadingJourneyState,
+  type ReadingBook,
+  type ReadingJourneyState,
+  type ReadingRecord,
+} from "../persistence/reading-storage.js";
+import {
   INITIAL_AI_PLAN_COMPOSER_DRAFT,
   createInitialBatchPlanDraft,
   createInitialPlanDraft,
@@ -88,6 +104,17 @@ import type {
 import { HabitBoard, HabitCheckInModal, HabitManagementScreen, HabitModal, HabitStatisticsScreen } from "./habits/habits-module.js";
 import { HelpCenterScreen } from "./help/help-center-screen.js";
 import { HomeScreen } from "./home/home-screen.js";
+import {
+  InterestClassModal,
+  InterestClassRecordModal,
+  InterestClassScreen,
+  createInterestClassDraftFromClass,
+  createInterestClassRecordDraftFromRecord,
+  createInitialInterestClassDraft,
+  createInitialInterestClassRecordDraft,
+  type InterestClassDraft,
+  type InterestClassRecordDraft,
+} from "./interest/interest-class-screen.js";
 import { MoreFeaturesScreen } from "./more-features/more-features-screen.js";
 import { PetCenterScreen } from "./pets/pet-center-screen.js";
 import { AchievementSystemScreen } from "./points/achievement-system-screen.js";
@@ -105,6 +132,18 @@ import { PlanDeleteSelectedModal, PlanManagementScreen } from "./plans/plan-mana
 import { PlanCreateScreen } from "./plans/plan-create-screen.js";
 import { formatPlanRepeatSaveNotice } from "./plans/plan-repeat.js";
 import { PlanBoard, PlanDetailModal, QuickCompleteModal } from "./plans/plans-module.js";
+import {
+  ReadingBookDetailScreen,
+  ReadingBookModal,
+  ReadingJourneyScreen,
+  ReadingRecordModal,
+  createInitialReadingBookDraft,
+  createInitialReadingRecordDraft,
+  type ReadingBookDraft,
+  type ReadingFilterCategory,
+  type ReadingFilterStatus,
+  type ReadingRecordDraft,
+} from "./reading/reading-journey-screen.js";
 import { StudyTimerScreen } from "./timer/study-timer-screen.js";
 
 // AppShell keeps state and navigation only. Feature JSX lives in feature modules for future agent handoff.
@@ -152,6 +191,31 @@ function createLocalUiId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function parsePositiveInteger(value: string): number | null {
+  const parsed = Math.round(Number(value));
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    return null;
+  }
+  return parsed;
+}
+
+function parsePositiveDecimal(value: string): number | null {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+  const rounded = Math.round(parsed * 100) / 100;
+  return rounded > 0 ? rounded : null;
+}
+
+function parseNonNegativeDecimal(value: string): number | null {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return null;
+  }
+  return Math.round(parsed * 100) / 100;
+}
+
 function deriveAiSessionTitle(prompt: string, attachments: AiPlanAttachmentDraft[]): string {
   const trimmedPrompt = prompt.trim();
   if (trimmedPrompt.length > 0) {
@@ -193,6 +257,27 @@ function AppShell(): JSX.Element {
   const [habitTypeMenuOpen, setHabitTypeMenuOpen] = useState(false);
   const [habitSearch, setHabitSearch] = useState("");
   const [moreFeaturesSearch, setMoreFeaturesSearch] = useState("");
+  const [interestState, setInterestState] = useState<InterestClassState>(() => loadInterestClassState());
+  const [interestClassModalOpen, setInterestClassModalOpen] = useState(false);
+  const [interestRecordModalOpen, setInterestRecordModalOpen] = useState(false);
+  const [editingInterestClassId, setEditingInterestClassId] = useState<string | null>(null);
+  const [editingInterestRecordId, setEditingInterestRecordId] = useState<string | null>(null);
+  const [interestClassDraft, setInterestClassDraft] = useState<InterestClassDraft>(createInitialInterestClassDraft());
+  const [interestRecordDraft, setInterestRecordDraft] = useState<InterestClassRecordDraft>(() =>
+    createInitialInterestClassRecordDraft("", currentDateKey()),
+  );
+  const [interestFilterStartDate, setInterestFilterStartDate] = useState("");
+  const [interestFilterEndDate, setInterestFilterEndDate] = useState("");
+  const [readingState, setReadingState] = useState<ReadingJourneyState>(() => loadReadingJourneyState());
+  const [readingSearch, setReadingSearch] = useState("");
+  const [readingStatusFilter, setReadingStatusFilter] = useState<ReadingFilterStatus>("all");
+  const [readingCategoryFilter, setReadingCategoryFilter] = useState<ReadingFilterCategory>("all");
+  const [readingBookModalOpen, setReadingBookModalOpen] = useState(false);
+  const [editingReadingBookId, setEditingReadingBookId] = useState<string | null>(null);
+  const [readingBookDraft, setReadingBookDraft] = useState<ReadingBookDraft>(createInitialReadingBookDraft());
+  const [readingRecordModalOpen, setReadingRecordModalOpen] = useState(false);
+  const [readingRecordDraft, setReadingRecordDraft] = useState<ReadingRecordDraft>(() => createInitialReadingRecordDraft("", currentDateKey()));
+  const [readingDetailBookId, setReadingDetailBookId] = useState<string | null>(null);
   const [habitFilter, setHabitFilter] = useState<HabitBoardFilter>("all");
   const [habitBoardLayout, setHabitBoardLayout] = useState<HabitBoardLayout>("grid");
   const [habitStatsRange, setHabitStatsRange] = useState<HabitStatsRange>("week");
@@ -299,10 +384,26 @@ function AppShell(): JSX.Element {
   const pointsMetrics = summarizePointsMetrics(state, today);
   const dailyPointOpportunities = buildDailyPointOpportunities(state, today);
   const achievementOverview = buildAchievementOverview(state);
+  const interestClasses = interestState.classes;
+  const interestRecords = interestState.records;
+  const editingInterestClassTarget = editingInterestClassId ? interestClasses.find((item) => item.id === editingInterestClassId) ?? null : null;
+  const editingInterestRecordTarget = editingInterestRecordId ? interestRecords.find((item) => item.id === editingInterestRecordId) ?? null : null;
+  const readingBooks = readingState.books;
+  const readingRecords = readingState.records;
+  const readingDetailBook = readingBooks.find((book) => book.id === readingDetailBookId) ?? null;
+  const readingDetailRecords = readingDetailBook ? readingRecords.filter((record) => record.bookId === readingDetailBook.id) : [];
 
   useEffect(() => {
     saveAppState(state);
   }, [state]);
+
+  useEffect(() => {
+    saveInterestClassState(interestState);
+  }, [interestState]);
+
+  useEffect(() => {
+    saveReadingJourneyState(readingState);
+  }, [readingState]);
 
   useEffect(() => {
     saveDashboardTabPreference(activeTab);
@@ -335,6 +436,30 @@ function AppShell(): JSX.Element {
   }, [planDetailPlanId, state.plans]);
 
   useEffect(() => {
+    if (!readingDetailBookId || readingState.books.some((book) => book.id === readingDetailBookId)) {
+      return;
+    }
+    setReadingDetailBookId(null);
+    if (screen === "reading-book-detail") {
+      setScreen("reading-journey");
+    }
+  }, [readingDetailBookId, readingState.books, screen]);
+
+  useEffect(() => {
+    if (!editingInterestClassId || interestClasses.some((item) => item.id === editingInterestClassId)) {
+      return;
+    }
+    closeInterestClassModal();
+  }, [editingInterestClassId, interestClasses]);
+
+  useEffect(() => {
+    if (!editingInterestRecordId || interestRecords.some((item) => item.id === editingInterestRecordId)) {
+      return;
+    }
+    closeInterestRecordModal();
+  }, [editingInterestRecordId, interestRecords]);
+
+  useEffect(() => {
     if (!notice) {
       return undefined;
     }
@@ -356,11 +481,38 @@ function AppShell(): JSX.Element {
   }, [habitTypeMenuOpen]);
 
   useEffect(() => {
-    if (!habitModalOpen && !wishModalOpen && !planDeleteModalOpen && !checkInHabitTarget && !quickCompletePlanTarget && !planDetailPlanTarget) {
+    if (
+      !habitModalOpen &&
+      !wishModalOpen &&
+      !planDeleteModalOpen &&
+      !checkInHabitTarget &&
+      !quickCompletePlanTarget &&
+      !planDetailPlanTarget &&
+      !interestClassModalOpen &&
+      !interestRecordModalOpen &&
+      !readingBookModalOpen &&
+      !readingRecordModalOpen
+    ) {
       return undefined;
     }
     const handleEscape = (event: KeyboardEvent): void => {
       if (event.key === "Escape") {
+        if (interestRecordModalOpen) {
+          closeInterestRecordModal();
+          return;
+        }
+        if (interestClassModalOpen) {
+          closeInterestClassModal();
+          return;
+        }
+        if (readingRecordModalOpen) {
+          closeReadingRecordModal();
+          return;
+        }
+        if (readingBookModalOpen) {
+          closeReadingBookModal();
+          return;
+        }
         if (quickCompletePlanTarget) {
           closeQuickCompleteModal();
           return;
@@ -386,7 +538,29 @@ function AppShell(): JSX.Element {
     };
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
-  }, [habitModalOpen, wishModalOpen, planDeleteModalOpen, checkInHabitTarget, planDetailPlanTarget, quickCompletePlanTarget]);
+  }, [
+    habitModalOpen,
+    wishModalOpen,
+    planDeleteModalOpen,
+    checkInHabitTarget,
+    planDetailPlanTarget,
+    quickCompletePlanTarget,
+    interestClassModalOpen,
+    interestRecordModalOpen,
+    readingBookModalOpen,
+    readingRecordModalOpen,
+  ]);
+
+  useEffect(() => {
+    if (!interestClassModalOpen && !interestRecordModalOpen) {
+      return undefined;
+    }
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [interestClassModalOpen, interestRecordModalOpen]);
 
   function updatePlanDraft(field: keyof PlanDraft, value: string | boolean | PlanRepeatType | PlanTimeMode | PlanAttachmentDraft[]): void {
     setPlanDraft((current) => ({ ...current, [field]: value }));
@@ -405,6 +579,494 @@ function AppShell(): JSX.Element {
     value: string | RewardCategory | RewardRepeatMode | RewardResetPeriod | null,
   ): void {
     setWishDraft((current) => ({ ...current, [field]: value }));
+  }
+
+  function updateInterestClassDraft(field: keyof InterestClassDraft, value: string | boolean): void {
+    setInterestClassDraft((current) => ({ ...current, [field]: value }));
+  }
+
+  function updateInterestRecordDraft(field: keyof InterestClassRecordDraft, value: string): void {
+    setInterestRecordDraft((current) => ({ ...current, [field]: value }));
+  }
+
+  function updateReadingBookDraft(field: keyof ReadingBookDraft, value: string): void {
+    setReadingBookDraft((current) => ({ ...current, [field]: value }));
+  }
+
+  function updateReadingRecordDraft(field: keyof ReadingRecordDraft, value: string): void {
+    setReadingRecordDraft((current) => ({ ...current, [field]: value }));
+  }
+
+  function openInterestClass(): void {
+    setScreen("interest-class");
+  }
+
+  function closeInterestClassModal(): void {
+    setInterestClassModalOpen(false);
+    setEditingInterestClassId(null);
+    setInterestClassDraft(createInitialInterestClassDraft());
+  }
+
+  function openAddInterestClassModal(): void {
+    setEditingInterestClassId(null);
+    setInterestClassDraft(createInitialInterestClassDraft());
+    setInterestClassModalOpen(true);
+  }
+
+  function openEditInterestClassModal(classId: string): void {
+    const target = interestClasses.find((item) => item.id === classId);
+    if (!target) {
+      setNotice("兴趣班不存在，可能已被删除。");
+      return;
+    }
+    setEditingInterestClassId(classId);
+    setInterestClassDraft(createInterestClassDraftFromClass(target));
+    setInterestClassModalOpen(true);
+  }
+
+  function closeInterestRecordModal(): void {
+    setInterestRecordModalOpen(false);
+    setEditingInterestRecordId(null);
+    setInterestRecordDraft(createInitialInterestClassRecordDraft("", today));
+  }
+
+  function openInterestRecordModal(classId?: string): void {
+    const selectedClassId = classId ?? interestClasses[0]?.id ?? "";
+    if (!selectedClassId) {
+      setNotice("请先添加一个兴趣班。");
+      return;
+    }
+
+    if (!interestClasses.some((item) => item.id === selectedClassId)) {
+      setNotice("兴趣班不存在，无法记录。");
+      return;
+    }
+    setEditingInterestRecordId(null);
+    setInterestRecordDraft(createInitialInterestClassRecordDraft(selectedClassId, today));
+    setInterestRecordModalOpen(true);
+  }
+
+  function openEditInterestRecordModal(recordId: string): void {
+    const target = interestRecords.find((item) => item.id === recordId);
+    if (!target) {
+      setNotice("记录不存在，可能已被删除。");
+      return;
+    }
+
+    setEditingInterestRecordId(recordId);
+    setInterestRecordDraft(createInterestClassRecordDraftFromRecord(target));
+    setInterestRecordModalOpen(true);
+  }
+
+  function handleDeleteInterestClass(classId: string): void {
+    const target = interestClasses.find((item) => item.id === classId);
+    if (!target) {
+      setNotice("兴趣班不存在，可能已被删除。");
+      return;
+    }
+
+    if (!window.confirm(`确定删除“${target.name}”以及对应记录吗？`)) {
+      return;
+    }
+
+    setInterestState((current) => ({
+      classes: current.classes.filter((item) => item.id !== classId),
+      records: current.records.filter((record) => record.classId !== classId),
+    }));
+    setNotice(`已删除兴趣班：${target.name}`);
+  }
+
+  function handleDeleteInterestRecord(recordId: string): void {
+    const target = interestRecords.find((record) => record.id === recordId);
+    if (!target) {
+      setNotice("记录不存在，可能已被删除。");
+      return;
+    }
+
+    if (!window.confirm("确定删除这条兴趣班记录吗？")) {
+      return;
+    }
+
+    setInterestState((current) => ({
+      classes: current.classes,
+      records: current.records.filter((record) => record.id !== recordId),
+    }));
+    setNotice("已删除兴趣班记录。");
+  }
+
+  function handleSubmitInterestClass(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    const name = interestClassDraft.name.trim();
+    const totalUnits = parsePositiveDecimal(interestClassDraft.totalUnits.trim());
+    const unitLabel = interestClassDraft.unitLabel.trim() || "课时";
+    const note = interestClassDraft.note.trim();
+    const overflowWarningThreshold =
+      interestClassDraft.overflowWarningEnabled && interestClassDraft.overflowWarningThreshold.trim().length > 0
+        ? parseNonNegativeDecimal(interestClassDraft.overflowWarningThreshold.trim())
+        : 0;
+
+    if (!name) {
+      setNotice("请填写兴趣班名称。");
+      return;
+    }
+    if (name.length > 24) {
+      setNotice("兴趣班名称请控制在 24 个字符以内。");
+      return;
+    }
+    if (unitLabel.length > 8) {
+      setNotice("单位请控制在 8 个字符以内。");
+      return;
+    }
+    if (note.length > 200) {
+      setNotice("班级备注请控制在 200 个字符以内。");
+      return;
+    }
+    if (totalUnits === null) {
+      setNotice("总量需要是大于 0 的数字。");
+      return;
+    }
+    if (interestClassDraft.overflowWarningEnabled && overflowWarningThreshold === null) {
+      setNotice("预警阈值需要是不小于 0 的数字。");
+      return;
+    }
+    if (
+      interestClasses.some(
+        (item) => item.id !== editingInterestClassId && item.name.trim().toLowerCase() === name.toLowerCase(),
+      )
+    ) {
+      setNotice("已存在同名兴趣班，请换个名称。");
+      return;
+    }
+
+    if (editingInterestClassTarget) {
+      setInterestState((current) => ({
+        classes: current.classes.map((item) =>
+          item.id === editingInterestClassTarget.id
+            ? {
+                ...item,
+                name,
+                totalUnits,
+                unitLabel,
+                note,
+                overflowWarningEnabled: interestClassDraft.overflowWarningEnabled,
+                overflowWarningThreshold: overflowWarningThreshold ?? 0,
+              }
+            : item,
+        ),
+        records: current.records,
+      }));
+      setNotice(`已更新兴趣班：${name}`);
+      closeInterestClassModal();
+      return;
+    }
+
+    const nextClass: InterestClassItem = {
+      id: createLocalUiId("interest-class"),
+      name,
+      totalUnits,
+      unitLabel,
+      note,
+      overflowWarningEnabled: interestClassDraft.overflowWarningEnabled,
+      overflowWarningThreshold: overflowWarningThreshold ?? 0,
+      createdAt: new Date().toISOString(),
+    };
+
+    setInterestState((current) => ({
+      classes: [nextClass, ...current.classes],
+      records: current.records,
+    }));
+    closeInterestClassModal();
+    setNotice(`已添加兴趣班：${name}`);
+  }
+
+  function handleSubmitInterestRecord(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    const classId = interestRecordDraft.classId;
+    const targetClass = interestClasses.find((item) => item.id === classId);
+    if (!targetClass) {
+      setNotice("请选择有效兴趣班。");
+      return;
+    }
+    if (!isValidDateKey(interestRecordDraft.dateKey)) {
+      setNotice("请选择有效上课日期。");
+      return;
+    }
+
+    const amount = parsePositiveDecimal(interestRecordDraft.amount.trim());
+    if (amount === null) {
+      setNotice("数量需要是大于 0 的数字。");
+      return;
+    }
+    const note = interestRecordDraft.note.trim();
+    if (note.length > 200) {
+      setNotice("备注请控制在 200 个字符以内。");
+      return;
+    }
+
+    if (editingInterestRecordTarget) {
+      setInterestState((current) => ({
+        classes: current.classes,
+        records: current.records.map((record) =>
+          record.id === editingInterestRecordTarget.id
+            ? {
+                ...record,
+                classId,
+                dateKey: interestRecordDraft.dateKey,
+                amount,
+                note,
+              }
+            : record,
+        ),
+      }));
+      closeInterestRecordModal();
+      setNotice(`已更新 ${targetClass.name} 的记录。`);
+      return;
+    }
+
+    const nextRecord: InterestClassRecord = {
+      id: createLocalUiId("interest-record"),
+      classId,
+      dateKey: interestRecordDraft.dateKey,
+      amount,
+      note,
+      createdAt: new Date().toISOString(),
+    };
+
+    setInterestState((current) => ({
+      classes: current.classes,
+      records: [nextRecord, ...current.records],
+    }));
+    closeInterestRecordModal();
+    setNotice(`已记录 ${targetClass.name}：${amount}${targetClass.unitLabel}`);
+  }
+
+  function openReadingJourney(): void {
+    setScreen("reading-journey");
+  }
+
+  function openReadingBookDetail(bookId: string): void {
+    setReadingDetailBookId(bookId);
+    setScreen("reading-book-detail");
+  }
+
+  function closeReadingBookModal(): void {
+    setReadingBookModalOpen(false);
+    setEditingReadingBookId(null);
+    setReadingBookDraft(createInitialReadingBookDraft());
+  }
+
+  function openReadingBookModal(bookId?: string): void {
+    if (bookId) {
+      const book = readingBooks.find((item) => item.id === bookId);
+      if (!book) {
+        setNotice("书籍不存在，可能已被删除。");
+        return;
+      }
+
+      setEditingReadingBookId(book.id);
+      setReadingBookDraft({
+        title: book.title,
+        author: book.author,
+        totalPages: book.totalPages ? String(book.totalPages) : "",
+        category: book.category,
+        status: book.status,
+        coverFileName: book.coverFileName,
+      });
+      setReadingBookModalOpen(true);
+      return;
+    }
+
+    setEditingReadingBookId(null);
+    setReadingBookDraft(createInitialReadingBookDraft());
+    setReadingBookModalOpen(true);
+  }
+
+  function closeReadingRecordModal(): void {
+    setReadingRecordModalOpen(false);
+    setReadingRecordDraft(createInitialReadingRecordDraft("", today));
+  }
+
+  function openReadingRecordModal(bookId?: string): void {
+    const selectedBookId = bookId ?? readingBooks[0]?.id ?? "";
+    if (!selectedBookId) {
+      setNotice("请先新增一本书，再记录阅读。");
+      return;
+    }
+
+    if (!readingBooks.some((book) => book.id === selectedBookId)) {
+      setNotice("书籍不存在，无法记录。");
+      return;
+    }
+
+    setReadingRecordDraft(createInitialReadingRecordDraft(selectedBookId, today));
+    setReadingRecordModalOpen(true);
+  }
+
+  function handleSubmitReadingBook(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    const title = readingBookDraft.title.trim();
+    if (!title) {
+      setNotice("请填写书名。");
+      return;
+    }
+
+    const totalPagesRaw = readingBookDraft.totalPages.trim();
+    const totalPages = totalPagesRaw.length === 0 ? null : parsePositiveInteger(totalPagesRaw);
+    if (totalPagesRaw.length > 0 && totalPages === null) {
+      setNotice("总页数需要是正整数。");
+      return;
+    }
+
+    const now = new Date().toISOString();
+    setReadingState((current) => {
+      if (editingReadingBookId) {
+        return {
+          books: current.books.map((book) =>
+            book.id === editingReadingBookId
+              ? {
+                  ...book,
+                  title,
+                  author: readingBookDraft.author.trim(),
+                  totalPages,
+                  category: readingBookDraft.category,
+                  status: readingBookDraft.status,
+                  coverFileName: readingBookDraft.coverFileName.trim(),
+                }
+              : book,
+          ),
+          records: current.records,
+        };
+      }
+
+      const nextBook: ReadingBook = {
+        id: createLocalUiId("reading-book"),
+        title,
+        author: readingBookDraft.author.trim(),
+        totalPages,
+        category: readingBookDraft.category,
+        status: readingBookDraft.status,
+        coverFileName: readingBookDraft.coverFileName.trim(),
+        createdAt: now,
+      };
+
+      return {
+        books: [nextBook, ...current.books],
+        records: current.records,
+      };
+    });
+
+    closeReadingBookModal();
+    setNotice(editingReadingBookId ? "书籍已更新。" : "已新增书籍。");
+  }
+
+  function handleDeleteReadingBook(bookId: string): void {
+    const targetBook = readingBooks.find((book) => book.id === bookId);
+    if (!targetBook) {
+      setNotice("书籍不存在，可能已经删除。");
+      return;
+    }
+
+    if (!window.confirm(`确定删除《${targetBook.title}》以及对应阅读记录吗？`)) {
+      return;
+    }
+
+    setReadingState((current) => ({
+      books: current.books.filter((book) => book.id !== bookId),
+      records: current.records.filter((record) => record.bookId !== bookId),
+    }));
+
+    if (readingDetailBookId === bookId) {
+      setReadingDetailBookId(null);
+      setScreen("reading-journey");
+    }
+
+    setNotice(`已删除《${targetBook.title}》。`);
+  }
+
+  function handleSubmitReadingRecord(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    const book = readingBooks.find((item) => item.id === readingRecordDraft.bookId);
+    if (!book) {
+      setNotice("请选择有效书籍。");
+      return;
+    }
+
+    if (!isValidDateKey(readingRecordDraft.readDate)) {
+      setNotice("请选择有效阅读日期。");
+      return;
+    }
+
+    const durationMinutes = parsePositiveInteger(readingRecordDraft.durationMinutes.trim());
+    if (!durationMinutes) {
+      setNotice("阅读时长需要是正整数分钟。");
+      return;
+    }
+
+    const startPageRaw = readingRecordDraft.startPage.trim();
+    const endPageRaw = readingRecordDraft.endPage.trim();
+    const startPage = startPageRaw.length === 0 ? null : parsePositiveInteger(startPageRaw);
+    const endPage = endPageRaw.length === 0 ? null : parsePositiveInteger(endPageRaw);
+    if ((startPageRaw.length > 0 && startPage === null) || (endPageRaw.length > 0 && endPage === null)) {
+      setNotice("页码需要是正整数。");
+      return;
+    }
+    if (startPage !== null && endPage !== null && endPage < startPage) {
+      setNotice("结束页不能小于开始页。");
+      return;
+    }
+
+    if (book.totalPages !== null) {
+      if (startPage !== null && startPage > book.totalPages) {
+        setNotice("开始页超出书籍总页数。");
+        return;
+      }
+      if (endPage !== null && endPage > book.totalPages) {
+        setNotice("结束页超出书籍总页数。");
+        return;
+      }
+    }
+
+    const now = new Date().toISOString();
+    const nextRecord: ReadingRecord = {
+      id: createLocalUiId("reading-record"),
+      bookId: book.id,
+      readDate: readingRecordDraft.readDate,
+      startPage,
+      endPage,
+      durationMinutes,
+      note: readingRecordDraft.note.trim(),
+      createdAt: now,
+    };
+
+    setReadingState((current) => {
+      const nextBookStatus: ReadingBook["status"] =
+        book.totalPages !== null && endPage !== null && endPage >= book.totalPages
+          ? "finished"
+          : book.status === "wishlist"
+            ? "reading"
+            : book.status;
+
+      return {
+        books: current.books.map((item) => (item.id === book.id ? { ...item, status: nextBookStatus } : item)),
+        records: [nextRecord, ...current.records],
+      };
+    });
+
+    closeReadingRecordModal();
+    setNotice(`已记录《${book.title}》阅读流水。`);
+  }
+
+  function handleOpenReadingStatsTab(): void {
+    openFutureFlow("统计分析已先合并到阅读页底部趋势区，后续可拆分为独立页面。");
+  }
+
+  function handleOpenReadingSyncTab(): void {
+    openFutureFlow("同步图书功能仍在规划中，当前版本先使用本地书架。");
+  }
+
+  function handleBackFromReadingDetail(): void {
+    setScreen("reading-journey");
+    setReadingDetailBookId(null);
   }
 
   function openWishModal(): void {
@@ -858,6 +1520,25 @@ function AppShell(): JSX.Element {
     setQuickCompleteDraft(INITIAL_QUICK_COMPLETE_DRAFT);
     setHabitDraft(INITIAL_HABIT_DRAFT);
     setWishDraft(createInitialWishDraft());
+    setInterestState(resetInterestClassState());
+    setInterestClassModalOpen(false);
+    setInterestRecordModalOpen(false);
+    setEditingInterestClassId(null);
+    setEditingInterestRecordId(null);
+    setInterestClassDraft(createInitialInterestClassDraft());
+    setInterestRecordDraft(createInitialInterestClassRecordDraft("", today));
+    setInterestFilterStartDate("");
+    setInterestFilterEndDate("");
+    setReadingState(resetReadingJourneyState());
+    setReadingSearch("");
+    setReadingStatusFilter("all");
+    setReadingCategoryFilter("all");
+    setReadingBookModalOpen(false);
+    setEditingReadingBookId(null);
+    setReadingBookDraft(createInitialReadingBookDraft());
+    setReadingRecordModalOpen(false);
+    setReadingRecordDraft(createInitialReadingRecordDraft("", today));
+    setReadingDetailBookId(null);
     setSelectedDateKey(today);
     setScreen("home");
     setActiveTab("plans");
@@ -1422,6 +2103,10 @@ function AppShell(): JSX.Element {
     setScreen("points-center");
   }
 
+  function handleBackToMoreFeatures(): void {
+    setScreen("more-features");
+  }
+
   function handleBackFromStudyTimer(): void {
     setScreen("home");
     setActiveTab("plans");
@@ -1441,7 +2126,7 @@ function AppShell(): JSX.Element {
     applyMutation(interactWithPet(state, actionId));
   }
 
-  function handleHelpFeatureAction(action: "plans" | "habits" | "habit-stats" | "help-placeholder"): void {
+  function handleHelpFeatureAction(action: "plans" | "habits" | "habit-stats" | "reading-journey" | "help-placeholder"): void {
     if (action === "plans") {
       setScreen("home");
       setActiveTab("plans");
@@ -1454,6 +2139,10 @@ function AppShell(): JSX.Element {
     }
     if (action === "habit-stats") {
       openHabitStatistics();
+      return;
+    }
+    if (action === "reading-journey") {
+      openReadingJourney();
       return;
     }
     openFutureFlow("该帮助条目已有说明，但功能仍未完成。");
@@ -1489,6 +2178,14 @@ function AppShell(): JSX.Element {
     }
     if (card.action === "help-center") {
       openHelpCenter();
+      return;
+    }
+    if (card.action === "reading-journey") {
+      openReadingJourney();
+      return;
+    }
+    if (card.action === "interest-class") {
+      openInterestClass();
       return;
     }
     openFutureFlow(card.message ?? "该功能仍在开发中。");
@@ -1562,8 +2259,51 @@ function AppShell(): JSX.Element {
   }
 
   function renderScreen(): JSX.Element {
+    const readingJourneyScreen = (
+      <ReadingJourneyScreen
+        today={today}
+        books={readingBooks}
+        records={readingRecords}
+        search={readingSearch}
+        statusFilter={readingStatusFilter}
+        categoryFilter={readingCategoryFilter}
+        onBack={handleBackToHome}
+        onOpenFlowTab={() => setScreen("reading-journey")}
+        onOpenStatsTab={handleOpenReadingStatsTab}
+        onOpenSyncTab={handleOpenReadingSyncTab}
+        onSearchChange={setReadingSearch}
+        onStatusFilterChange={setReadingStatusFilter}
+        onCategoryFilterChange={setReadingCategoryFilter}
+        onOpenAddBook={() => openReadingBookModal()}
+        onOpenAddRecord={openReadingRecordModal}
+        onOpenBookDetail={openReadingBookDetail}
+        onOpenEditBook={(bookId) => openReadingBookModal(bookId)}
+        onDeleteBook={handleDeleteReadingBook}
+      />
+    );
+
     if (screen === "study-timer") {
       return <StudyTimerScreen plan={activeTimerPlan} onBack={handleBackFromStudyTimer} />;
+    }
+
+    if (screen === "reading-journey") {
+      return readingJourneyScreen;
+    }
+
+    if (screen === "reading-book-detail") {
+      if (!readingDetailBook) {
+        return readingJourneyScreen;
+      }
+
+      return (
+        <ReadingBookDetailScreen
+          book={readingDetailBook}
+          records={readingDetailRecords}
+          onBack={handleBackFromReadingDetail}
+          onEditBook={() => openReadingBookModal(readingDetailBook.id)}
+          onAddRecord={() => openReadingRecordModal(readingDetailBook.id)}
+        />
+      );
     }
 
     if (screen === "plan-management") {
@@ -1756,6 +2496,30 @@ function AppShell(): JSX.Element {
       );
     }
 
+    if (screen === "interest-class") {
+      return (
+        <InterestClassScreen
+          classes={interestClasses}
+          records={interestRecords}
+          filterStartDate={interestFilterStartDate}
+          filterEndDate={interestFilterEndDate}
+          onBack={handleBackToMoreFeatures}
+          onOpenAddClass={openAddInterestClassModal}
+          onOpenEditClass={openEditInterestClassModal}
+          onOpenAddRecord={openInterestRecordModal}
+          onOpenEditRecord={openEditInterestRecordModal}
+          onDeleteClass={handleDeleteInterestClass}
+          onDeleteRecord={handleDeleteInterestRecord}
+          onChangeFilterStartDate={setInterestFilterStartDate}
+          onChangeFilterEndDate={setInterestFilterEndDate}
+          onResetDateFilters={() => {
+            setInterestFilterStartDate("");
+            setInterestFilterEndDate("");
+          }}
+        />
+      );
+    }
+
     const planBoard = (
       <PlanBoard
         today={today}
@@ -1891,6 +2655,39 @@ function AppShell(): JSX.Element {
         hasRecurringSelection={hasRecurringManagedSelection}
         onClose={closePlanDeleteModal}
         onConfirmDelete={handleConfirmDeleteManagedPlans}
+      />
+      <ReadingBookModal
+        open={readingBookModalOpen}
+        mode={editingReadingBookId ? "edit" : "create"}
+        draft={readingBookDraft}
+        onClose={closeReadingBookModal}
+        onSubmit={handleSubmitReadingBook}
+        onUpdateDraft={updateReadingBookDraft}
+      />
+      <ReadingRecordModal
+        open={readingRecordModalOpen}
+        books={readingBooks}
+        draft={readingRecordDraft}
+        onClose={closeReadingRecordModal}
+        onSubmit={handleSubmitReadingRecord}
+        onUpdateDraft={updateReadingRecordDraft}
+      />
+      <InterestClassModal
+        open={interestClassModalOpen}
+        mode={editingInterestClassTarget ? "edit" : "create"}
+        draft={interestClassDraft}
+        onClose={closeInterestClassModal}
+        onSubmit={handleSubmitInterestClass}
+        onUpdateDraft={updateInterestClassDraft}
+      />
+      <InterestClassRecordModal
+        open={interestRecordModalOpen}
+        mode={editingInterestRecordTarget ? "edit" : "create"}
+        classes={interestClasses}
+        draft={interestRecordDraft}
+        onClose={closeInterestRecordModal}
+        onSubmit={handleSubmitInterestRecord}
+        onUpdateDraft={updateInterestRecordDraft}
       />
       <WishModal
         open={wishModalOpen}

@@ -37,6 +37,14 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .reading-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .interest-class-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .batch-plan-workspace {
     grid-template-columns: 1fr;
   }
@@ -143,6 +151,19 @@
     grid-template-columns: 1fr;
   }
 
+  .reading-summary-grid,
+  .reading-toolbar,
+  .reading-hero,
+  .interest-hero,
+  .reading-detail-summary,
+  .reading-detail-metrics,
+  .reading-form-grid,
+  .reading-form-grid.reading-form-grid-triple,
+  .interest-filter-row,
+  .interest-form-grid {
+    grid-template-columns: 1fr;
+  }
+
   .pet-topbar {
     grid-template-columns: 1fr;
     justify-items: start;
@@ -194,7 +215,17 @@
   .pet-roster-row,
   .more-feature-entry-head,
   .more-feature-entry-foot,
-  .more-info-row {
+  .interest-filter-head,
+  .interest-monthly-head,
+  .interest-class-head,
+  .interest-record-row,
+  .more-info-row,
+  .reading-book-head,
+  .reading-book-meta,
+  .reading-book-actions,
+  .reading-card-head,
+  .reading-detail-hero,
+  .reading-detail-actions {
     flex-direction: column;
   }
 
@@ -251,7 +282,9 @@
   .habit-card,
   .habit-board-card,
   .habit-manager-row,
-  .habit-board-panel {
+  .habit-board-panel,
+  .interest-class-card,
+  .interest-empty-card {
     border-radius: 24px;
   }
 
@@ -275,6 +308,8 @@
   .more-info-card,
   .more-note-card,
   .more-empty-state,
+  .interest-class-card,
+  .interest-empty-card,
   .star-rules-quick-card,
   .star-rules-section,
   .star-rules-tips-card {
@@ -288,6 +323,8 @@
   .achievement-hero,
   .help-hero,
   .more-hero,
+  .interest-hero,
+  .reading-hero,
   .pet-shop-card,
   .pet-showcase,
   .pet-need-card,
@@ -551,6 +588,14 @@
     grid-template-columns: 1fr;
   }
 
+  .reading-detail-summary,
+  .reading-detail-metrics,
+  .reading-summary-grid,
+  .reading-toolbar,
+  .reading-trend-axis {
+    grid-template-columns: 1fr;
+  }
+
   .plan-detail-footer {
     grid-template-columns: 1fr;
   }
@@ -603,6 +648,13 @@
     width: 100%;
   }
 
+  .interest-primary-button,
+  .interest-empty-action,
+  .interest-record-button,
+  .interest-filter-reset {
+    width: 100%;
+  }
+
   .habit-board-card-side {
     justify-items: stretch;
   }
@@ -643,6 +695,10 @@
   }
 
   .more-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .interest-class-grid {
     grid-template-columns: 1fr;
   }
 
