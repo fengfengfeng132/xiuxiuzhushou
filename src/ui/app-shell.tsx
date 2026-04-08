@@ -164,6 +164,7 @@ import { AchievementSystemScreen } from "./points/achievement-system-screen.js";
 import { PointsCenterScreen } from "./points/points-center-screen.js";
 import { PointsHistoryScreen } from "./points/points-history-screen.js";
 import { StarRulesScreen } from "./points/star-rules-screen.js";
+import { WishDeleteConfirmModal } from "./points/wish-delete-confirm-modal.js";
 import { WishModal } from "./points/wish-modal.js";
 import { getWishIconCategory } from "./points/wish-config.js";
 import { buildAchievementOverview, buildDailyPointOpportunities, summarizePointsMetrics } from "./points/points-helpers.js";
@@ -322,6 +323,7 @@ function AppShell(): JSX.Element {
   const [habitModalOpen, setHabitModalOpen] = useState(false);
   const [wishModalOpen, setWishModalOpen] = useState(false);
   const [editingWishId, setEditingWishId] = useState<string | null>(null);
+  const [deletingWishId, setDeletingWishId] = useState<string | null>(null);
   const [habitCheckInDraft, setHabitCheckInDraft] = useState<HabitCheckInDraft>(INITIAL_HABIT_CHECKIN_DRAFT);
   const [habitTypeMenuOpen, setHabitTypeMenuOpen] = useState(false);
   const [habitSearch, setHabitSearch] = useState("");
@@ -435,6 +437,7 @@ function AppShell(): JSX.Element {
     parsedWishCost > 0 &&
     (wishDraft.repeatMode !== "multi" || (Number.isInteger(parsedWishMaxRedemptions) && parsedWishMaxRedemptions > 0)) &&
     (wishDraft.repeatMode !== "cycle" || (Number.isInteger(parsedWishRedemptionsPerPeriod) && parsedWishRedemptionsPerPeriod > 0));
+  const deletingWishTarget = deletingWishId ? state.rewards.find((item) => item.id === deletingWishId) ?? null : null;
   const quickCompleteHours = Math.max(0, Math.round(Number(quickCompleteDraft.hours) || 0));
   const quickCompleteMinutes = Math.max(0, Math.round(Number(quickCompleteDraft.minutes) || 0));
   const quickCompleteSeconds = Math.max(0, Math.round(Number(quickCompleteDraft.seconds) || 0));
@@ -552,6 +555,17 @@ function AppShell(): JSX.Element {
   }, [editingInterestRecordId, interestRecords]);
 
   useEffect(() => {
+    if (!deletingWishId) {
+      return;
+    }
+    if (state.rewards.some((item) => item.id === deletingWishId)) {
+      return;
+    }
+    closeWishDeleteModal();
+    setNotice("愿望已不存在。");
+  }, [deletingWishId, state.rewards]);
+
+  useEffect(() => {
     if (!notice) {
       return undefined;
     }
@@ -576,6 +590,7 @@ function AppShell(): JSX.Element {
     if (
       !habitModalOpen &&
       !wishModalOpen &&
+      !deletingWishId &&
       !planDeleteModalOpen &&
       !checkInHabitTarget &&
       !quickCompletePlanTarget &&
@@ -617,6 +632,10 @@ function AppShell(): JSX.Element {
           closePlanDeleteModal();
           return;
         }
+        if (deletingWishId) {
+          closeWishDeleteModal();
+          return;
+        }
         if (wishModalOpen) {
           closeWishModal();
           return;
@@ -633,6 +652,7 @@ function AppShell(): JSX.Element {
   }, [
     habitModalOpen,
     wishModalOpen,
+    deletingWishId,
     planDeleteModalOpen,
     checkInHabitTarget,
     planDetailPlanTarget,
@@ -1191,6 +1211,19 @@ function AppShell(): JSX.Element {
     setWishModalOpen(false);
     setEditingWishId(null);
     setWishDraft(createInitialWishDraft());
+  }
+
+  function openWishDeleteModal(rewardId: string): void {
+    const reward = state.rewards.find((item) => item.id === rewardId);
+    if (!reward) {
+      setNotice("愿望已不存在。");
+      return;
+    }
+    setDeletingWishId(reward.id);
+  }
+
+  function closeWishDeleteModal(): void {
+    setDeletingWishId(null);
   }
 
   function handleSelectWishIconCategory(category: RewardCategory): void {
@@ -2442,17 +2475,17 @@ function AppShell(): JSX.Element {
   }
 
   function handleDeleteWish(rewardId: string): void {
-    const reward = state.rewards.find((item) => item.id === rewardId);
-    if (!reward) {
+    openWishDeleteModal(rewardId);
+  }
+
+  function handleConfirmDeleteWish(): void {
+    if (!deletingWishTarget) {
       setNotice("愿望已不存在。");
+      closeWishDeleteModal();
       return;
     }
 
-    if (!window.confirm(`确定要删除愿望“${reward.title}”吗？此操作不可恢复。`)) {
-      return;
-    }
-
-    applyMutation(deleteReward(state, rewardId));
+    applyMutation(deleteReward(state, deletingWishTarget.id), closeWishDeleteModal);
   }
 
   function handleBackToHabitBoard(): void {
@@ -3108,6 +3141,12 @@ function AppShell(): JSX.Element {
         onSelectIcon={handleSelectWishIcon}
         onSelectCustomImage={handleWishCustomImageSelection}
         onClearCustomImage={clearWishCustomImage}
+      />
+      <WishDeleteConfirmModal
+        open={Boolean(deletingWishId)}
+        reward={deletingWishTarget}
+        onClose={closeWishDeleteModal}
+        onConfirm={handleConfirmDeleteWish}
       />
       <SyncAccountModal
         open={syncModalOpen}
