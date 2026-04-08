@@ -2,8 +2,6 @@ export const SYNC_SETTINGS_STORAGE_KEY = "xiuxiuzhushou_sync_settings_v1";
 export const SYNC_SESSION_STORAGE_KEY = "xiuxiuzhushou_sync_session_v1";
 
 export interface SyncAccountSettings {
-  supabaseUrl: string;
-  supabaseAnonKey: string;
   email: string;
 }
 
@@ -18,8 +16,6 @@ export interface SyncAccountSession {
 
 export function createInitialSyncAccountSettings(): SyncAccountSettings {
   return {
-    supabaseUrl: "",
-    supabaseAnonKey: "",
     email: "",
   };
 }
@@ -77,8 +73,6 @@ export function loadSyncAccountSettings(): SyncAccountSettings {
     }
 
     return {
-      supabaseUrl: normalizeString(parsed.supabaseUrl),
-      supabaseAnonKey: normalizeString(parsed.supabaseAnonKey),
       email: normalizeString(parsed.email),
     };
   } catch {
@@ -94,8 +88,6 @@ export function saveSyncAccountSettings(settings: SyncAccountSettings): void {
   window.localStorage.setItem(
     SYNC_SETTINGS_STORAGE_KEY,
     JSON.stringify({
-      supabaseUrl: normalizeString(settings.supabaseUrl),
-      supabaseAnonKey: normalizeString(settings.supabaseAnonKey),
       email: normalizeString(settings.email),
     }),
   );

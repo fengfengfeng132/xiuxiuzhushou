@@ -34,6 +34,7 @@
 - Keep `src/App.tsx` thin; new UI work should usually land in `src/ui/*`.
 - Treat `docs/verification.md` scenarios as blocking.
 - Run `npm run check` before handing off work.
+- For each completed update, commit and push to `origin` by default unless the user explicitly says not to push.
 
 ## Recovery Workflow
 - Confirm current milestone in `harness/harness-tasks.json`.

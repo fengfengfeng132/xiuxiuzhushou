@@ -10,7 +10,7 @@ interface SyncAccountModalProps {
   isBusy: boolean;
   statusMessage: string;
   onClose: () => void;
-  onUpdateSettings: (field: keyof SyncAccountSettings, value: string) => void;
+  onUpdateEmail: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onSignIn: () => void;
   onSignUp: () => void;
@@ -40,7 +40,7 @@ export function SyncAccountModal({
   isBusy,
   statusMessage,
   onClose,
-  onUpdateSettings,
+  onUpdateEmail,
   onPasswordChange,
   onSignIn,
   onSignUp,
@@ -61,7 +61,7 @@ export function SyncAccountModal({
         <header className="modal-head">
           <div>
             <h2>跨设备同步</h2>
-            <p>使用 Supabase 账号把本地学习数据同步到其他设备。</p>
+            <p>已内置同步配置，只需邮箱和密码即可注册或登录。</p>
           </div>
           <button type="button" className="modal-close" onClick={onClose}>
             ×
@@ -79,33 +79,13 @@ export function SyncAccountModal({
           </div>
         </div>
 
-        <div className="field-block">
-          <span>Supabase URL</span>
-          <input
-            type="text"
-            value={settings.supabaseUrl}
-            onChange={(event) => onUpdateSettings("supabaseUrl", event.target.value)}
-            placeholder="https://xxxx.supabase.co"
-          />
-        </div>
-
-        <div className="field-block">
-          <span>Anon Key</span>
-          <textarea
-            value={settings.supabaseAnonKey}
-            onChange={(event) => onUpdateSettings("supabaseAnonKey", event.target.value)}
-            placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-            rows={3}
-          />
-        </div>
-
         <div className="sync-auth-grid">
           <div className="field-block">
             <span>邮箱</span>
             <input
               type="email"
               value={settings.email}
-              onChange={(event) => onUpdateSettings("email", event.target.value)}
+              onChange={(event) => onUpdateEmail(event.target.value)}
               placeholder="you@example.com"
             />
           </div>

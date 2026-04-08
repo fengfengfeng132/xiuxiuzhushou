@@ -37,22 +37,22 @@ using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
 ```
 
-## 2) Get project credentials
+## 2) Configure built-in project credentials
 
-From Supabase project settings:
+The app now uses built-in Supabase credentials from `src/persistence/supabase-config.ts`.
+If you need to switch project, update:
 
-- Project URL: `https://<project-ref>.supabase.co`
-- Anon key: the `anon public` key
+- `DEFAULT_SUPABASE_URL`
+- `DEFAULT_SUPABASE_ANON_KEY` (publishable / anon public key)
 
 ## 3) Use in app
 
 In app homepage:
 
 1. Click top-right profile chip.
-2. Fill `Supabase URL` and `Anon Key`.
-3. Fill account email + password.
-4. Click `注册` (first time) or `登录`.
-5. Use:
+2. Fill account email + password.
+3. Click `注册` (first time) or `登录`.
+4. Use:
    - `上传本地到云端`
    - `下载云端到本地`
    - `双向同步` (recommended)

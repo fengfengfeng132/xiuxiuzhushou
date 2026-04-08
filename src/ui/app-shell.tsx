@@ -54,6 +54,7 @@ import {
   type SupabaseInitializationCheckItem,
   type SupabaseSyncConfig,
 } from "../persistence/supabase-sync.js";
+import { DEFAULT_SUPABASE_ANON_KEY, DEFAULT_SUPABASE_URL } from "../persistence/supabase-config.js";
 import {
   loadSyncAccountSession,
   loadSyncAccountSettings,
@@ -1639,8 +1640,8 @@ function AppShell(): JSX.Element {
     setNotice(message);
   }
 
-  function updateSyncSettings(field: keyof SyncAccountSettings, value: string): void {
-    setSyncSettings((current) => ({ ...current, [field]: value }));
+  function updateSyncEmail(value: string): void {
+    setSyncSettings((current) => ({ ...current, email: value }));
   }
 
   function openSyncAccountModal(): void {
@@ -1653,16 +1654,16 @@ function AppShell(): JSX.Element {
 
   function resolveSyncConfig(): SupabaseSyncConfig {
     const config: SupabaseSyncConfig = {
-      supabaseUrl: syncSettings.supabaseUrl.trim(),
-      supabaseAnonKey: syncSettings.supabaseAnonKey.trim(),
+      supabaseUrl: DEFAULT_SUPABASE_URL.trim(),
+      supabaseAnonKey: DEFAULT_SUPABASE_ANON_KEY.trim(),
     };
 
     if (!config.supabaseUrl) {
-      throw new Error("请先填写 Supabase URL。");
+      throw new Error("同步服务未配置 Supabase URL。");
     }
 
     if (!config.supabaseAnonKey) {
-      throw new Error("请先填写 Supabase anon key。");
+      throw new Error("同步服务未配置 Supabase key。");
     }
 
     return config;
@@ -3043,7 +3044,7 @@ function AppShell(): JSX.Element {
         isBusy={syncBusy}
         statusMessage={syncStatusMessage}
         onClose={closeSyncAccountModal}
-        onUpdateSettings={updateSyncSettings}
+        onUpdateEmail={updateSyncEmail}
         onPasswordChange={setSyncPassword}
         onSignIn={() => void handleSyncSignIn()}
         onSignUp={() => void handleSyncSignUp()}
