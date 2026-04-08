@@ -60,7 +60,7 @@ export function HomeScreen({
           <div className="balance-chip">
             <span>星星余额</span>
             <strong>{starBalance}</strong>
-            <small>奖励数据仅保存在本地</small>
+            <small>默认本地保存，可在档案中开启同步</small>
           </div>
           <button type="button" className="reset-button" onClick={onReset}>
             重置本地数据

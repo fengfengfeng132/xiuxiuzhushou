@@ -34,6 +34,9 @@ import type {
   RewardRedeemSummary,
   RewardRepeatMode,
   RewardResetPeriod,
+  SyncEntityType,
+  SyncMergeResult,
+  SyncPendingOperation,
   StarTransaction,
   StudyPlan,
   Summary,
@@ -43,6 +46,10 @@ import type {
 function cloneState(state: AppState): AppState {
   return JSON.parse(JSON.stringify(state)) as AppState;
 }
+
+const SYNC_SCHEMA_VERSION = 1;
+const LOCAL_DEVICE_PLACEHOLDER = "device-local";
+const MAX_PENDING_SYNC_OPS = 500;
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -440,6 +447,67 @@ function pushTransaction(state: AppState, amount: number, reason: string, create
   });
 }
 
+function nextEntityVersion(version: number): number {
+  if (!Number.isFinite(version) || version < 1) {
+    return 1;
+  }
+  return Math.round(version) + 1;
+}
+
+function touchPlanForMutation(plan: StudyPlan, now: string): void {
+  plan.updatedAt = now;
+  plan.version = nextEntityVersion(plan.version);
+  plan.deletedAt = null;
+}
+
+function touchHabitForMutation(habit: Habit, now: string): void {
+  habit.updatedAt = now;
+  habit.version = nextEntityVersion(habit.version);
+  habit.deletedAt = null;
+}
+
+function touchRewardForMutation(reward: Reward, now: string): void {
+  reward.updatedAt = now;
+  reward.version = nextEntityVersion(reward.version);
+  reward.deletedAt = null;
+}
+
+function touchCompanionForMutation(companion: OwnedPet, now: string): void {
+  companion.updatedAt = now;
+  companion.version = nextEntityVersion(companion.version);
+  companion.deletedAt = null;
+}
+
+function queuePendingSyncOperation(
+  state: AppState,
+  mutation: {
+    entityType: SyncEntityType;
+    entityId: string | null;
+    action: string;
+    payload?: unknown;
+  },
+  now: string,
+): string {
+  const sequence = state.sync.lastMutationSequence + 1;
+  const operationId = `${state.sync.deviceId}:${sequence}`;
+  state.sync.lastMutationSequence = sequence;
+  state.sync.pendingOps.push({
+    id: operationId,
+    deviceId: state.sync.deviceId,
+    sequence,
+    entityType: mutation.entityType,
+    entityId: mutation.entityId,
+    action: mutation.action,
+    payload: mutation.payload ?? null,
+    createdAt: now,
+  });
+  if (state.sync.pendingOps.length > MAX_PENDING_SYNC_OPS) {
+    state.sync.pendingOps = state.sync.pendingOps.slice(-MAX_PENDING_SYNC_OPS);
+  }
+  state.meta.lastUpdatedAt = now;
+  return operationId;
+}
+
 function getNumericSuffix(id: string): number {
   const match = id.match(/_(\d+)$/);
   return match ? Number(match[1]) : 0;
@@ -532,6 +600,9 @@ function normalizePlan(value: unknown, fallbackTime: string): StudyPlan | null {
   const status = value.status === "done" ? "done" : "pending";
   const createdAt = typeof value.createdAt === "string" ? value.createdAt : fallbackTime;
   const completedAt = typeof value.completedAt === "string" ? value.completedAt : null;
+  const updatedAt = normalizeEntityUpdatedAt(value.updatedAt, completedAt ?? createdAt);
+  const version = normalizeEntityVersion(value.version);
+  const deletedAt = normalizeEntityDeletedAt(value.deletedAt);
   const fallbackDurationSeconds = Math.max(60, Math.round(minutes) * 60);
   const completionRecords = Array.isArray(value.completionRecords)
     ? value.completionRecords
@@ -565,6 +636,9 @@ function normalizePlan(value: unknown, fallbackTime: string): StudyPlan | null {
     status,
     createdAt,
     completedAt,
+    updatedAt,
+    version,
+    deletedAt,
     excludedDateKeys: Array.isArray(value.excludedDateKeys)
       ? value.excludedDateKeys.filter((dateKey): dateKey is string => typeof dateKey === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateKey))
       : [],
@@ -602,6 +676,9 @@ function normalizeHabit(value: unknown, profileId: string, fallbackTime: string)
   const icon = typeof value.icon === "string" && value.icon ? value.icon : "☆";
   const color = typeof value.color === "string" && value.color ? value.color : "#4f7cff";
   const createdAt = typeof value.createdAt === "string" ? value.createdAt : fallbackTime;
+  const updatedAt = normalizeEntityUpdatedAt(value.updatedAt, createdAt);
+  const version = normalizeEntityVersion(value.version);
+  const deletedAt = normalizeEntityDeletedAt(value.deletedAt);
   const status = value.status === "archived" ? "archived" : "active";
   const approvalRequired = value.approvalRequired === true;
   const completions = isObject(value.completions)
@@ -628,6 +705,9 @@ function normalizeHabit(value: unknown, profileId: string, fallbackTime: string)
     icon,
     color,
     createdAt,
+    updatedAt,
+    version,
+    deletedAt,
     status,
     completions,
   };
@@ -710,7 +790,7 @@ function normalizeRewardRepeatConfig(value: unknown, repeatMode: RewardRepeatMod
   return null;
 }
 
-function normalizeReward(value: unknown): Reward | null {
+function normalizeReward(value: unknown, fallbackTime: string): Reward | null {
   if (!isObject(value)) {
     return null;
   }
@@ -725,6 +805,9 @@ function normalizeReward(value: unknown): Reward | null {
   const repeatMode: RewardRepeatMode = isRewardRepeatMode(value.repeatMode) ? value.repeatMode : "forever";
   const repeatConfig = normalizeRewardRepeatConfig(value.repeatConfig, repeatMode);
   const redeemedCount = Number(value.redeemedCount);
+  const updatedAt = normalizeEntityUpdatedAt(value.updatedAt, fallbackTime);
+  const version = normalizeEntityVersion(value.version);
+  const deletedAt = normalizeEntityDeletedAt(value.deletedAt);
   const redemptionHistory = Array.isArray(value.redemptionHistory)
     ? value.redemptionHistory.filter((entry): entry is string => typeof entry === "string")
     : [];
@@ -743,6 +826,9 @@ function normalizeReward(value: unknown): Reward | null {
     customImage,
     repeatMode,
     repeatConfig,
+    updatedAt,
+    version,
+    deletedAt,
     redeemedCount: Math.round(redeemedCount),
     redemptionHistory,
   };
@@ -771,6 +857,9 @@ function normalizeOwnedPet(value: unknown, profileId: string, fallbackTime: stri
     definitionId,
     profileId: typeof value.profileId === "string" && value.profileId ? value.profileId : profileId,
     adoptedAt: typeof value.adoptedAt === "string" ? value.adoptedAt : fallbackTime,
+    updatedAt: normalizeEntityUpdatedAt(value.updatedAt, typeof value.adoptedAt === "string" ? value.adoptedAt : fallbackTime),
+    version: normalizeEntityVersion(value.version),
+    deletedAt: normalizeEntityDeletedAt(value.deletedAt),
     intimacy: Number.isFinite(intimacy) ? Math.max(0, Math.round(intimacy)) : 55,
     satiety: Number.isFinite(satiety) ? clampPetNeed(satiety) : 90,
     cleanliness: Number.isFinite(cleanliness) ? clampPetNeed(cleanliness) : 92,
@@ -834,6 +923,58 @@ function normalizeActivity(value: unknown, fallbackTime: string): ActivityEntry 
   };
 }
 
+function normalizeSyncPendingOperation(value: unknown, fallbackTime: string): SyncPendingOperation | null {
+  if (!isObject(value)) {
+    return null;
+  }
+
+  const id = typeof value.id === "string" && value.id ? value.id : "";
+  const deviceId = typeof value.deviceId === "string" && value.deviceId ? value.deviceId : "";
+  const sequence = Number(value.sequence);
+  const entityType: SyncEntityType =
+    value.entityType === "plan" || value.entityType === "habit" || value.entityType === "reward" || value.entityType === "pet" ? value.entityType : "state";
+  const entityId = typeof value.entityId === "string" && value.entityId ? value.entityId : null;
+  const action = typeof value.action === "string" && value.action ? value.action : "";
+  const createdAt = typeof value.createdAt === "string" && value.createdAt ? value.createdAt : fallbackTime;
+
+  if (!id || !deviceId || !Number.isFinite(sequence) || sequence <= 0 || !action) {
+    return null;
+  }
+
+  return {
+    id,
+    deviceId,
+    sequence: Math.round(sequence),
+    entityType,
+    entityId,
+    action,
+    payload: value.payload,
+    createdAt,
+  };
+}
+
+function normalizeSyncState(value: unknown, fallbackTime: string): AppState["sync"] {
+  const syncValue = isObject(value) ? value : {};
+  const schemaVersion = Number(syncValue.schemaVersion);
+  const deviceId = typeof syncValue.deviceId === "string" && syncValue.deviceId ? syncValue.deviceId : LOCAL_DEVICE_PLACEHOLDER;
+  const lastMutationSequence = Number(syncValue.lastMutationSequence);
+  const pendingOps = Array.isArray(syncValue.pendingOps)
+    ? syncValue.pendingOps
+        .map((pendingOp) => normalizeSyncPendingOperation(pendingOp, fallbackTime))
+        .filter((pendingOp): pendingOp is SyncPendingOperation => pendingOp !== null)
+        .sort((left, right) => left.sequence - right.sequence)
+        .slice(-MAX_PENDING_SYNC_OPS)
+    : [];
+
+  return {
+    schemaVersion: Number.isFinite(schemaVersion) && schemaVersion >= 1 ? Math.round(schemaVersion) : SYNC_SCHEMA_VERSION,
+    deviceId,
+    lastMutationSequence: Number.isFinite(lastMutationSequence) && lastMutationSequence >= 0 ? Math.round(lastMutationSequence) : 0,
+    lastSyncedAt: typeof syncValue.lastSyncedAt === "string" && syncValue.lastSyncedAt ? syncValue.lastSyncedAt : null,
+    pendingOps,
+  };
+}
+
 function normalizeState(value: unknown, fallbackTime: string = new Date().toISOString()): AppState {
   const defaults = createInitialState(fallbackTime);
   if (!isObject(value)) {
@@ -856,7 +997,7 @@ function normalizeState(value: unknown, fallbackTime: string = new Date().toISOS
     : defaults.habits;
 
   const rewards = Array.isArray(value.rewards)
-    ? value.rewards.map((reward) => normalizeReward(reward)).filter((reward): reward is Reward => reward !== null)
+    ? value.rewards.map((reward) => normalizeReward(reward, fallbackTime)).filter((reward): reward is Reward => reward !== null)
     : defaults.rewards;
 
   const petsValue = isObject(value.pets) ? value.pets : {};
@@ -880,6 +1021,7 @@ function normalizeState(value: unknown, fallbackTime: string = new Date().toISOS
   const activity = Array.isArray(value.activity)
     ? value.activity.map((entry) => normalizeActivity(entry, fallbackTime)).filter((entry): entry is ActivityEntry => entry !== null)
     : defaults.activity;
+  const sync = normalizeSyncState(value.sync, fallbackTime);
 
   const metaValue = isObject(value.meta) ? value.meta : {};
   const candidateNextId = Number(metaValue.nextId);
@@ -895,6 +1037,7 @@ function normalizeState(value: unknown, fallbackTime: string = new Date().toISOS
     },
     starTransactions,
     activity,
+    sync,
     meta: {
       nextId: Number.isFinite(candidateNextId) && candidateNextId > 0 ? Math.round(candidateNextId) : 1,
       lastUpdatedAt: typeof metaValue.lastUpdatedAt === "string" ? metaValue.lastUpdatedAt : fallbackTime,
@@ -903,6 +1046,10 @@ function normalizeState(value: unknown, fallbackTime: string = new Date().toISOS
 
   normalized.version = VERSION;
   normalized.meta.nextId = Math.max(normalized.meta.nextId, inferNextId(normalized));
+  normalized.sync.lastMutationSequence = Math.max(
+    normalized.sync.lastMutationSequence,
+    normalized.sync.pendingOps.reduce((max, pendingOp) => Math.max(max, pendingOp.sequence), 0),
+  );
   return normalized;
 }
 
@@ -920,6 +1067,9 @@ function insertHabit(state: AppState, input: CreateHabitInput, now: string): Hab
     icon: input.icon.trim(),
     color: input.color.trim(),
     createdAt: now,
+    updatedAt: now,
+    version: 1,
+    deletedAt: null,
     status: "active",
     completions: {},
   };
@@ -933,6 +1083,9 @@ function createOwnedPet(definitionId: string, profileId: string, now: string): O
     definitionId,
     profileId,
     adoptedAt: now,
+    updatedAt: now,
+    version: 1,
+    deletedAt: null,
     intimacy: 55,
     satiety: 90,
     cleanliness: 92,
@@ -1100,6 +1253,9 @@ export function createInitialState(now: string = new Date().toISOString()): AppS
         status: "pending",
         createdAt: now,
         completedAt: null,
+        updatedAt: now,
+        version: 1,
+        deletedAt: null,
         excludedDateKeys: [],
         completionRecords: [],
       },
@@ -1114,6 +1270,9 @@ export function createInitialState(now: string = new Date().toISOString()): AppS
         status: "pending",
         createdAt: now,
         completedAt: null,
+        updatedAt: now,
+        version: 1,
+        deletedAt: null,
         excludedDateKeys: [],
         completionRecords: [],
       },
@@ -1130,6 +1289,9 @@ export function createInitialState(now: string = new Date().toISOString()): AppS
         customImage: null,
         repeatMode: "forever",
         repeatConfig: null,
+        updatedAt: now,
+        version: 1,
+        deletedAt: null,
         redeemedCount: 0,
         redemptionHistory: [],
       },
@@ -1143,6 +1305,9 @@ export function createInitialState(now: string = new Date().toISOString()): AppS
         customImage: null,
         repeatMode: "forever",
         repeatConfig: null,
+        updatedAt: now,
+        version: 1,
+        deletedAt: null,
         redeemedCount: 0,
         redemptionHistory: [],
       },
@@ -1167,6 +1332,13 @@ export function createInitialState(now: string = new Date().toISOString()): AppS
         createdAt: now,
       },
     ],
+    sync: {
+      schemaVersion: SYNC_SCHEMA_VERSION,
+      deviceId: LOCAL_DEVICE_PLACEHOLDER,
+      lastMutationSequence: 0,
+      lastSyncedAt: null,
+      pendingOps: [],
+    },
     meta: {
       nextId: 1,
       lastUpdatedAt: now,
@@ -1198,7 +1370,7 @@ export function addPlan(
   }
 
   const nextState = cloneState(state);
-  nextState.plans.unshift({
+  const plan: StudyPlan = {
     id: nextEntityId(nextState, "plan"),
     title,
     subject,
@@ -1209,10 +1381,30 @@ export function addPlan(
     status: "pending",
     createdAt: now,
     completedAt: null,
+    updatedAt: now,
+    version: 1,
+    deletedAt: null,
     excludedDateKeys: [],
     completionRecords: [],
-  });
-  nextState.meta.lastUpdatedAt = now;
+  };
+  nextState.plans.unshift(plan);
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "plan",
+      entityId: plan.id,
+      action: "plan.create",
+      payload: {
+        title: plan.title,
+        subject: plan.subject,
+        repeatType: plan.repeatType,
+        minutes: plan.minutes,
+        stars: plan.stars,
+        customStarsEnabled: plan.customStarsEnabled,
+      },
+    },
+    now,
+  );
   pushActivity(nextState, "plan-added", `新增计划：${title}（${subject}）`, now);
 
   return {
@@ -1258,7 +1450,24 @@ export function updatePlan(state: AppState, planId: string, input: UpdatePlanInp
   if (typeof input.createdAt === "string" && input.createdAt) {
     plan.createdAt = input.createdAt;
   }
-  nextState.meta.lastUpdatedAt = now;
+  touchPlanForMutation(plan, now);
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "plan",
+      entityId: plan.id,
+      action: "plan.update",
+      payload: {
+        title: plan.title,
+        subject: plan.subject,
+        repeatType: plan.repeatType,
+        minutes: plan.minutes,
+        stars: plan.stars,
+        customStarsEnabled: plan.customStarsEnabled,
+      },
+    },
+    now,
+  );
   pushActivity(nextState, "system", `编辑计划：${title}`, now);
 
   return {
@@ -1332,7 +1541,7 @@ export function createReward(state: AppState, input: CreateRewardInput, now: str
   }
 
   const nextState = cloneState(state);
-  nextState.rewards.unshift({
+  const reward: Reward = {
     id: nextEntityId(nextState, "reward"),
     title,
     description,
@@ -1342,10 +1551,28 @@ export function createReward(state: AppState, input: CreateRewardInput, now: str
     customImage: typeof input.customImage === "string" && input.customImage ? input.customImage : null,
     repeatMode: input.repeatMode,
     repeatConfig,
+    updatedAt: now,
+    version: 1,
+    deletedAt: null,
     redeemedCount: 0,
     redemptionHistory: [],
-  });
-  nextState.meta.lastUpdatedAt = now;
+  };
+  nextState.rewards.unshift(reward);
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "reward",
+      entityId: reward.id,
+      action: "reward.create",
+      payload: {
+        title: reward.title,
+        cost: reward.cost,
+        category: reward.category,
+        repeatMode: reward.repeatMode,
+      },
+    },
+    now,
+  );
   pushActivity(nextState, "system", `新增愿望：${title}，需要 ${cost} 星`, now);
 
   return {
@@ -1377,7 +1604,16 @@ export function deletePlans(state: AppState, planIds: string[], now: string = ne
 
   const nextState = cloneState(state);
   nextState.plans = nextState.plans.filter((plan) => !targetIds.includes(plan.id));
-  nextState.meta.lastUpdatedAt = now;
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "plan",
+      entityId: null,
+      action: "plan.delete",
+      payload: { planIds: deletablePlans.map((plan) => plan.id) },
+    },
+    now,
+  );
   pushActivity(nextState, "system", `删除计划：${deletablePlans.map((plan) => plan.title).join("、")}`, now);
 
   return {
@@ -1423,6 +1659,8 @@ export function deletePlansForDate(
   const nextState = cloneState(state);
   const removedPlanTitles: string[] = [];
   const excludedPlanTitles: string[] = [];
+  const removedPlanIds: string[] = [];
+  const excludedPlanIds: string[] = [];
 
   nextState.plans = nextState.plans.filter((plan) => {
     if (!targetIds.includes(plan.id)) {
@@ -1431,13 +1669,16 @@ export function deletePlansForDate(
 
     if (plan.repeatType === "once") {
       removedPlanTitles.push(plan.title);
+      removedPlanIds.push(plan.id);
       return false;
     }
 
     if (!plan.excludedDateKeys.includes(scopedDateKey)) {
       plan.excludedDateKeys.push(scopedDateKey);
     }
+    touchPlanForMutation(plan, now);
     excludedPlanTitles.push(plan.title);
+    excludedPlanIds.push(plan.id);
     return true;
   });
 
@@ -1449,7 +1690,20 @@ export function deletePlansForDate(
     };
   }
 
-  nextState.meta.lastUpdatedAt = now;
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "plan",
+      entityId: null,
+      action: "plan.delete-for-date",
+      payload: {
+        dateKey: scopedDateKey,
+        removedPlanIds,
+        excludedPlanIds,
+      },
+    },
+    now,
+  );
   const activityParts: string[] = [];
   if (excludedPlanTitles.length > 0) {
     activityParts.push(`仅删除 ${scopedDateKey} 的计划：${excludedPlanTitles.join("、")}`);
@@ -1547,7 +1801,20 @@ export function createHabit(
     },
     now,
   );
-  nextState.meta.lastUpdatedAt = now;
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "habit",
+      entityId: habit.id,
+      action: "habit.create",
+      payload: {
+        name: habit.name,
+        frequency: habit.frequency,
+        points: habit.points,
+      },
+    },
+    now,
+  );
   pushActivity(nextState, "habit-created", `新建习惯：${habit.name}`, now);
 
   return {
@@ -1560,6 +1827,7 @@ export function createHabit(
 export function addDefaultHabits(state: AppState, now: string = new Date().toISOString()): CommandResult {
   const nextState = cloneState(state);
   let addedCount = 0;
+  const addedHabitIds: string[] = [];
 
   for (const template of DEFAULT_HABIT_TEMPLATES) {
     if (nextState.habits.some((habit) => habit.status === "active" && habit.name === template.name)) {
@@ -1567,6 +1835,7 @@ export function addDefaultHabits(state: AppState, now: string = new Date().toISO
     }
 
     const habit = insertHabit(nextState, template, now);
+    addedHabitIds.push(habit.id);
     pushActivity(nextState, "habit-created", `添加默认习惯：${habit.name}`, now);
     addedCount += 1;
   }
@@ -1579,7 +1848,16 @@ export function addDefaultHabits(state: AppState, now: string = new Date().toISO
     };
   }
 
-  nextState.meta.lastUpdatedAt = now;
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "habit",
+      entityId: null,
+      action: "habit.create-defaults",
+      payload: { habitIds: addedHabitIds },
+    },
+    now,
+  );
   return {
     ok: true,
     nextState,
@@ -1610,7 +1888,15 @@ export function adoptPet(state: AppState, definitionId: string, now: string = ne
     }
 
     nextState.pets.activePetDefinitionId = definitionId;
-    nextState.meta.lastUpdatedAt = now;
+    queuePendingSyncOperation(
+      nextState,
+      {
+        entityType: "pet",
+        entityId: definitionId,
+        action: "pet.switch-active",
+      },
+      now,
+    );
     pushActivity(nextState, "pet-switched", `切换电子宠物：${definition.name}`, now);
     return {
       ok: true,
@@ -1628,9 +1914,19 @@ export function adoptPet(state: AppState, definitionId: string, now: string = ne
     };
   }
 
-  nextState.pets.companions.unshift(createOwnedPet(definitionId, nextState.profile.id, now));
+  const adoptedCompanion = createOwnedPet(definitionId, nextState.profile.id, now);
+  nextState.pets.companions.unshift(adoptedCompanion);
   nextState.pets.activePetDefinitionId = definitionId;
-  nextState.meta.lastUpdatedAt = now;
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "pet",
+      entityId: definitionId,
+      action: "pet.adopt",
+      payload: { cost: definition.cost },
+    },
+    now,
+  );
   pushTransaction(nextState, -definition.cost, `领养电子宠物：${definition.name}`, now);
   pushActivity(nextState, "pet-adopted", `领养电子宠物：${definition.name}，消耗 ${definition.cost} 星星`, now);
 
@@ -1669,7 +1965,15 @@ export function switchActivePet(state: AppState, definitionId: string, now: stri
 
   const nextState = cloneState(state);
   nextState.pets.activePetDefinitionId = definitionId;
-  nextState.meta.lastUpdatedAt = now;
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "pet",
+      entityId: definitionId,
+      action: "pet.switch-active",
+    },
+    now,
+  );
   pushActivity(nextState, "pet-switched", `切换电子宠物：${definition.name}`, now);
 
   return {
@@ -1732,7 +2036,17 @@ export function interactWithPet(state: AppState, actionId: PetInteractionId, now
   companion.intimacy = Math.max(0, Math.round(companion.intimacy + action.intimacyDelta));
   companion.lastInteractionId = action.id;
   companion.lastInteractionAt = now;
-  nextState.meta.lastUpdatedAt = now;
+  touchCompanionForMutation(companion, now);
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "pet",
+      entityId: companion.definitionId,
+      action: "pet.interact",
+      payload: { actionId: action.id, interactionCost },
+    },
+    now,
+  );
 
   pushTransaction(nextState, -interactionCost, `宠物互动：${definition.name} · ${action.title}`, now);
   pushActivity(nextState, "pet-interacted", `${definition.name}${action.activityMessage}（消耗 ${interactionCost} 星星）`, now);
@@ -1742,6 +2056,22 @@ export function interactWithPet(state: AppState, actionId: PetInteractionId, now
     nextState,
     message: `${definition.name}${action.successMessage}（消耗 ${interactionCost} 星星）`,
   };
+}
+
+function normalizeEntityVersion(value: unknown): number {
+  const version = Number(value);
+  if (!Number.isFinite(version) || version < 1) {
+    return 1;
+  }
+  return Math.round(version);
+}
+
+function normalizeEntityDeletedAt(value: unknown): string | null {
+  return typeof value === "string" && value ? value : null;
+}
+
+function normalizeEntityUpdatedAt(value: unknown, fallback: string): string {
+  return typeof value === "string" && value ? value : fallback;
 }
 
 export function archiveHabits(state: AppState, habitIds: string[], now: string = new Date().toISOString()): CommandResult {
@@ -1767,9 +2097,19 @@ export function archiveHabits(state: AppState, habitIds: string[], now: string =
 
   for (const habit of archivedHabits) {
     habit.status = "archived";
+    touchHabitForMutation(habit, now);
   }
 
-  nextState.meta.lastUpdatedAt = now;
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "habit",
+      entityId: null,
+      action: "habit.archive",
+      payload: { habitIds: archivedHabits.map((habit) => habit.id) },
+    },
+    now,
+  );
   pushActivity(nextState, "system", `删除习惯：${archivedHabits.map((habit) => habit.name).join("、")}`, now);
 
   return {
@@ -1853,7 +2193,21 @@ export function completePlan(
     })),
     completedAt: effectiveNow,
   });
-  nextState.meta.lastUpdatedAt = effectiveNow;
+  touchPlanForMutation(plan, effectiveNow);
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "plan",
+      entityId: plan.id,
+      action: "plan.complete",
+      payload: {
+        mode,
+        durationSeconds,
+        completedAt: effectiveNow,
+      },
+    },
+    effectiveNow,
+  );
   const durationMinutes = Math.max(1, Math.round(durationSeconds / 60));
   const durationBonusStars = getSystemDurationBonusStars(durationMinutes);
   const completionMultiplier = getPlanCompletionMultiplier(effectiveNow);
@@ -1945,7 +2299,21 @@ export function checkInHabit(
   const noteSuffix = note ? `，备注：${note}` : "";
 
   habit.completions[dateKey] = (habit.completions[dateKey] ?? 0) + 1;
-  nextState.meta.lastUpdatedAt = effectiveNow;
+  touchHabitForMutation(habit, effectiveNow);
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "habit",
+      entityId: habit.id,
+      action: "habit.check-in",
+      payload: {
+        dateKey,
+        awardedPoints,
+        useCustomPoints,
+      },
+    },
+    effectiveNow,
+  );
 
   if (habit.approvalRequired) {
     pushActivity(nextState, "habit-checked", `记录习惯打卡：${habit.name}，待家长审定积分 ${formatPoints(awardedPoints)}${noteSuffix}`, effectiveNow);
@@ -2042,7 +2410,17 @@ export function redeemReward(state: AppState, rewardId: string, now: string = ne
 
   reward.redeemedCount += 1;
   reward.redemptionHistory.push(now);
-  nextState.meta.lastUpdatedAt = now;
+  touchRewardForMutation(reward, now);
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "reward",
+      entityId: reward.id,
+      action: "reward.redeem",
+      payload: { cost: reward.cost },
+    },
+    now,
+  );
   pushTransaction(nextState, -reward.cost, `兑换奖励：${reward.title}`, now);
   pushActivity(nextState, "reward-redeemed", `已兑换奖励：${reward.title}，消耗 ${reward.cost} 星`, now);
 
@@ -2051,6 +2429,223 @@ export function redeemReward(state: AppState, rewardId: string, now: string = ne
     nextState,
     message: `兑换成功，消耗 ${reward.cost} 星。`,
   };
+}
+
+function compareEntityRecency(left: { updatedAt: string; version: number }, right: { updatedAt: string; version: number }): number {
+  const leftTime = Date.parse(left.updatedAt);
+  const rightTime = Date.parse(right.updatedAt);
+  const normalizedLeftTime = Number.isFinite(leftTime) ? leftTime : 0;
+  const normalizedRightTime = Number.isFinite(rightTime) ? rightTime : 0;
+  if (normalizedLeftTime !== normalizedRightTime) {
+    return normalizedLeftTime - normalizedRightTime;
+  }
+
+  const leftVersion = Number.isFinite(left.version) ? left.version : 0;
+  const rightVersion = Number.isFinite(right.version) ? right.version : 0;
+  return leftVersion - rightVersion;
+}
+
+function mergeEntitiesById<T extends { updatedAt: string; version: number }>(
+  localItems: T[],
+  remoteItems: T[],
+  getId: (item: T) => string,
+): { merged: T[]; remoteWins: number; localWins: number; conflicts: string[] } {
+  const merged = [...localItems];
+  const localIndexById = new Map<string, number>();
+  for (let index = 0; index < merged.length; index += 1) {
+    localIndexById.set(getId(merged[index]), index);
+  }
+
+  let remoteWins = 0;
+  let localWins = 0;
+  const conflicts: string[] = [];
+  for (const remoteItem of remoteItems) {
+    const id = getId(remoteItem);
+    const localIndex = localIndexById.get(id);
+    if (localIndex === undefined) {
+      merged.push(remoteItem);
+      localIndexById.set(id, merged.length - 1);
+      remoteWins += 1;
+      continue;
+    }
+
+    const localItem = merged[localIndex];
+    const comparison = compareEntityRecency(localItem, remoteItem);
+    if (comparison < 0) {
+      merged[localIndex] = remoteItem;
+      remoteWins += 1;
+      if (comparison === 0) {
+        conflicts.push(id);
+      }
+      continue;
+    }
+
+    localWins += 1;
+    if (comparison === 0) {
+      conflicts.push(id);
+    }
+  }
+
+  return { merged, remoteWins, localWins, conflicts };
+}
+
+export function assignSyncDeviceId(state: AppState, deviceId: string): AppState {
+  const normalizedDeviceId = typeof deviceId === "string" ? deviceId.trim() : "";
+  if (!normalizedDeviceId || normalizedDeviceId === state.sync.deviceId) {
+    return state;
+  }
+
+  const nextState = cloneState(state);
+  nextState.sync.deviceId = normalizedDeviceId;
+  nextState.sync.pendingOps = nextState.sync.pendingOps.map((pendingOp) => {
+    if (pendingOp.deviceId !== LOCAL_DEVICE_PLACEHOLDER) {
+      return pendingOp;
+    }
+
+    return {
+      ...pendingOp,
+      id: `${normalizedDeviceId}:${pendingOp.sequence}`,
+      deviceId: normalizedDeviceId,
+    };
+  });
+  return nextState;
+}
+
+export function acknowledgeSyncedOperations(
+  state: AppState,
+  syncedOperationIds: string[],
+  syncedAt: string = new Date().toISOString(),
+): AppState {
+  const targetIds = new Set(syncedOperationIds.map((operationId) => operationId.trim()).filter(Boolean));
+  if (targetIds.size === 0) {
+    return state;
+  }
+
+  const nextState = cloneState(state);
+  const previousCount = nextState.sync.pendingOps.length;
+  nextState.sync.pendingOps = nextState.sync.pendingOps.filter((pendingOp) => !targetIds.has(pendingOp.id));
+  if (nextState.sync.pendingOps.length === previousCount) {
+    return state;
+  }
+
+  nextState.sync.lastSyncedAt = syncedAt;
+  return nextState;
+}
+
+export function mergeStateForSync(localState: AppState, remoteState: AppState): SyncMergeResult {
+  const normalizedLocal = normalizeState(localState);
+  const normalizedRemote = normalizeState(remoteState);
+  const mergedState = cloneState(normalizedLocal);
+
+  let remoteWins = 0;
+  let localWins = 0;
+  const conflicts: string[] = [];
+
+  const planMerge = mergeEntitiesById(mergedState.plans, normalizedRemote.plans, (plan) => plan.id);
+  mergedState.plans = planMerge.merged;
+  remoteWins += planMerge.remoteWins;
+  localWins += planMerge.localWins;
+  conflicts.push(...planMerge.conflicts.map((id) => `plan:${id}`));
+
+  const habitMerge = mergeEntitiesById(mergedState.habits, normalizedRemote.habits, (habit) => habit.id);
+  mergedState.habits = habitMerge.merged;
+  remoteWins += habitMerge.remoteWins;
+  localWins += habitMerge.localWins;
+  conflicts.push(...habitMerge.conflicts.map((id) => `habit:${id}`));
+
+  const rewardMerge = mergeEntitiesById(mergedState.rewards, normalizedRemote.rewards, (reward) => reward.id);
+  mergedState.rewards = rewardMerge.merged;
+  remoteWins += rewardMerge.remoteWins;
+  localWins += rewardMerge.localWins;
+  conflicts.push(...rewardMerge.conflicts.map((id) => `reward:${id}`));
+
+  const companionMerge = mergeEntitiesById(mergedState.pets.companions, normalizedRemote.pets.companions, (companion) => companion.definitionId);
+  mergedState.pets.companions = companionMerge.merged;
+  remoteWins += companionMerge.remoteWins;
+  localWins += companionMerge.localWins;
+  conflicts.push(...companionMerge.conflicts.map((id) => `pet:${id}`));
+
+  if (normalizedRemote.pets.activePetDefinitionId && mergedState.pets.companions.some((pet) => pet.definitionId === normalizedRemote.pets.activePetDefinitionId)) {
+    const localActive = mergedState.pets.activePetDefinitionId
+      ? mergedState.pets.companions.find((pet) => pet.definitionId === mergedState.pets.activePetDefinitionId)
+      : null;
+    const remoteActive = mergedState.pets.companions.find((pet) => pet.definitionId === normalizedRemote.pets.activePetDefinitionId) ?? null;
+    if (!localActive || (remoteActive && compareEntityRecency(localActive, remoteActive) < 0)) {
+      mergedState.pets.activePetDefinitionId = normalizedRemote.pets.activePetDefinitionId;
+      remoteWins += 1;
+    } else {
+      localWins += 1;
+    }
+  }
+
+  const transactionIds = new Set(mergedState.starTransactions.map((item) => item.id));
+  for (const transaction of normalizedRemote.starTransactions) {
+    if (transactionIds.has(transaction.id)) {
+      continue;
+    }
+    mergedState.starTransactions.push(transaction);
+    transactionIds.add(transaction.id);
+    remoteWins += 1;
+  }
+
+  const activityIds = new Set(mergedState.activity.map((entry) => entry.id));
+  for (const entry of normalizedRemote.activity) {
+    if (activityIds.has(entry.id)) {
+      continue;
+    }
+    mergedState.activity.push(entry);
+    activityIds.add(entry.id);
+    remoteWins += 1;
+  }
+
+  mergedState.version = VERSION;
+  mergedState.meta.nextId = inferNextId(mergedState);
+  mergedState.meta.lastUpdatedAt =
+    compareEntityRecency(
+      { updatedAt: mergedState.meta.lastUpdatedAt, version: 1 },
+      { updatedAt: normalizedRemote.meta.lastUpdatedAt, version: 1 },
+    ) < 0
+      ? normalizedRemote.meta.lastUpdatedAt
+      : mergedState.meta.lastUpdatedAt;
+
+  mergedState.sync.schemaVersion = Math.max(mergedState.sync.schemaVersion, normalizedRemote.sync.schemaVersion);
+  mergedState.sync.lastMutationSequence = Math.max(
+    mergedState.sync.lastMutationSequence,
+    mergedState.sync.pendingOps.reduce((max, pendingOp) => Math.max(max, pendingOp.sequence), 0),
+  );
+  mergedState.sync.lastSyncedAt = normalizedRemote.sync.lastSyncedAt ?? mergedState.sync.lastSyncedAt;
+
+  return {
+    mergedState: normalizeState(mergedState),
+    remoteWins,
+    localWins,
+    conflicts: Array.from(new Set(conflicts)),
+  };
+}
+
+export function markStateMutation(
+  state: AppState,
+  action: string,
+  payload: unknown = null,
+  now: string = new Date().toISOString(),
+): AppState {
+  const normalizedAction = action.trim();
+  if (!normalizedAction) {
+    return state;
+  }
+
+  const nextState = cloneState(state);
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "state",
+      entityId: null,
+      action: normalizedAction,
+      payload,
+    },
+    now,
+  );
+  return nextState;
 }
 
 export function serializeState(state: AppState): string {
@@ -2087,7 +2682,43 @@ export function evaluateInvariants(state: AppState): string[] {
     violations.push("meta.nextId must be positive.");
   }
 
-  if (state.plans.some((plan) => plan.minutes <= 0 || plan.stars <= 0 || !plan.title || !plan.subject || !isPlanRepeatType(plan.repeatType))) {
+  if (!state.sync.deviceId) {
+    violations.push("sync.deviceId is required.");
+  }
+
+  if (state.sync.schemaVersion < 1) {
+    violations.push("sync.schemaVersion must be positive.");
+  }
+
+  if (state.sync.lastMutationSequence < 0) {
+    violations.push("sync.lastMutationSequence must be non-negative.");
+  }
+
+  if (
+    state.sync.pendingOps.some(
+      (pendingOp) =>
+        !pendingOp.id ||
+        !pendingOp.deviceId ||
+        pendingOp.sequence <= 0 ||
+        !pendingOp.action ||
+        !pendingOp.createdAt,
+    )
+  ) {
+    violations.push("sync.pendingOps must have valid id, device, sequence, action, and createdAt.");
+  }
+
+  if (
+    state.plans.some(
+      (plan) =>
+        plan.minutes <= 0 ||
+        plan.stars <= 0 ||
+        !plan.title ||
+        !plan.subject ||
+        !isPlanRepeatType(plan.repeatType) ||
+        !plan.updatedAt ||
+        plan.version < 1,
+    )
+  ) {
     violations.push("Plans must have titles, subjects, positive minutes, and positive star rewards.");
   }
 
@@ -2119,7 +2750,9 @@ export function evaluateInvariants(state: AppState): string[] {
         habit.points < -100 ||
         habit.points > 100 ||
         !habit.icon ||
-        !habit.color,
+        !habit.color ||
+        !habit.updatedAt ||
+        habit.version < 1,
     )
   ) {
     violations.push("Habits must have valid names, frequency, limits, points, icon, and color.");
@@ -2134,6 +2767,8 @@ export function evaluateInvariants(state: AppState): string[] {
         !isRewardCategory(reward.category) ||
         !reward.icon ||
         !isRewardRepeatMode(reward.repeatMode) ||
+        !reward.updatedAt ||
+        reward.version < 1 ||
         reward.redemptionHistory.some((entry) => !entry) ||
         (reward.repeatMode === "multi" && (reward.repeatConfig?.maxRedemptions ?? 0) <= 0) ||
         (reward.repeatMode === "cycle" &&
@@ -2154,7 +2789,9 @@ export function evaluateInvariants(state: AppState): string[] {
         companion.cleanliness < 0 ||
         companion.cleanliness > 100 ||
         companion.mood < 0 ||
-        companion.mood > 100,
+        companion.mood > 100 ||
+        !companion.updatedAt ||
+        companion.version < 1,
     )
   ) {
     violations.push("Pet companions must reference a valid catalog pet and keep all need values within range.");

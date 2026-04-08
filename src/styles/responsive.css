@@ -29,6 +29,10 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .height-hub-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .pet-action-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -160,6 +164,9 @@
   .reading-toolbar,
   .reading-hero,
   .interest-hero,
+  .height-assess-grid,
+  .height-checkin-summary-grid,
+  .height-form-grid,
   .reading-detail-summary,
   .reading-detail-metrics,
   .reading-form-grid,
@@ -223,6 +230,8 @@
   .interest-filter-head,
   .interest-monthly-head,
   .interest-class-head,
+  .height-subhead,
+  .height-card-head,
   .interest-record-row,
   .more-info-row,
   .reading-book-head,
@@ -291,6 +300,7 @@
   .interest-class-card,
   .interest-empty-card,
   .more-feature-card,
+  .height-card,
   .more-search-empty {
     border-radius: 24px;
   }
@@ -332,6 +342,7 @@
   .help-hero,
   .more-hero,
   .interest-hero,
+  .height-hero,
   .reading-hero,
   .pet-shop-card,
   .pet-showcase,
@@ -660,6 +671,7 @@
   .interest-primary-button,
   .interest-empty-action,
   .interest-record-button,
+  .height-primary-button,
   .interest-filter-reset {
     width: 100%;
   }
@@ -704,6 +716,10 @@
   }
 
   .more-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .height-hub-grid {
     grid-template-columns: 1fr;
   }
 
@@ -912,5 +928,21 @@
   .wish-icon-button {
     min-height: 54px;
     font-size: 24px;
+  }
+}
+
+@media (max-width: 980px) {
+  .sync-auth-actions,
+  .sync-run-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .sync-status-strip,
+  .sync-auth-grid,
+  .sync-auth-actions,
+  .sync-run-actions {
+    grid-template-columns: 1fr;
   }
 }

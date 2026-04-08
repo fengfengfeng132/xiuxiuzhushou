@@ -817,3 +817,76 @@
   border: 1px solid rgba(240, 143, 29, 0.18);
   background: rgba(255, 249, 236, 0.96);
 }
+
+.sync-modal-card {
+  width: min(620px, calc(100vw - 24px));
+  display: grid;
+  gap: 14px;
+}
+
+.sync-status-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.sync-status-strip > div {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(18, 49, 100, 0.08);
+  background: rgba(247, 251, 255, 0.85);
+}
+
+.sync-status-strip strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.sync-status-strip small {
+  color: var(--muted);
+  word-break: break-all;
+}
+
+.sync-auth-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.sync-auth-actions,
+.sync-run-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.sync-auth-actions {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.sync-run-actions {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.sync-session-card {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(79, 124, 255, 0.16);
+  background: rgba(247, 251, 255, 0.84);
+}
+
+.sync-session-card h3 {
+  margin: 0;
+  color: var(--ink);
+}
+
+.sync-session-card p,
+.sync-status-message {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}

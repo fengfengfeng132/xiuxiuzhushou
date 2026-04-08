@@ -18,6 +18,7 @@ export type PetInteractionId = "feed" | "bathe" | "park" | "sleep";
 export type RewardCategory = "toy" | "food" | "activity" | "electronics" | "books" | "privilege" | "other";
 export type RewardRepeatMode = "single" | "multi" | "cycle" | "forever";
 export type RewardResetPeriod = "daily" | "weekly" | "monthly";
+export type SyncEntityType = "state" | "plan" | "habit" | "reward" | "pet";
 
 export interface Profile {
   id: string;
@@ -36,6 +37,9 @@ export interface StudyPlan {
   status: PlanStatus;
   createdAt: string;
   completedAt: string | null;
+  updatedAt: string;
+  version: number;
+  deletedAt: string | null;
   excludedDateKeys: string[];
   completionRecords: PlanCompletionRecord[];
 }
@@ -67,6 +71,9 @@ export interface Habit {
   icon: string;
   color: string;
   createdAt: string;
+  updatedAt: string;
+  version: number;
+  deletedAt: string | null;
   status: HabitStatus;
   completions: Record<string, number>;
 }
@@ -85,6 +92,9 @@ export interface Reward {
     resetPeriod: RewardResetPeriod | null;
     redemptionsPerPeriod: number | null;
   } | null;
+  updatedAt: string;
+  version: number;
+  deletedAt: string | null;
   redeemedCount: number;
   redemptionHistory: string[];
 }
@@ -105,12 +115,34 @@ export interface OwnedPet {
   definitionId: string;
   profileId: string;
   adoptedAt: string;
+  updatedAt: string;
+  version: number;
+  deletedAt: string | null;
   intimacy: number;
   satiety: number;
   cleanliness: number;
   mood: number;
   lastInteractionId: PetInteractionId | null;
   lastInteractionAt: string | null;
+}
+
+export interface SyncPendingOperation {
+  id: string;
+  deviceId: string;
+  sequence: number;
+  entityType: SyncEntityType;
+  entityId: string | null;
+  action: string;
+  payload: unknown;
+  createdAt: string;
+}
+
+export interface SyncState {
+  schemaVersion: number;
+  deviceId: string;
+  lastMutationSequence: number;
+  lastSyncedAt: string | null;
+  pendingOps: SyncPendingOperation[];
 }
 
 export interface PetCenterState {
@@ -172,6 +204,7 @@ export interface AppState {
   pets: PetCenterState;
   starTransactions: StarTransaction[];
   activity: ActivityEntry[];
+  sync: SyncState;
   meta: {
     nextId: number;
     lastUpdatedAt: string;
@@ -260,4 +293,11 @@ export interface RewardRedeemSummary {
   shortfall: number;
   remainingLabel: string;
   blockedReason: string | null;
+}
+
+export interface SyncMergeResult {
+  mergedState: AppState;
+  remoteWins: number;
+  localWins: number;
+  conflicts: string[];
 }

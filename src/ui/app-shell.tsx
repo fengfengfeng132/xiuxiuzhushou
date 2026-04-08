@@ -1,6 +1,7 @@
 ﻿import type { DragEvent, FormEvent, JSX } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
+  acknowledgeSyncedOperations,
   addDefaultHabits,
   addPlan,
   adoptPet,
@@ -19,6 +20,8 @@ import {
   isPlanCompletedForDate,
   isPlanScheduledForDate,
   interactWithPet,
+  markStateMutation,
+  mergeStateForSync,
   redeemReward,
   switchActivePet,
   summarizeState,
@@ -35,11 +38,40 @@ import {
 import {
   loadAppState,
   loadDashboardTabPreference,
+  loadOrCreateSyncDeviceId,
   resetAppState,
   saveAppState,
   saveDashboardTabPreference,
   type DashboardTab,
 } from "../persistence/storage.js";
+import {
+  fetchRemoteSyncSnapshot,
+  pushRemoteSyncSnapshot,
+  refreshSupabaseSession,
+  signInSupabaseWithPassword,
+  signUpSupabaseWithPassword,
+  type SupabaseSyncConfig,
+} from "../persistence/supabase-sync.js";
+import {
+  loadSyncAccountSession,
+  loadSyncAccountSettings,
+  saveSyncAccountSession,
+  saveSyncAccountSettings,
+  type SyncAccountSession,
+  type SyncAccountSettings,
+} from "../persistence/sync-storage.js";
+import {
+  loadHeightManagementState,
+  resetHeightManagementState,
+  saveHeightManagementState,
+  type HeightManagementState,
+} from "../persistence/height-storage.js";
+import {
+  loadMorningReadingState,
+  resetMorningReadingState,
+  saveMorningReadingState,
+  type MorningReadingState,
+} from "../persistence/morning-reading-storage.js";
 import {
   loadInterestClassState,
   resetInterestClassState,
@@ -103,7 +135,9 @@ import type {
 } from "./app-types.js";
 import { HabitBoard, HabitCheckInModal, HabitManagementScreen, HabitModal, HabitStatisticsScreen } from "./habits/habits-module.js";
 import { HelpCenterScreen } from "./help/help-center-screen.js";
+import { HeightManagementScreen } from "./height/height-management-screen.js";
 import { HomeScreen } from "./home/home-screen.js";
+import { SyncAccountModal } from "./home/sync-account-modal.js";
 import {
   InterestClassModal,
   InterestClassRecordModal,
@@ -116,6 +150,7 @@ import {
   type InterestClassRecordDraft,
 } from "./interest/interest-class-screen.js";
 import { MoreFeaturesScreen } from "./more-features/more-features-screen.js";
+import { MorningReadingScreen } from "./morning-reading/morning-reading-screen.js";
 import { PetCenterScreen } from "./pets/pet-center-screen.js";
 import { AchievementSystemScreen } from "./points/achievement-system-screen.js";
 import { PointsCenterScreen } from "./points/points-center-screen.js";
@@ -248,6 +283,12 @@ function AppShell(): JSX.Element {
   const [habitDraft, setHabitDraft] = useState<HabitDraft>(INITIAL_HABIT_DRAFT);
   const [wishDraft, setWishDraft] = useState<WishDraft>(createInitialWishDraft());
   const [notice, setNotice] = useState("本地数据已加载。");
+  const [syncModalOpen, setSyncModalOpen] = useState(false);
+  const [syncSettings, setSyncSettings] = useState<SyncAccountSettings>(() => loadSyncAccountSettings());
+  const [syncPassword, setSyncPassword] = useState("");
+  const [syncSession, setSyncSession] = useState<SyncAccountSession | null>(() => loadSyncAccountSession());
+  const [syncBusy, setSyncBusy] = useState(false);
+  const [syncStatusMessage, setSyncStatusMessage] = useState("尚未开始同步。");
   const [activeTab, setActiveTab] = useState<DashboardTab>(() => loadDashboardTabPreference());
   const [screen, setScreen] = useState<Screen>("home");
   const [quickCompleteDraft, setQuickCompleteDraft] = useState<QuickCompleteDraft>(INITIAL_QUICK_COMPLETE_DRAFT);
@@ -257,6 +298,8 @@ function AppShell(): JSX.Element {
   const [habitTypeMenuOpen, setHabitTypeMenuOpen] = useState(false);
   const [habitSearch, setHabitSearch] = useState("");
   const [moreFeaturesSearch, setMoreFeaturesSearch] = useState("");
+  const [heightState, setHeightState] = useState<HeightManagementState>(() => loadHeightManagementState());
+  const [morningReadingState, setMorningReadingState] = useState<MorningReadingState>(() => loadMorningReadingState());
   const [interestState, setInterestState] = useState<InterestClassState>(() => loadInterestClassState());
   const [interestClassModalOpen, setInterestClassModalOpen] = useState(false);
   const [interestRecordModalOpen, setInterestRecordModalOpen] = useState(false);
@@ -291,6 +334,8 @@ function AppShell(): JSX.Element {
   const quickCompleteFileInputRef = useRef<HTMLInputElement | null>(null);
   const aiPlanFileInputRef = useRef<HTMLInputElement | null>(null);
   const habitTypeRef = useRef<HTMLDivElement | null>(null);
+  const stateRef = useRef<AppState>(state);
+  const [deviceId] = useState(() => loadOrCreateSyncDeviceId());
 
   const today = currentDateKey();
   const activeHabits = state.habits.filter((habit) => habit.status === "active");
@@ -396,8 +441,25 @@ function AppShell(): JSX.Element {
   const readingDetailRecords = readingDetailBook ? readingRecords.filter((record) => record.bookId === readingDetailBook.id) : [];
 
   useEffect(() => {
+    stateRef.current = state;
     saveAppState(state);
   }, [state]);
+
+  useEffect(() => {
+    saveSyncAccountSettings(syncSettings);
+  }, [syncSettings]);
+
+  useEffect(() => {
+    saveSyncAccountSession(syncSession);
+  }, [syncSession]);
+
+  useEffect(() => {
+    saveHeightManagementState(heightState);
+  }, [heightState]);
+
+  useEffect(() => {
+    saveMorningReadingState(morningReadingState);
+  }, [morningReadingState]);
 
   useEffect(() => {
     saveInterestClassState(interestState);
@@ -601,6 +663,14 @@ function AppShell(): JSX.Element {
 
   function openInterestClass(): void {
     setScreen("interest-class");
+  }
+
+  function openHeightManagement(): void {
+    setScreen("height-management");
+  }
+
+  function openMorningReading(): void {
+    setScreen("morning-reading");
   }
 
   function closeInterestClassModal(): void {
@@ -1522,6 +1592,8 @@ function AppShell(): JSX.Element {
     setQuickCompleteDraft(INITIAL_QUICK_COMPLETE_DRAFT);
     setHabitDraft(INITIAL_HABIT_DRAFT);
     setWishDraft(createInitialWishDraft());
+    setHeightState(resetHeightManagementState());
+    setMorningReadingState(resetMorningReadingState());
     setInterestState(resetInterestClassState());
     setInterestClassModalOpen(false);
     setInterestRecordModalOpen(false);
@@ -1556,12 +1628,203 @@ function AppShell(): JSX.Element {
     setPlanDeleteModalOpen(false);
     setActiveTimerPlanId(null);
     setWishModalOpen(false);
+    setSyncModalOpen(false);
     setHabitCheckInDraft(INITIAL_HABIT_CHECKIN_DRAFT);
     setNotice("本地状态已重置。");
   }
 
   function openFutureFlow(message: string): void {
     setNotice(message);
+  }
+
+  function updateSyncSettings(field: keyof SyncAccountSettings, value: string): void {
+    setSyncSettings((current) => ({ ...current, [field]: value }));
+  }
+
+  function openSyncAccountModal(): void {
+    setSyncModalOpen(true);
+  }
+
+  function closeSyncAccountModal(): void {
+    setSyncModalOpen(false);
+  }
+
+  function resolveSyncConfig(): SupabaseSyncConfig {
+    const config: SupabaseSyncConfig = {
+      supabaseUrl: syncSettings.supabaseUrl.trim(),
+      supabaseAnonKey: syncSettings.supabaseAnonKey.trim(),
+    };
+
+    if (!config.supabaseUrl) {
+      throw new Error("请先填写 Supabase URL。");
+    }
+
+    if (!config.supabaseAnonKey) {
+      throw new Error("请先填写 Supabase anon key。");
+    }
+
+    return config;
+  }
+
+  function resolveSyncSession(): SyncAccountSession {
+    if (!syncSession) {
+      throw new Error("请先登录同步账号。");
+    }
+    return syncSession;
+  }
+
+  function formatSyncError(error: unknown): string {
+    if (error instanceof Error && error.message) {
+      return error.message;
+    }
+    return "同步请求失败，请稍后重试。";
+  }
+
+  async function runSyncAction(actionLabel: string, task: () => Promise<string>): Promise<void> {
+    if (syncBusy) {
+      return;
+    }
+
+    setSyncBusy(true);
+    setSyncStatusMessage(`${actionLabel}进行中...`);
+    try {
+      const message = await task();
+      setSyncStatusMessage(message);
+      setNotice(message);
+    } catch (error) {
+      const message = formatSyncError(error);
+      setSyncStatusMessage(`${actionLabel}失败：${message}`);
+      setNotice(`${actionLabel}失败：${message}`);
+    } finally {
+      setSyncBusy(false);
+    }
+  }
+
+  async function handleSyncSignIn(): Promise<void> {
+    await runSyncAction("登录", async () => {
+      const config = resolveSyncConfig();
+      const session = await signInSupabaseWithPassword(config, syncSettings.email, syncPassword);
+      setSyncSession(session);
+      setSyncSettings((current) => ({ ...current, email: session.email }));
+      setSyncPassword("");
+      return `已登录 ${session.email}。`;
+    });
+  }
+
+  async function handleSyncSignUp(): Promise<void> {
+    await runSyncAction("注册", async () => {
+      const config = resolveSyncConfig();
+      const result = await signUpSupabaseWithPassword(config, syncSettings.email, syncPassword);
+      setSyncPassword("");
+      if (result.session) {
+        setSyncSession(result.session);
+        setSyncSettings((current) => ({ ...current, email: result.session?.email ?? current.email }));
+        return `注册并登录成功：${result.session.email}`;
+      }
+
+      return result.needsEmailConfirmation ? "注册成功，请先在邮箱中确认账号后再登录。" : "注册完成，请继续登录。";
+    });
+  }
+
+  async function handleSyncRefreshSession(): Promise<void> {
+    await runSyncAction("刷新会话", async () => {
+      const config = resolveSyncConfig();
+      const session = resolveSyncSession();
+      const refreshed = await refreshSupabaseSession(config, session);
+      setSyncSession(refreshed);
+      return `会话已刷新，账号 ${refreshed.email}`;
+    });
+  }
+
+  async function handleSyncPushLocal(): Promise<void> {
+    await runSyncAction("上传本地", async () => {
+      const config = resolveSyncConfig();
+      const session = resolveSyncSession();
+      const snapshot = stateRef.current;
+      const operationIds = snapshot.sync.pendingOps.map((pendingOp) => pendingOp.id);
+      const syncedAt = new Date().toISOString();
+      const pushed = await pushRemoteSyncSnapshot(config, session, snapshot, syncedAt);
+      setSyncSession(pushed.session);
+      setState((current) =>
+        operationIds.length > 0
+          ? acknowledgeSyncedOperations(current, operationIds, syncedAt)
+          : {
+              ...current,
+              sync: {
+                ...current.sync,
+                lastSyncedAt: syncedAt,
+              },
+            },
+      );
+      return operationIds.length > 0 ? `本地数据已上传，已确认 ${operationIds.length} 条待同步操作。` : "本地数据已上传到云端。";
+    });
+  }
+
+  async function handleSyncPullRemote(): Promise<void> {
+    await runSyncAction("下载云端", async () => {
+      const config = resolveSyncConfig();
+      const session = resolveSyncSession();
+      const fetched = await fetchRemoteSyncSnapshot(config, session);
+      setSyncSession(fetched.session);
+      if (!fetched.snapshot) {
+        return "云端还没有可下载的数据。";
+      }
+      const remoteSnapshot = fetched.snapshot;
+
+      const preview = mergeStateForSync(stateRef.current, remoteSnapshot.state);
+      setState((current) => mergeStateForSync(current, remoteSnapshot.state).mergedState);
+      return `云端合并完成：远端更新 ${preview.remoteWins} 项，本地保留 ${preview.localWins} 项。`;
+    });
+  }
+
+  async function handleSyncBidirectional(): Promise<void> {
+    await runSyncAction("双向同步", async () => {
+      const config = resolveSyncConfig();
+      const session = resolveSyncSession();
+      const fetched = await fetchRemoteSyncSnapshot(config, session);
+      let activeSession = fetched.session;
+
+      if (!fetched.snapshot) {
+        const localState = stateRef.current;
+        const localOperationIds = localState.sync.pendingOps.map((pendingOp) => pendingOp.id);
+        const syncedAt = new Date().toISOString();
+        const pushed = await pushRemoteSyncSnapshot(config, activeSession, localState, syncedAt);
+        activeSession = pushed.session;
+        setSyncSession(activeSession);
+        setState((current) =>
+          localOperationIds.length > 0
+            ? acknowledgeSyncedOperations(current, localOperationIds, syncedAt)
+            : {
+                ...current,
+                sync: {
+                  ...current.sync,
+                  lastSyncedAt: syncedAt,
+                },
+              },
+        );
+        return "云端为空，已把本地数据初始化到云端。";
+      }
+      const remoteSnapshot = fetched.snapshot;
+
+      const mergePreview = mergeStateForSync(stateRef.current, remoteSnapshot.state);
+      const operationIds = mergePreview.mergedState.sync.pendingOps.map((pendingOp) => pendingOp.id);
+      const syncedAt = new Date().toISOString();
+      const pushed = await pushRemoteSyncSnapshot(config, activeSession, mergePreview.mergedState, syncedAt);
+      activeSession = pushed.session;
+      setSyncSession(activeSession);
+      setState((current) => {
+        const merged = mergeStateForSync(current, remoteSnapshot.state).mergedState;
+        return acknowledgeSyncedOperations(merged, operationIds, syncedAt);
+      });
+      return `双向同步完成：远端更新 ${mergePreview.remoteWins} 项，本地保留 ${mergePreview.localWins} 项。`;
+    });
+  }
+
+  function handleSyncSignOut(): void {
+    setSyncSession(null);
+    setSyncPassword("");
+    setSyncStatusMessage("已退出同步账号。");
+    setNotice("已退出同步账号。");
   }
 
   function handleEditPlanFromDetail(_plan: StudyPlan): void {
@@ -1781,14 +2044,18 @@ function AppShell(): JSX.Element {
       return;
     }
 
-    setState((current) => ({
-      ...current,
-      plans: applyManagedPlanOrder(current.plans, planManagementDateKey, planManagementOrderIds),
-      meta: {
-        ...current.meta,
-        lastUpdatedAt: new Date().toISOString(),
-      },
-    }));
+    setState((current) => {
+      const now = new Date().toISOString();
+      return markStateMutation(
+        {
+          ...current,
+          plans: applyManagedPlanOrder(current.plans, planManagementDateKey, planManagementOrderIds),
+        },
+        "plan.reorder-for-date",
+        { dateKey: planManagementDateKey, planIds: planManagementOrderIds },
+        now,
+      );
+    });
     setSelectedDateKey(planManagementDateKey);
     setScreen("home");
     setActiveTab("plans");
@@ -2186,6 +2453,14 @@ function AppShell(): JSX.Element {
       openReadingJourney();
       return;
     }
+    if (card.action === "morning-reading") {
+      openMorningReading();
+      return;
+    }
+    if (card.action === "height-management") {
+      openHeightManagement();
+      return;
+    }
     if (card.action === "interest-class") {
       openInterestClass();
       return;
@@ -2486,6 +2761,30 @@ function AppShell(): JSX.Element {
       return <HelpCenterScreen onBack={handleBackToHome} onFeatureAction={handleHelpFeatureAction} />;
     }
 
+    if (screen === "height-management") {
+      return (
+        <HeightManagementScreen
+          state={heightState}
+          today={today}
+          onBack={handleBackToMoreFeatures}
+          onChangeState={setHeightState}
+          onShowNotice={setNotice}
+        />
+      );
+    }
+
+    if (screen === "morning-reading") {
+      return (
+        <MorningReadingScreen
+          state={morningReadingState}
+          today={today}
+          onBack={handleBackToHome}
+          onChangeState={setMorningReadingState}
+          onShowNotice={setNotice}
+        />
+      );
+    }
+
     if (screen === "more-features") {
       return (
         <MoreFeaturesScreen
@@ -2588,7 +2887,7 @@ function AppShell(): JSX.Element {
         recentActivity={recentActivity}
         planBoard={planBoard}
         habitBoard={habitBoard}
-        onProfileClick={() => openFutureFlow("多档案切换仍在开发中。")}
+        onProfileClick={openSyncAccountModal}
         onReset={handleReset}
         onMetricCardAction={handleMetricCardAction}
         onTabChange={handleTabChange}
@@ -2702,6 +3001,26 @@ function AppShell(): JSX.Element {
         onSelectIcon={handleSelectWishIcon}
         onSelectCustomImage={handleWishCustomImageSelection}
         onClearCustomImage={clearWishCustomImage}
+      />
+      <SyncAccountModal
+        open={syncModalOpen}
+        settings={syncSettings}
+        password={syncPassword}
+        session={syncSession}
+        deviceId={deviceId}
+        pendingOpsCount={state.sync.pendingOps.length}
+        isBusy={syncBusy}
+        statusMessage={syncStatusMessage}
+        onClose={closeSyncAccountModal}
+        onUpdateSettings={updateSyncSettings}
+        onPasswordChange={setSyncPassword}
+        onSignIn={() => void handleSyncSignIn()}
+        onSignUp={() => void handleSyncSignUp()}
+        onRefreshSession={() => void handleSyncRefreshSession()}
+        onPush={() => void handleSyncPushLocal()}
+        onPull={() => void handleSyncPullRemote()}
+        onBidirectionalSync={() => void handleSyncBidirectional()}
+        onSignOut={handleSyncSignOut}
       />
       {notice ? <div className="toast">{notice}</div> : null}
     </div>
