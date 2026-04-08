@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   addPlan,
+  adoptPet,
   calculateStarBalance,
   checkInHabit,
   createHabit,
@@ -12,6 +13,7 @@ import {
   deserializeState,
   evaluateInvariants,
   isPlanScheduledForDate,
+  recyclePet,
   redeemReward,
   serializeState,
   type AppState,
@@ -144,6 +146,38 @@ function runHabitScenario(baseState: AppState): { result: ScenarioResult; state:
   };
 }
 
+function runPetRecycleScenario(baseState: AppState): { result: ScenarioResult; state: AppState } {
+  const fundedState = deserializeState(serializeState(baseState));
+  fundedState.starTransactions.push({
+    id: "stars_pet_test_fund",
+    amount: 80,
+    reason: "宠物回收测试补充星星",
+    createdAt: FIXED_NOW,
+  });
+
+  const beforeAdoptBalance = calculateStarBalance(fundedState);
+  const adoptMutation = adoptPet(fundedState, "pet_teddy", FIXED_NOW);
+  const afterAdoptBalance = calculateStarBalance(adoptMutation.nextState);
+  const recycleMutation = recyclePet(adoptMutation.nextState, "pet_teddy", FIXED_NOW);
+  const afterRecycleBalance = calculateStarBalance(recycleMutation.nextState);
+
+  assert(adoptMutation.ok, "Pet adoption should succeed with enough balance.");
+  assert(recycleMutation.ok, "Owned pet recycling should succeed.");
+  assert(afterAdoptBalance === beforeAdoptBalance - 50, "Pet adoption should deduct 50 stars.");
+  assert(afterRecycleBalance === afterAdoptBalance + 25, "Pet recycling should refund 25 stars.");
+  assert(recycleMutation.nextState.pets.companions.length === 0, "Recycled pet should be removed from owned companions.");
+  assert(recycleMutation.nextState.pets.activePetDefinitionId === null, "Active pet should clear after recycling the only companion.");
+
+  return {
+    result: {
+      id: "pet-recycle-refund",
+      passed: true,
+      details: "Pet recycle removes the owned pet and refunds the configured stars.",
+    },
+    state: recycleMutation.nextState,
+  };
+}
+
 function runRedeemScenario(baseState: AppState): { result: ScenarioResult; state: AppState } {
   const beforeBalance = calculateStarBalance(baseState);
   const mutation = redeemReward(baseState, "reward_movie", FIXED_NOW);
@@ -199,11 +233,15 @@ async function main(): Promise<void> {
     scenarioResults.push(habitScenario.result);
     await writeJson("state-after-habit.json", habitScenario.state);
 
-    const redeemScenario = runRedeemScenario(habitScenario.state);
+    const petRecycleScenario = runPetRecycleScenario(habitScenario.state);
+    scenarioResults.push(petRecycleScenario.result);
+    await writeJson("state-after-pet-recycle.json", petRecycleScenario.state);
+
+    const redeemScenario = runRedeemScenario(petRecycleScenario.state);
     scenarioResults.push(redeemScenario.result);
     await writeJson("state-after-redeem.json", redeemScenario.state);
 
-    scenarioResults.push(runInsufficientBalanceScenario(redeemScenario.state));
+    scenarioResults.push(runInsufficientBalanceScenario(defaultScenario.state));
 
     await writeJson("scenario-results.json", scenarioResults);
     await writeJson("verdict.json", {

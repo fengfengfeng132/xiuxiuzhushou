@@ -190,6 +190,7 @@ export interface ActivityEntry {
     | "pet-adopted"
     | "pet-switched"
     | "pet-interacted"
+    | "pet-recycled"
     | "system";
   message: string;
   createdAt: string;

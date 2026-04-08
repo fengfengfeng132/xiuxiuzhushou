@@ -32,7 +32,7 @@ Provide a dedicated page where the user can spend local star points to adopt a f
   - large pet visual
   - pet name
   - short personality description
-  - orange cost chip such as `100 星星领养`
+  - orange cost chip such as `50 星星领养`
   - blue `领养` button
 
 ## Interaction Notes

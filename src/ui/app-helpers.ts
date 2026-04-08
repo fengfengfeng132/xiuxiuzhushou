@@ -157,6 +157,8 @@ export function formatActivityKind(kind: ActivityEntry["kind"]): string {
       return "切换宠物";
     case "pet-interacted":
       return "宠物互动";
+    case "pet-recycled":
+      return "回收宠物";
     default:
       return "系统";
   }

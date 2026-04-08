@@ -22,6 +22,8 @@ import {
   interactWithPet,
   markStateMutation,
   mergeStateForSync,
+  PET_RECYCLE_REFUND_STARS,
+  recyclePet,
   redeemReward,
   switchActivePet,
   summarizeState,
@@ -2423,6 +2425,15 @@ function AppShell(): JSX.Element {
     applyMutation(switchActivePet(state, definitionId), openPetCenter);
   }
 
+  function handleRecyclePet(definitionId: string): void {
+    const definition = getPetDefinition(definitionId);
+    const petName = definition?.name ?? "这只宠物";
+    if (!window.confirm(`确定回收 ${petName} 吗？回收后将返还 ${PET_RECYCLE_REFUND_STARS} 颗星星。`)) {
+      return;
+    }
+    applyMutation(recyclePet(state, definitionId), openPetCenter);
+  }
+
   function handlePetInteraction(actionId: PetInteractionAction["id"]): void {
     applyMutation(interactWithPet(state, actionId));
   }
@@ -2740,6 +2751,7 @@ function AppShell(): JSX.Element {
           onBack={handleBackToHome}
           onAdoptPet={handleAdoptPet}
           onSwitchPet={handleSwitchPet}
+          onRecyclePet={handleRecyclePet}
           onInteract={handlePetInteraction}
         />
       );

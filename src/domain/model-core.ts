@@ -3,6 +3,7 @@ import {
   HABIT_FREQUENCY_OPTIONS,
   PET_CATALOG,
   PET_INTERACTION_ACTIONS,
+  PET_RECYCLE_REFUND_STARS,
   PET_LEVEL_TIERS,
   STAR_RULES,
   VERSION,
@@ -905,7 +906,8 @@ function normalizeActivity(value: unknown, fallbackTime: string): ActivityEntry 
     value.kind === "reward-redeemed" ||
     value.kind === "pet-adopted" ||
     value.kind === "pet-switched" ||
-    value.kind === "pet-interacted"
+    value.kind === "pet-interacted" ||
+    value.kind === "pet-recycled"
       ? value.kind
       : "system";
   const message = typeof value.message === "string" ? value.message : "";
@@ -1980,6 +1982,56 @@ export function switchActivePet(state: AppState, definitionId: string, now: stri
     ok: true,
     nextState,
     message: `已切换到 ${definition.name}。`,
+  };
+}
+
+export function recyclePet(state: AppState, definitionId: string, now: string = new Date().toISOString()): CommandResult {
+  const definition = findPetDefinition(definitionId);
+  if (!definition) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "未找到这只电子宠物。",
+    };
+  }
+
+  const existingCompanion = state.pets.companions.find((companion) => companion.definitionId === definitionId);
+  if (!existingCompanion) {
+    return {
+      ok: false,
+      nextState: state,
+      message: `请先领养 ${definition.name}。`,
+    };
+  }
+
+  const nextState = cloneState(state);
+  nextState.pets.companions = nextState.pets.companions.filter((companion) => companion.definitionId !== definitionId);
+
+  let switchedToName: string | null = null;
+  if (nextState.pets.activePetDefinitionId === definitionId) {
+    const nextActiveCompanion = nextState.pets.companions[0] ?? null;
+    nextState.pets.activePetDefinitionId = nextActiveCompanion ? nextActiveCompanion.definitionId : null;
+    switchedToName = nextActiveCompanion ? findPetDefinition(nextActiveCompanion.definitionId)?.name ?? null : null;
+  }
+
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "pet",
+      entityId: definitionId,
+      action: "pet.recycle",
+      payload: { refundStars: PET_RECYCLE_REFUND_STARS },
+    },
+    now,
+  );
+  pushTransaction(nextState, PET_RECYCLE_REFUND_STARS, `回收电子宠物：${definition.name}`, now);
+  pushActivity(nextState, "pet-recycled", `回收电子宠物：${definition.name}，返还 ${PET_RECYCLE_REFUND_STARS} 星星`, now);
+
+  const switchedSuffix = switchedToName ? `，当前陪伴已切换到 ${switchedToName}` : nextState.pets.activePetDefinitionId === null ? "，当前暂无陪伴宠物" : "";
+  return {
+    ok: true,
+    nextState,
+    message: `已回收 ${definition.name}，返还 ${PET_RECYCLE_REFUND_STARS} 星星${switchedSuffix}。`,
   };
 }
 

@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactElement } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
+  PET_RECYCLE_REFUND_STARS,
   PET_CATALOG,
   PET_INTERACTION_ACTIONS,
   PET_LEVEL_TIERS,
@@ -21,6 +22,7 @@ interface PetCenterScreenProps {
   onBack: () => void;
   onAdoptPet: (definitionId: string) => void;
   onSwitchPet: (definitionId: string) => void;
+  onRecyclePet: (definitionId: string) => void;
   onInteract: (actionId: "feed" | "bathe" | "park" | "sleep") => void;
 }
 
@@ -57,6 +59,7 @@ export function PetCenterScreen({
   onBack,
   onAdoptPet,
   onSwitchPet,
+  onRecyclePet,
   onInteract,
 }: PetCenterScreenProps) {
   const interactionCost = 1;
@@ -280,20 +283,27 @@ export function PetCenterScreen({
                     </div>
                     <div className="pet-roster-side">
                       <span className="pet-roster-cost">{isOwned ? "已拥有" : `-${definition.cost} 颗星星`}</span>
-                      <button
-                        type="button"
-                        className="pet-roster-button"
-                        onClick={() => {
-                          if (isOwned) {
-                            onSwitchPet(definition.id);
-                            return;
-                          }
-                          onAdoptPet(definition.id);
-                        }}
-                        disabled={isActive || (!isOwned && !canAdopt)}
-                      >
-                        {isActive ? "当前陪伴" : isOwned ? "切换" : canAdopt ? "领养" : "星星不足"}
-                      </button>
+                      <div className="pet-roster-actions">
+                        <button
+                          type="button"
+                          className="pet-roster-button"
+                          onClick={() => {
+                            if (isOwned) {
+                              onSwitchPet(definition.id);
+                              return;
+                            }
+                            onAdoptPet(definition.id);
+                          }}
+                          disabled={isActive || (!isOwned && !canAdopt)}
+                        >
+                          {isActive ? "当前陪伴" : isOwned ? "切换" : canAdopt ? "领养" : "星星不足"}
+                        </button>
+                        {isOwned ? (
+                          <button type="button" className="pet-roster-recycle-button" onClick={() => onRecyclePet(definition.id)}>
+                            回收 +{PET_RECYCLE_REFUND_STARS}
+                          </button>
+                        ) : null}
+                      </div>
                     </div>
                   </article>
                 );

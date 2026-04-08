@@ -59,6 +59,7 @@ Show the currently active pet, its growth progress, care metrics, and interactio
   - pet name
   - short description or owned summary
   - current state action such as `陪伴中` / `切换` / `领养`
+  - owned-pet recycle action such as `回收 +25`
   - visible star cost for unowned pets
 
 ## Interaction Notes
@@ -66,6 +67,7 @@ Show the currently active pet, its growth progress, care metrics, and interactio
 - Interaction buttons update only the local pet state and do not leave the page.
 - Switching to an already owned pet should not re-charge stars.
 - Adopting a new pet from the right-side list should deduct stars and make it active immediately.
+- Recycling an owned pet should remove it from the roster and refund `25` stars.
 
 ## States Required
 

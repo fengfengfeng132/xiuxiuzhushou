@@ -457,11 +457,12 @@ Acceptance notes:
 2. User sees the active pet stage, growth ladder, need cards, interaction actions, and the `更换宠物` list.
 3. User can choose one interaction such as `喂食`, `洗香香`, `去公园`, or `睡觉`.
 4. The app updates the active pet's local intimacy and need values without leaving the page.
-5. User can also switch to another already owned pet from the right-side list, or adopt another unowned pet if enough stars remain.
+5. User can also switch to another already owned pet from the right-side list, adopt another unowned pet if enough stars remain, or recycle an owned pet to return stars.
 
 Acceptance notes:
 - Switching to an already owned pet should not spend stars again.
 - Adopting another pet from the roster should both spend stars and make that pet active immediately.
+- Recycling an owned pet returns `25` stars and removes that pet from the owned list.
 
 ## Flow 16L: Open Usage Help Center
 

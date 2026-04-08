@@ -548,6 +548,24 @@
   gap: 8px;
 }
 
+.pet-roster-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pet-roster-recycle-button {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #ffe8ef;
+  color: #d54f79;
+  border: 1px solid rgba(213, 79, 121, 0.2);
+  font-weight: 700;
+}
+
 @keyframes pet-react-feed {
   0% {
     transform: scale(1) translateY(0);
