@@ -18,6 +18,8 @@ export type Screen =
   | "pet-center"
   | "help-center"
   | "more-features"
+  | "height-management"
+  | "morning-reading"
   | "interest-class"
   | "reading-journey"
   | "reading-book-detail"
@@ -216,6 +218,8 @@ export type MoreFeatureAction =
   | "pet-center"
   | "help-center"
   | "reading-journey"
+  | "morning-reading"
+  | "height-management"
   | "interest-class"
   | "home-habits"
   | "placeholder";

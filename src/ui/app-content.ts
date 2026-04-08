@@ -15,6 +15,12 @@ import type {
   WishDraft,
 } from "./app-types.js";
 
+declare const __APP_VERSION__: string;
+declare const __APP_COMMIT__: string;
+declare const __APP_BUILD_TIME__: string;
+declare const __APP_LAST_UPDATE__: string;
+declare const __APP_ENV_LABEL__: string;
+
 // Static UI content is isolated here so product-copy changes do not require opening the app shell.
 export function createInitialPlanDraft(dateKey: string = currentDateKey()): PlanDraft {
   return {
@@ -401,10 +407,9 @@ export const MORE_FEATURE_SECTIONS: MoreFeatureSection[] = [
         description: "科学高效的阅读学习方法",
         icon: "📖",
         accent: "#4f7cff",
-        action: "placeholder",
+        action: "morning-reading",
         keywords: ["337", "晨读", "阅读"],
         badge: "新功能",
-        message: "337 晨读页面还没开始实现，等你给截图后我可以继续接。",
       },
       {
         id: "listening",
@@ -630,10 +635,9 @@ export const MORE_FEATURE_SECTIONS: MoreFeatureSection[] = [
         description: "记录身高体重，追踪生长趋势",
         icon: "📏",
         accent: "#19b392",
-        action: "placeholder",
+        action: "height-management",
         keywords: ["身高", "体重", "成长"],
         badge: "新功能",
-        message: "身高管理页面还没单独实现，目前先保留在其他功能页。",
       },
       {
         id: "savings",
@@ -661,9 +665,9 @@ export const MORE_FEATURE_SECTIONS: MoreFeatureSection[] = [
 ];
 
 export const APP_INFO_ITEMS: AppInfoItem[] = [
-  { label: "版本号", value: "1.0.310" },
-  { label: "提交版本", value: "e6f8ba" },
-  { label: "构建时间", value: "2026/03/18" },
-  { label: "最后更新", value: "2026-03-18" },
-  { label: "环境", value: "生产环境" },
+  { label: "版本号", value: __APP_VERSION__ },
+  { label: "提交版本", value: __APP_COMMIT__ },
+  { label: "构建时间", value: __APP_BUILD_TIME__ },
+  { label: "最后更新", value: __APP_LAST_UPDATE__ },
+  { label: "环境", value: __APP_ENV_LABEL__ },
 ];
