@@ -1584,6 +1584,152 @@ export function createReward(state: AppState, input: CreateRewardInput, now: str
   };
 }
 
+export function updateReward(state: AppState, rewardId: string, input: CreateRewardInput, now: string = new Date().toISOString()): CommandResult {
+  const targetReward = state.rewards.find((reward) => reward.id === rewardId);
+  if (!targetReward) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "愿望不存在。",
+    };
+  }
+
+  const title = input.title.trim();
+  const description = typeof input.description === "string" ? input.description.trim().slice(0, 200) : "";
+  const cost = Math.round(Number(input.cost));
+  const icon = input.icon.trim();
+
+  if (!title) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "愿望名称不能为空。",
+    };
+  }
+
+  if (!isRewardCategory(input.category)) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "请选择有效的愿望分类。",
+    };
+  }
+
+  if (!isRewardRepeatMode(input.repeatMode)) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "请选择有效的兑换模式。",
+    };
+  }
+
+  if (!Number.isFinite(cost) || cost <= 0) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "需要多少星星必须是大于 0 的整数。",
+    };
+  }
+
+  if (!icon) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "请先选择一个愿望图标。",
+    };
+  }
+
+  const repeatConfig = normalizeRewardRepeatConfig(input.repeatConfig ?? {}, input.repeatMode);
+  if (input.repeatMode === "multi" && !repeatConfig?.maxRedemptions) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "多次兑换需要设置有效的兑换次数。",
+    };
+  }
+
+  if (input.repeatMode === "cycle" && (!repeatConfig?.resetPeriod || !repeatConfig.redemptionsPerPeriod)) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "循环愿望需要设置重置周期和每周期兑换次数。",
+    };
+  }
+
+  const nextState = cloneState(state);
+  const reward = nextState.rewards.find((item) => item.id === rewardId);
+  if (!reward) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "愿望不存在。",
+    };
+  }
+
+  reward.title = title;
+  reward.description = description;
+  reward.cost = cost;
+  reward.category = input.category;
+  reward.icon = icon;
+  reward.customImage = typeof input.customImage === "string" && input.customImage ? input.customImage : null;
+  reward.repeatMode = input.repeatMode;
+  reward.repeatConfig = repeatConfig;
+  touchRewardForMutation(reward, now);
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "reward",
+      entityId: reward.id,
+      action: "reward.update",
+      payload: {
+        title: reward.title,
+        cost: reward.cost,
+        category: reward.category,
+        repeatMode: reward.repeatMode,
+      },
+    },
+    now,
+  );
+  pushActivity(nextState, "system", `编辑愿望：${title}`, now);
+
+  return {
+    ok: true,
+    nextState,
+    message: `已更新愿望：${title}`,
+  };
+}
+
+export function deleteReward(state: AppState, rewardId: string, now: string = new Date().toISOString()): CommandResult {
+  const targetReward = state.rewards.find((reward) => reward.id === rewardId);
+  if (!targetReward) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "愿望不存在。",
+    };
+  }
+
+  const nextState = cloneState(state);
+  nextState.rewards = nextState.rewards.filter((reward) => reward.id !== rewardId);
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "reward",
+      entityId: rewardId,
+      action: "reward.delete",
+      payload: { rewardId },
+    },
+    now,
+  );
+  pushActivity(nextState, "system", `删除愿望：${targetReward.title}`, now);
+
+  return {
+    ok: true,
+    nextState,
+    message: `已删除愿望：${targetReward.title}`,
+  };
+}
+
 export function deletePlans(state: AppState, planIds: string[], now: string = new Date().toISOString()): CommandResult {
   const targetIds = [...new Set(planIds.map((planId) => planId.trim()).filter(Boolean))];
 

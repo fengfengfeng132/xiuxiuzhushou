@@ -7,8 +7,10 @@ import {
   calculateStarBalance,
   checkInHabit,
   createHabit,
+  createReward,
   createInitialState,
   currentDateKey,
+  deleteReward,
   deletePlansForDate,
   deserializeState,
   evaluateInvariants,
@@ -16,6 +18,7 @@ import {
   recyclePet,
   redeemReward,
   serializeState,
+  updateReward,
   type AppState,
 } from "../src/domain/model.js";
 
@@ -178,6 +181,62 @@ function runPetRecycleScenario(baseState: AppState): { result: ScenarioResult; s
   };
 }
 
+function runRewardManageScenario(baseState: AppState): { result: ScenarioResult; state: AppState } {
+  const createMutation = createReward(
+    baseState,
+    {
+      title: "测试愿望",
+      description: "用于验证编辑和删除流程。",
+      cost: 11,
+      category: "activity",
+      icon: "🎯",
+      repeatMode: "multi",
+      repeatConfig: { maxRedemptions: 3 },
+    },
+    FIXED_NOW,
+  );
+  const createdReward = createMutation.nextState.rewards.find((item) => item.title === "测试愿望");
+
+  assert(createMutation.ok, "Wish creation should succeed in reward management scenario.");
+  assert(Boolean(createdReward), "Created wish should exist.");
+
+  const updateMutation = updateReward(
+    createMutation.nextState,
+    createdReward!.id,
+    {
+      title: "测试愿望-已编辑",
+      description: "编辑后描述",
+      cost: 13,
+      category: "books",
+      icon: "📚",
+      repeatMode: "cycle",
+      repeatConfig: { resetPeriod: "weekly", redemptionsPerPeriod: 2 },
+    },
+    FIXED_NOW,
+  );
+  const updatedReward = updateMutation.nextState.rewards.find((item) => item.id === createdReward!.id);
+
+  assert(updateMutation.ok, "Wish update should succeed.");
+  assert(Boolean(updatedReward), "Updated wish should exist.");
+  assert(updatedReward!.title === "测试愿望-已编辑", "Wish title should be updated.");
+  assert(updatedReward!.cost === 13, "Wish cost should be updated.");
+  assert(updatedReward!.repeatMode === "cycle", "Wish repeat mode should be updated.");
+  assert(updatedReward!.repeatConfig?.redemptionsPerPeriod === 2, "Wish cycle limit should be updated.");
+
+  const deleteMutation = deleteReward(updateMutation.nextState, createdReward!.id, FIXED_NOW);
+  assert(deleteMutation.ok, "Wish delete should succeed.");
+  assert(!deleteMutation.nextState.rewards.some((item) => item.id === createdReward!.id), "Deleted wish should be removed.");
+
+  return {
+    result: {
+      id: "reward-manage-edit-delete",
+      passed: true,
+      details: "Wish edit keeps the same identity and delete removes the wish from list.",
+    },
+    state: deleteMutation.nextState,
+  };
+}
+
 function runRedeemScenario(baseState: AppState): { result: ScenarioResult; state: AppState } {
   const beforeBalance = calculateStarBalance(baseState);
   const mutation = redeemReward(baseState, "reward_movie", FIXED_NOW);
@@ -237,7 +296,11 @@ async function main(): Promise<void> {
     scenarioResults.push(petRecycleScenario.result);
     await writeJson("state-after-pet-recycle.json", petRecycleScenario.state);
 
-    const redeemScenario = runRedeemScenario(petRecycleScenario.state);
+    const rewardManageScenario = runRewardManageScenario(petRecycleScenario.state);
+    scenarioResults.push(rewardManageScenario.result);
+    await writeJson("state-after-reward-manage.json", rewardManageScenario.state);
+
+    const redeemScenario = runRedeemScenario(rewardManageScenario.state);
     scenarioResults.push(redeemScenario.result);
     await writeJson("state-after-redeem.json", redeemScenario.state);
 

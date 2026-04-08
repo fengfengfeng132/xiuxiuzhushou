@@ -14,6 +14,7 @@ import {
 
 interface WishModalProps {
   open: boolean;
+  mode: "create" | "edit";
   draft: WishDraft;
   canSubmit: boolean;
   onClose: () => void;
@@ -43,6 +44,7 @@ function renderModeHelper(draft: WishDraft): string {
 
 export function WishModal({
   open,
+  mode,
   draft,
   canSubmit,
   onClose,
@@ -60,6 +62,11 @@ export function WishModal({
   }
 
   const currentIconCategory = WISH_ICON_CATEGORIES.find((category) => category.value === draft.iconCategory) ?? WISH_ICON_CATEGORIES[0];
+  const isEditMode = mode === "edit";
+  const modalTitle = isEditMode ? "编辑愿望" : "添加我的愿望";
+  const modalSubtitle = isEditMode ? "修改你的愿望配置，保存后会直接更新到清单。" : "设定你想要的奖励，努力攒星星去实现吧！";
+  const submitLabel = isEditMode ? "保存修改" : "添加愿望";
+  const closeLabel = isEditMode ? "关闭编辑愿望弹窗" : "关闭添加愿望弹窗";
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -70,11 +77,11 @@ export function WishModal({
               ✨
             </span>
             <div>
-              <h2>添加我的愿望</h2>
-              <p>设定你想要的奖励，努力攒星星去实现吧！</p>
+              <h2>{modalTitle}</h2>
+              <p>{modalSubtitle}</p>
             </div>
           </div>
-          <button type="button" className="modal-close" onClick={onClose} aria-label="关闭添加愿望弹窗">
+          <button type="button" className="modal-close" onClick={onClose} aria-label={closeLabel}>
             ×
           </button>
         </div>
@@ -267,7 +274,7 @@ export function WishModal({
               取消
             </button>
             <button type="submit" className="modal-submit modal-submit-primary wish-submit-button" disabled={!canSubmit}>
-              添加愿望
+              {submitLabel}
             </button>
           </div>
         </form>

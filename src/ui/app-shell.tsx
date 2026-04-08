@@ -10,6 +10,7 @@ import {
   completePlan,
   createHabit,
   createReward,
+  deleteReward,
   deletePlansForDate,
   deletePlans,
   currentDateKey,
@@ -28,10 +29,12 @@ import {
   switchActivePet,
   summarizeState,
   updatePlan,
+  updateReward,
   type AppState,
   type Habit,
   type PlanCompletionAttachment,
   type PetInteractionAction,
+  type Reward,
   type RewardCategory,
   type RewardRepeatMode,
   type RewardResetPeriod,
@@ -276,6 +279,25 @@ function buildAiTrialReply(prompt: string, attachments: AiPlanAttachmentDraft[])
   return `${promptSummary}${attachmentSummary} 当前版本先保留对话草稿页，后续会把识别结果转换成可确认保存的学习计划。你也可以继续补充科目、频率、开始时间或时长。`;
 }
 
+function createWishDraftFromReward(reward: Reward): WishDraft {
+  const iconCategory = getWishIconCategory(reward.category);
+  const resolvedIcon = iconCategory.icons.includes(reward.icon) ? reward.icon : iconCategory.icons[0];
+  return {
+    iconCategory: reward.category,
+    icon: resolvedIcon,
+    customImage: reward.customImage,
+    customImageName: reward.customImage ? "已上传图片" : "",
+    title: reward.title,
+    description: reward.description,
+    category: reward.category,
+    cost: String(reward.cost),
+    repeatMode: reward.repeatMode,
+    maxRedemptions: String(reward.repeatConfig?.maxRedemptions ?? 5),
+    resetPeriod: reward.repeatConfig?.resetPeriod ?? "weekly",
+    redemptionsPerPeriod: String(reward.repeatConfig?.redemptionsPerPeriod ?? 1),
+  };
+}
+
 function AppShell(): JSX.Element {
   const [state, setState] = useState<AppState>(() => loadAppState());
   const [selectedDateKey, setSelectedDateKey] = useState<string>(() => currentDateKey());
@@ -299,6 +321,7 @@ function AppShell(): JSX.Element {
   const [quickCompleteDraft, setQuickCompleteDraft] = useState<QuickCompleteDraft>(INITIAL_QUICK_COMPLETE_DRAFT);
   const [habitModalOpen, setHabitModalOpen] = useState(false);
   const [wishModalOpen, setWishModalOpen] = useState(false);
+  const [editingWishId, setEditingWishId] = useState<string | null>(null);
   const [habitCheckInDraft, setHabitCheckInDraft] = useState<HabitCheckInDraft>(INITIAL_HABIT_CHECKIN_DRAFT);
   const [habitTypeMenuOpen, setHabitTypeMenuOpen] = useState(false);
   const [habitSearch, setHabitSearch] = useState("");
@@ -1147,12 +1170,26 @@ function AppShell(): JSX.Element {
   }
 
   function openWishModal(): void {
+    setEditingWishId(null);
     setWishDraft(createInitialWishDraft());
+    setWishModalOpen(true);
+  }
+
+  function openWishEditModal(rewardId: string): void {
+    const reward = state.rewards.find((item) => item.id === rewardId);
+    if (!reward) {
+      setNotice("愿望已不存在，无法编辑。");
+      return;
+    }
+
+    setEditingWishId(reward.id);
+    setWishDraft(createWishDraftFromReward(reward));
     setWishModalOpen(true);
   }
 
   function closeWishModal(): void {
     setWishModalOpen(false);
+    setEditingWishId(null);
     setWishDraft(createInitialWishDraft());
   }
 
@@ -2367,30 +2404,55 @@ function AppShell(): JSX.Element {
       return;
     }
 
-    applyMutation(
-      createReward(state, {
-        title,
-        description: wishDraft.description,
-        cost: parsedWishCost,
-        category: wishDraft.category,
-        icon: wishDraft.icon,
-        customImage: wishDraft.customImage,
-        repeatMode: wishDraft.repeatMode,
-        repeatConfig:
-          wishDraft.repeatMode === "multi"
+    const rewardInput = {
+      title,
+      description: wishDraft.description,
+      cost: parsedWishCost,
+      category: wishDraft.category,
+      icon: wishDraft.icon,
+      customImage: wishDraft.customImage,
+      repeatMode: wishDraft.repeatMode,
+      repeatConfig:
+        wishDraft.repeatMode === "multi"
+          ? {
+              maxRedemptions: parsedWishMaxRedemptions,
+            }
+          : wishDraft.repeatMode === "cycle"
             ? {
-                maxRedemptions: parsedWishMaxRedemptions,
+                resetPeriod: wishDraft.resetPeriod,
+                redemptionsPerPeriod: parsedWishRedemptionsPerPeriod,
               }
-            : wishDraft.repeatMode === "cycle"
-              ? {
-                  resetPeriod: wishDraft.resetPeriod,
-                  redemptionsPerPeriod: parsedWishRedemptionsPerPeriod,
-                }
-              : undefined,
-      }),
-      closeWishModal,
-      `愿望添加成功，需要 ${parsedWishCost} 星才能兑换这个愿望`,
-    );
+            : undefined,
+    } as const;
+
+    if (editingWishId) {
+      applyMutation(
+        updateReward(state, editingWishId, rewardInput),
+        closeWishModal,
+        `愿望更新成功，需要 ${parsedWishCost} 星才能兑换这个愿望`,
+      );
+      return;
+    }
+
+    applyMutation(createReward(state, rewardInput), closeWishModal, `愿望添加成功，需要 ${parsedWishCost} 星才能兑换这个愿望`);
+  }
+
+  function handleEditWish(rewardId: string): void {
+    openWishEditModal(rewardId);
+  }
+
+  function handleDeleteWish(rewardId: string): void {
+    const reward = state.rewards.find((item) => item.id === rewardId);
+    if (!reward) {
+      setNotice("愿望已不存在。");
+      return;
+    }
+
+    if (!window.confirm(`确定要删除愿望“${reward.title}”吗？此操作不可恢复。`)) {
+      return;
+    }
+
+    applyMutation(deleteReward(state, rewardId));
   }
 
   function handleBackToHabitBoard(): void {
@@ -2769,8 +2831,8 @@ function AppShell(): JSX.Element {
           onOpenAchievements={openAchievementSystem}
           onOpenPointsHistory={openPointsHistory}
           onAddWish={openWishModal}
-          onEditWish={() => openFutureFlow("愿望编辑流程仍在开发中。")}
-          onDeleteWish={() => openFutureFlow("愿望删除流程仍在开发中。")}
+          onEditWish={handleEditWish}
+          onDeleteWish={handleDeleteWish}
           onOpenRulesPage={openStarRulesPage}
         />
       );
@@ -3036,6 +3098,7 @@ function AppShell(): JSX.Element {
       />
       <WishModal
         open={wishModalOpen}
+        mode={editingWishId ? "edit" : "create"}
         draft={wishDraft}
         canSubmit={canSubmitWish}
         onClose={closeWishModal}
