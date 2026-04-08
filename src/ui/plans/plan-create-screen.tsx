@@ -350,18 +350,55 @@ export function PlanCreateScreen({
             </div>
 
             {draft.useCustomPoints ? (
-              <label className="plan-create-field">
-                <span>计划奖励星数</span>
-                <input
-                  type="number"
-                  min={1}
-                  max={999}
-                  step={1}
-                  className="plan-create-input"
-                  value={draft.customPoints}
-                  onChange={(event) => onUpdateDraft("customPoints", event.target.value)}
-                />
-              </label>
+              <>
+                <div className="plan-create-points-grid">
+                  <label className="plan-create-field">
+                    <span>积分数值</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={1000}
+                      step={1}
+                      className="plan-create-input"
+                      value={draft.customPoints}
+                      onChange={(event) => onUpdateDraft("customPoints", event.target.value)}
+                    />
+                    <small className="plan-create-field-helper">1-1000 星星</small>
+                  </label>
+                  <div className="plan-create-points-preview">
+                    <strong>奖励：{draft.customPoints || 0}⭐</strong>
+                    <p>固定积分，无额外加成</p>
+                  </div>
+                </div>
+
+                <div className="plan-create-approval-panel">
+                  <div className="plan-create-approval-head">
+                    <div>
+                      <strong>需要审定</strong>
+                      <p>任务完成后需要手动审定才发放积分。</p>
+                    </div>
+                    <button
+                      type="button"
+                      className={`plan-create-switch${draft.approvalRequired ? " is-active" : ""}`}
+                      role="switch"
+                      aria-checked={draft.approvalRequired}
+                      onClick={() => onUpdateDraft("approvalRequired", !draft.approvalRequired)}
+                    >
+                      <span />
+                    </button>
+                  </div>
+                  {draft.approvalRequired ? (
+                    <div className="plan-create-approval-guide">
+                      <strong>审定流程说明</strong>
+                      <ul>
+                        <li>任务完成后显示“审定积分”入口。</li>
+                        <li>可选择通过、调整积分或拒绝。</li>
+                        <li>审定通过后才会计入积分余额。</li>
+                      </ul>
+                    </div>
+                  ) : null}
+                </div>
+              </>
             ) : (
               <div className="plan-create-rule-card">
                 <strong>系统默认规则</strong>
@@ -376,7 +413,9 @@ export function PlanCreateScreen({
 
             <div className="plan-create-inline-note is-gold">
               {draft.useCustomPoints
-                ? `当前将按自定义积分保存，计划完成后奖励 ${draft.customPoints || 0} 星。`
+                ? draft.approvalRequired
+                  ? `当前将按自定义积分保存，计划完成后需审定，通过后发放 ${draft.customPoints || 0} 星。`
+                  : `当前将按自定义积分保存，计划完成后奖励 ${draft.customPoints || 0} 星。`
                 : `按当前时长估算，系统会给出约 ${resolvedMinutes ? derivedStars : 1} 星奖励。`}
             </div>
           </div>

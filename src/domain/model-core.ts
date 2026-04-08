@@ -26,6 +26,8 @@ import type {
   PetInteractionId,
   PetLevelTier,
   PlanCompletionAttachment,
+  PlanCompletionReviewDecision,
+  PlanCompletionReviewStatus,
   PlanCompletionMode,
   PlanCompletionRecord,
   PlanRepeatType,
@@ -41,6 +43,7 @@ import type {
   StarTransaction,
   StudyPlan,
   Summary,
+  ReviewPlanCompletionInput,
 } from "./types.js";
 
 // Pure state transforms and queries stay here; src/domain/model.ts re-exports this file as the public entry.
@@ -86,6 +89,10 @@ function isPlanRepeatType(value: unknown): value is PlanRepeatType {
     value === "biweekly-cross-day-once" ||
     value === "monthly-cross-day-once"
   );
+}
+
+function isPlanCompletionReviewStatus(value: unknown): value is PlanCompletionReviewStatus {
+  return value === "pending" || value === "approved" || value === "adjusted" || value === "rejected";
 }
 
 function parseDateKey(dateKey: string): Date {
@@ -566,6 +573,15 @@ function normalizePlanCompletionRecord(value: unknown, fallbackCompletedAt: stri
   const durationSeconds = Number.isFinite(rawDurationSeconds) ? rawDurationSeconds : fallbackDurationSeconds;
   const note = typeof value.note === "string" ? value.note : "";
   const completedAt = typeof value.completedAt === "string" ? value.completedAt : fallbackCompletedAt;
+  const reviewStatus: PlanCompletionReviewStatus = isPlanCompletionReviewStatus(value.reviewStatus)
+    ? value.reviewStatus
+    : "approved";
+  const reviewReason = typeof value.reviewReason === "string" ? value.reviewReason : "";
+  const reviewedAtRaw = value.reviewedAt;
+  const reviewedAtCandidate = reviewedAtRaw === null || typeof reviewedAtRaw === "string" ? reviewedAtRaw : null;
+  const reviewedAt = reviewStatus === "pending" ? null : reviewedAtCandidate ?? completedAt;
+  const awardedStarsRaw = Number(value.awardedStars);
+  const awardedStars = Number.isFinite(awardedStarsRaw) ? Math.round(awardedStarsRaw) : null;
   const attachments = Array.isArray(value.attachments)
     ? value.attachments.map((item) => normalizePlanCompletionAttachment(item)).filter((item): item is PlanCompletionAttachment => item !== null).slice(0, 15)
     : [];
@@ -581,6 +597,10 @@ function normalizePlanCompletionRecord(value: unknown, fallbackCompletedAt: stri
     note,
     attachments,
     completedAt,
+    reviewStatus,
+    reviewReason,
+    reviewedAt,
+    awardedStars,
   };
 }
 
@@ -598,6 +618,7 @@ function normalizePlan(value: unknown, fallbackTime: string): StudyPlan | null {
   const legacyEstimatedStars = Math.max(1, Math.round(minutes / 10));
   const customStarsEnabled =
     typeof value.customStarsEnabled === "boolean" ? value.customStarsEnabled : Number.isFinite(stars) && Math.round(stars) !== legacyEstimatedStars;
+  const approvalRequired = value.approvalRequired === true && customStarsEnabled;
   const status = value.status === "done" ? "done" : "pending";
   const createdAt = typeof value.createdAt === "string" ? value.createdAt : fallbackTime;
   const completedAt = typeof value.completedAt === "string" ? value.completedAt : null;
@@ -618,6 +639,10 @@ function normalizePlan(value: unknown, fallbackTime: string): StudyPlan | null {
             note: "",
             attachments: [],
             completedAt,
+            reviewStatus: "approved" as const,
+            reviewReason: "历史记录自动迁移",
+            reviewedAt: completedAt,
+            awardedStars: null,
           },
         ]
       : [];
@@ -634,6 +659,7 @@ function normalizePlan(value: unknown, fallbackTime: string): StudyPlan | null {
     minutes: Math.round(minutes),
     stars: Math.round(stars),
     customStarsEnabled,
+    approvalRequired,
     status,
     createdAt,
     completedAt,
@@ -1252,6 +1278,7 @@ export function createInitialState(now: string = new Date().toISOString()): AppS
         minutes: 25,
         stars: 3,
         customStarsEnabled: false,
+        approvalRequired: false,
         status: "pending",
         createdAt: now,
         completedAt: null,
@@ -1269,6 +1296,7 @@ export function createInitialState(now: string = new Date().toISOString()): AppS
         minutes: 20,
         stars: 2,
         customStarsEnabled: false,
+        approvalRequired: false,
         status: "pending",
         createdAt: now,
         completedAt: null,
@@ -1353,7 +1381,15 @@ export function createInitialState(now: string = new Date().toISOString()): AppS
 
 export function addPlan(
   state: AppState,
-  input: { title: string; subject: string; repeatType?: PlanRepeatType; minutes: number; stars?: number; customStarsEnabled?: boolean },
+  input: {
+    title: string;
+    subject: string;
+    repeatType?: PlanRepeatType;
+    minutes: number;
+    stars?: number;
+    customStarsEnabled?: boolean;
+    approvalRequired?: boolean;
+  },
   now: string = new Date().toISOString(),
 ): CommandResult {
   const title = input.title.trim();
@@ -1361,6 +1397,7 @@ export function addPlan(
   const repeatType = input.repeatType ?? "once";
   const minutes = Math.max(5, Math.round(input.minutes));
   const customStarsEnabled = input.customStarsEnabled ?? input.stars !== undefined;
+  const approvalRequired = input.approvalRequired === true && customStarsEnabled;
   const stars = input.stars === undefined ? estimateSystemPlanStars(minutes) : Math.round(Number(input.stars));
 
   if (!title || !subject || !isPlanRepeatType(repeatType) || !Number.isFinite(minutes) || !Number.isFinite(stars) || stars <= 0) {
@@ -1380,6 +1417,7 @@ export function addPlan(
     minutes,
     stars,
     customStarsEnabled,
+    approvalRequired,
     status: "pending",
     createdAt: now,
     completedAt: null,
@@ -1403,6 +1441,7 @@ export function addPlan(
         minutes: plan.minutes,
         stars: plan.stars,
         customStarsEnabled: plan.customStarsEnabled,
+        approvalRequired: plan.approvalRequired,
       },
     },
     now,
@@ -1433,6 +1472,7 @@ export function updatePlan(state: AppState, planId: string, input: UpdatePlanInp
   const repeatType = input.repeatType;
   const minutes = Math.max(5, Math.round(input.minutes));
   const customStarsEnabled = input.customStarsEnabled ?? input.stars !== undefined;
+  const approvalRequired = (input.approvalRequired ?? plan.approvalRequired) && customStarsEnabled;
   const stars = input.stars === undefined ? estimateSystemPlanStars(minutes) : Math.round(Number(input.stars));
 
   if (!title || !subject || !isPlanRepeatType(repeatType) || !Number.isFinite(minutes) || !Number.isFinite(stars) || stars <= 0) {
@@ -1449,6 +1489,7 @@ export function updatePlan(state: AppState, planId: string, input: UpdatePlanInp
   plan.minutes = minutes;
   plan.stars = stars;
   plan.customStarsEnabled = customStarsEnabled;
+  plan.approvalRequired = approvalRequired;
   if (typeof input.createdAt === "string" && input.createdAt) {
     plan.createdAt = input.createdAt;
   }
@@ -1466,6 +1507,7 @@ export function updatePlan(state: AppState, planId: string, input: UpdatePlanInp
         minutes: plan.minutes,
         stars: plan.stars,
         customStarsEnabled: plan.customStarsEnabled,
+        approvalRequired: plan.approvalRequired,
       },
     },
     now,
@@ -2317,6 +2359,51 @@ export function archiveHabits(state: AppState, habitIds: string[], now: string =
   };
 }
 
+function resolvePlanBaseStars(
+  plan: StudyPlan,
+  durationMinutes: number,
+  completedAt: string,
+): { basePlanStars: number; planRewardReason: string } {
+  const durationBonusStars = getSystemDurationBonusStars(durationMinutes);
+  const completionMultiplier = getPlanCompletionMultiplier(completedAt);
+  const systemSubtotalStars = STAR_RULES.planBaseStars + durationBonusStars;
+  const basePlanStars = plan.customStarsEnabled ? plan.stars : Math.max(1, Math.round(systemSubtotalStars * completionMultiplier));
+  const multiplierLabel = completionMultiplier > 1 ? `x${completionMultiplier.toFixed(2).replace(/\.?0+$/, "")}` : null;
+  const planRewardReason = plan.customStarsEnabled
+    ? `完成计划：${plan.title}（自定义奖励）`
+    : `完成计划：${plan.title}（基础${STAR_RULES.planBaseStars}+时长${durationBonusStars}${multiplierLabel ? `，加成 ${multiplierLabel}` : ""}）`;
+  return {
+    basePlanStars,
+    planRewardReason,
+  };
+}
+
+function awardTaskCompletionBonuses(
+  state: AppState,
+  completionDateKey: string,
+  now: string,
+): { fullAttendanceBonus: number; streakBonus: number; achievementBonus: number } {
+  const fullAttendanceBonus = awardDailyFullAttendanceIfReached(state, completionDateKey, now);
+  const streakBonus = awardStreakBonusIfReached(state, completionDateKey, now);
+  const achievementBonus = awardAchievementBonusIfReached(state, completionDateKey, now);
+  return {
+    fullAttendanceBonus,
+    streakBonus,
+    achievementBonus,
+  };
+}
+
+function formatPlanRewardBreakdown(basePlanStars: number, fullAttendanceBonus: number, streakBonus: number, achievementBonus: number): string {
+  return [
+    `任务奖励 ${basePlanStars} 星`,
+    fullAttendanceBonus > 0 ? `全勤奖励 ${fullAttendanceBonus} 星` : null,
+    streakBonus > 0 ? `连续打卡奖励 ${streakBonus} 星` : null,
+    achievementBonus > 0 ? `成就奖励 ${achievementBonus} 星` : null,
+  ]
+    .filter(Boolean)
+    .join(" + ");
+}
+
 export function completePlan(
   state: AppState,
   planId: string,
@@ -2379,7 +2466,7 @@ export function completePlan(
     plan.status = "done";
   }
   plan.completedAt = effectiveNow;
-  plan.completionRecords.unshift({
+  const completionRecord: PlanCompletionRecord = {
     id: nextEntityId(nextState, "plan_completion"),
     mode,
     durationSeconds,
@@ -2390,7 +2477,12 @@ export function completePlan(
       size: Math.round(attachment.size),
     })),
     completedAt: effectiveNow,
-  });
+    reviewStatus: plan.approvalRequired ? "pending" : "approved",
+    reviewReason: plan.approvalRequired ? "" : "系统自动发放",
+    reviewedAt: plan.approvalRequired ? null : effectiveNow,
+    awardedStars: null,
+  };
+  plan.completionRecords.unshift(completionRecord);
   touchPlanForMutation(plan, effectiveNow);
   queuePendingSyncOperation(
     nextState,
@@ -2402,34 +2494,31 @@ export function completePlan(
         mode,
         durationSeconds,
         completedAt: effectiveNow,
+        reviewStatus: completionRecord.reviewStatus,
       },
     },
     effectiveNow,
   );
   const durationMinutes = Math.max(1, Math.round(durationSeconds / 60));
-  const durationBonusStars = getSystemDurationBonusStars(durationMinutes);
-  const completionMultiplier = getPlanCompletionMultiplier(effectiveNow);
-  const systemSubtotalStars = STAR_RULES.planBaseStars + durationBonusStars;
-  const basePlanStars = plan.customStarsEnabled ? plan.stars : Math.max(1, Math.round(systemSubtotalStars * completionMultiplier));
-  const multiplierLabel = completionMultiplier > 1 ? `x${completionMultiplier.toFixed(2).replace(/\.?0+$/, "")}` : null;
-  const planRewardReason = plan.customStarsEnabled
-    ? `完成计划：${plan.title}（自定义奖励）`
-    : `完成计划：${plan.title}（基础${STAR_RULES.planBaseStars}+时长${durationBonusStars}${multiplierLabel ? `，加成 ${multiplierLabel}` : ""}）`;
-  pushTransaction(nextState, basePlanStars, planRewardReason, effectiveNow);
-  const fullAttendanceBonus = awardDailyFullAttendanceIfReached(nextState, completionDateKey, effectiveNow);
-  const streakBonus = awardStreakBonusIfReached(nextState, completionDateKey, effectiveNow);
-  const achievementBonus = awardAchievementBonusIfReached(nextState, completionDateKey, effectiveNow);
-  const totalAwardedStars = basePlanStars + fullAttendanceBonus + streakBonus + achievementBonus;
   const noteSuffix = note ? `，备注：${note}` : "";
   const attachmentSuffix = attachments.length > 0 ? `，附件 ${attachments.length} 个` : "";
-  const rewardBreakdown = [
-    `任务奖励 ${basePlanStars} 星`,
-    fullAttendanceBonus > 0 ? `全勤奖励 ${fullAttendanceBonus} 星` : null,
-    streakBonus > 0 ? `连续打卡奖励 ${streakBonus} 星` : null,
-    achievementBonus > 0 ? `成就奖励 ${achievementBonus} 星` : null,
-  ]
-    .filter(Boolean)
-    .join(" + ");
+
+  if (plan.approvalRequired) {
+    pushActivity(nextState, "plan-completed", `完成计划：${plan.title}，记录 ${durationMinutes} 分钟，积分待审定${noteSuffix}${attachmentSuffix}`, effectiveNow);
+    return {
+      ok: true,
+      nextState,
+      message: "计划已完成，等待积分审定后发放奖励。",
+    };
+  }
+
+  const { basePlanStars, planRewardReason } = resolvePlanBaseStars(plan, durationMinutes, effectiveNow);
+  pushTransaction(nextState, basePlanStars, planRewardReason, effectiveNow);
+  const { fullAttendanceBonus, streakBonus, achievementBonus } = awardTaskCompletionBonuses(nextState, completionDateKey, effectiveNow);
+  const totalAwardedStars = basePlanStars + fullAttendanceBonus + streakBonus + achievementBonus;
+  completionRecord.awardedStars = totalAwardedStars;
+
+  const rewardBreakdown = formatPlanRewardBreakdown(basePlanStars, fullAttendanceBonus, streakBonus, achievementBonus);
   pushActivity(
     nextState,
     "plan-completed",
@@ -2441,6 +2530,141 @@ export function completePlan(
     ok: true,
     nextState,
     message: `计划已完成，记录 ${durationMinutes} 分钟，获得 ${totalAwardedStars} 星。`,
+  };
+}
+
+export function reviewPlanCompletion(
+  state: AppState,
+  planId: string,
+  completionRecordId: string,
+  input: ReviewPlanCompletionInput,
+  now: string = new Date().toISOString(),
+): CommandResult {
+  const nextState = cloneState(state);
+  const plan = nextState.plans.find((item) => item.id === planId);
+  if (!plan) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "计划不存在。",
+    };
+  }
+
+  const completionRecord = plan.completionRecords.find((record) => record.id === completionRecordId);
+  if (!completionRecord) {
+    return {
+      ok: false,
+      nextState: state,
+      message: "待审定记录不存在。",
+    };
+  }
+
+  if (completionRecord.reviewStatus !== "pending") {
+    return {
+      ok: false,
+      nextState: state,
+      message: "该记录已经审定完成。",
+    };
+  }
+
+  const decision: PlanCompletionReviewDecision = input.decision;
+  if (decision !== "approve" && decision !== "adjust" && decision !== "reject") {
+    return {
+      ok: false,
+      nextState: state,
+      message: "审定操作无效。",
+    };
+  }
+
+  const reason = typeof input.reason === "string" ? input.reason.trim() : "";
+  const durationMinutes = Math.max(1, Math.round(completionRecord.durationSeconds / 60));
+  const completionDateKey = currentDateKey(completionRecord.completedAt);
+
+  let basePlanStars = 0;
+  let planRewardReason = "";
+  if (decision === "approve") {
+    const resolved = resolvePlanBaseStars(plan, durationMinutes, completionRecord.completedAt);
+    basePlanStars = resolved.basePlanStars;
+    planRewardReason = `积分审定通过：${plan.title}`;
+  } else if (decision === "adjust") {
+    const adjustedStars = Math.round(Number(input.adjustedStars));
+    if (!Number.isInteger(adjustedStars) || adjustedStars < -1000 || adjustedStars > 1000) {
+      return {
+        ok: false,
+        nextState: state,
+        message: "调整积分必须是 -1000 到 1000 的整数。",
+      };
+    }
+    if (!reason) {
+      return {
+        ok: false,
+        nextState: state,
+        message: "请填写审定说明后再确认调整。",
+      };
+    }
+    basePlanStars = adjustedStars;
+    planRewardReason = `积分审定调整：${plan.title}`;
+  } else {
+    basePlanStars = 0;
+    planRewardReason = `积分审定拒绝：${plan.title}`;
+  }
+
+  if (basePlanStars !== 0) {
+    pushTransaction(nextState, basePlanStars, planRewardReason, now);
+  }
+
+  let fullAttendanceBonus = 0;
+  let streakBonus = 0;
+  let achievementBonus = 0;
+  if (basePlanStars > 0) {
+    const bonuses = awardTaskCompletionBonuses(nextState, completionDateKey, now);
+    fullAttendanceBonus = bonuses.fullAttendanceBonus;
+    streakBonus = bonuses.streakBonus;
+    achievementBonus = bonuses.achievementBonus;
+  }
+
+  const totalAwardedStars = basePlanStars + fullAttendanceBonus + streakBonus + achievementBonus;
+  completionRecord.reviewStatus = decision === "approve" ? "approved" : decision === "adjust" ? "adjusted" : "rejected";
+  completionRecord.reviewReason = reason;
+  completionRecord.reviewedAt = now;
+  completionRecord.awardedStars = totalAwardedStars;
+  touchPlanForMutation(plan, now);
+  queuePendingSyncOperation(
+    nextState,
+    {
+      entityType: "plan",
+      entityId: plan.id,
+      action: "plan.review",
+      payload: {
+        completionRecordId: completionRecord.id,
+        decision,
+        basePlanStars,
+        fullAttendanceBonus,
+        streakBonus,
+        achievementBonus,
+        totalAwardedStars,
+      },
+    },
+    now,
+  );
+
+  const reasonSuffix = reason ? `，说明：${reason}` : "";
+  if (decision === "reject") {
+    pushActivity(nextState, "system", `积分审定拒绝：${plan.title}，本次不发放积分${reasonSuffix}`, now);
+    return {
+      ok: true,
+      nextState,
+      message: "已拒绝该任务积分，未发放奖励。",
+    };
+  }
+
+  const rewardBreakdown = formatPlanRewardBreakdown(basePlanStars, fullAttendanceBonus, streakBonus, achievementBonus);
+  const actionLabel = decision === "approve" ? "通过" : "调整";
+  pushActivity(nextState, "system", `积分审定${actionLabel}：${plan.title}，发放 ${totalAwardedStars} 星（${rewardBreakdown}）${reasonSuffix}`, now);
+  return {
+    ok: true,
+    nextState,
+    message: `审定已${actionLabel}，共发放 ${totalAwardedStars} 星。`,
   };
 }
 
@@ -2913,11 +3137,12 @@ export function evaluateInvariants(state: AppState): string[] {
         !plan.title ||
         !plan.subject ||
         !isPlanRepeatType(plan.repeatType) ||
+        (plan.approvalRequired && !plan.customStarsEnabled) ||
         !plan.updatedAt ||
         plan.version < 1,
     )
   ) {
-    violations.push("Plans must have titles, subjects, positive minutes, and positive star rewards.");
+    violations.push("Plans must have valid metadata, positive rewards, and approval settings.");
   }
 
   if (state.plans.some((plan) => plan.status === "done" && !plan.completedAt)) {
@@ -2930,12 +3155,15 @@ export function evaluateInvariants(state: AppState): string[] {
         (record) =>
           record.durationSeconds < 0 ||
           !record.completedAt ||
+          !isPlanCompletionReviewStatus(record.reviewStatus) ||
+          (record.reviewStatus === "pending" && record.reviewedAt !== null) ||
+          (record.reviewStatus !== "pending" && !record.reviewedAt) ||
           record.attachments.length > 15 ||
           record.attachments.some((attachment) => !attachment.name || attachment.size < 0),
       ),
     )
   ) {
-    violations.push("Plan completion records must have valid durations, timestamps, and attachment metadata.");
+    violations.push("Plan completion records must have valid review state, durations, timestamps, and attachment metadata.");
   }
 
   if (

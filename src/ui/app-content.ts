@@ -11,6 +11,7 @@ import type {
   HelpFeatureCard,
   MoreFeatureSection,
   PlanDraft,
+  PlanPointsReviewDraft,
   QuickCompleteDraft,
   WishDraft,
 } from "./app-types.js";
@@ -35,6 +36,7 @@ export function createInitialPlanDraft(dateKey: string = currentDateKey()): Plan
     endTime: "20:30",
     useCustomPoints: false,
     customPoints: "3",
+    approvalRequired: false,
     attachments: [],
   };
 }
@@ -53,6 +55,7 @@ export function createPlanDraftFromPlan(plan: StudyPlan): PlanDraft {
     endTime: "20:30",
     useCustomPoints: plan.stars !== estimatedStars,
     customPoints: String(plan.stars),
+    approvalRequired: plan.approvalRequired,
     attachments: [],
   };
 }
@@ -102,6 +105,13 @@ export const INITIAL_QUICK_COMPLETE_DRAFT: QuickCompleteDraft = {
   seconds: "0",
   note: "",
   attachments: [],
+};
+export const INITIAL_PLAN_POINTS_REVIEW_DRAFT: PlanPointsReviewDraft = {
+  planId: "",
+  completionRecordId: "",
+  decision: "approve",
+  adjustedStars: "0",
+  reason: "",
 };
 export const INITIAL_HABIT_DRAFT: HabitDraft = {
   name: "",

@@ -545,7 +545,8 @@
 
   .board-actions,
   .week-actions,
-  .section-tools {
+  .section-tools,
+  .plan-review-strip-actions {
     width: 100%;
     display: flex;
     flex-wrap: wrap;
@@ -554,7 +555,8 @@
 
   .board-actions .chip-button,
   .week-actions .icon-button,
-  .section-tools .filter-chip {
+  .section-tools .filter-chip,
+  .plan-review-strip-actions .filter-chip {
     width: auto;
     flex: 1 1 calc(50% - 8px);
     min-width: 0;
@@ -581,6 +583,7 @@
   .plan-management-action-group,
   .batch-plan-footer,
   .plan-create-footer,
+  .plan-review-strip,
   .points-wish-actions,
   .points-history-summary-card,
   .achievement-summary-card,
@@ -602,6 +605,7 @@
   .plan-create-time-grid,
   .plan-create-duration-grid,
   .plan-create-custom-row,
+  .plan-create-points-grid,
   .ai-plan-composer-row,
   .plan-management-card,
   .wish-preview-card {
@@ -617,6 +621,24 @@
   }
 
   .plan-detail-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-points-review-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .plan-points-review-header .modal-close {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .plan-points-review-status {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .plan-points-review-actions {
     grid-template-columns: 1fr;
   }
 

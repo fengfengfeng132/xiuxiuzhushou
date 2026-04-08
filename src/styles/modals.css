@@ -431,6 +431,189 @@
   box-shadow: 0 18px 34px rgba(37, 194, 110, 0.22);
 }
 
+.plan-points-review-modal-card {
+  width: min(620px, calc(100vw - 24px));
+  padding: 0;
+  overflow: hidden;
+}
+
+.plan-points-review-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid rgba(108, 151, 255, 0.22);
+  background: linear-gradient(180deg, rgba(236, 243, 255, 0.98), rgba(250, 253, 255, 0.96));
+}
+
+.plan-points-review-header-main {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.plan-points-review-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #4f7cff, #6674ff);
+  color: #fff;
+  font-size: 24px;
+}
+
+.plan-points-review-header h2 {
+  margin: 0;
+}
+
+.plan-points-review-header p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.plan-points-review-status {
+  min-height: 34px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.plan-points-review-status.is-approved {
+  background: rgba(37, 194, 110, 0.14);
+  color: #19995a;
+}
+
+.plan-points-review-status.is-adjusted {
+  background: rgba(241, 162, 22, 0.18);
+  color: #ad7310;
+}
+
+.plan-points-review-status.is-rejected {
+  background: rgba(238, 99, 99, 0.15);
+  color: #d04a4a;
+}
+
+.plan-points-review-form {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.plan-points-review-summary,
+.plan-points-review-section,
+.plan-points-review-result {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(117, 150, 210, 0.24);
+  background: rgba(247, 251, 255, 0.92);
+}
+
+.plan-points-review-summary-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.plan-points-review-badge {
+  min-height: 28px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: rgba(79, 124, 255, 0.12);
+  color: #2f65de;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.plan-points-review-summary h3,
+.plan-points-review-section strong,
+.plan-points-review-result strong {
+  margin: 0;
+}
+
+.plan-points-review-summary p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.plan-points-review-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.plan-points-review-action {
+  min-height: 92px;
+  padding: 10px;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  align-content: center;
+  border-radius: 14px;
+  border: 1px solid rgba(18, 49, 100, 0.12);
+  background: #fff;
+  color: var(--ink);
+}
+
+.plan-points-review-action span {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.plan-points-review-action small {
+  color: var(--muted);
+}
+
+.plan-points-review-action.is-active {
+  box-shadow: 0 0 0 3px rgba(33, 99, 255, 0.1);
+}
+
+.plan-points-review-action.is-active.is-approved {
+  border-color: rgba(37, 194, 110, 0.45);
+  background: rgba(234, 252, 242, 0.96);
+}
+
+.plan-points-review-action.is-active.is-adjusted {
+  border-color: rgba(241, 162, 22, 0.5);
+  background: rgba(255, 245, 219, 0.96);
+}
+
+.plan-points-review-action.is-active.is-rejected {
+  border-color: rgba(238, 99, 99, 0.5);
+  background: rgba(255, 241, 241, 0.96);
+}
+
+.plan-points-review-adjust-field small {
+  margin: 0;
+  color: var(--muted);
+}
+
+.plan-points-review-reason-required textarea {
+  border-color: rgba(241, 162, 22, 0.34);
+  background: rgba(255, 251, 239, 0.92);
+}
+
+.plan-points-review-result p {
+  margin: 0;
+  color: var(--ink);
+}
+
+.plan-points-review-result span {
+  font-family: "Manrope", sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+}
+
 .plan-detail-modal-card {
   width: min(580px, calc(100vw - 24px));
   max-height: min(760px, calc(100vh - 24px));

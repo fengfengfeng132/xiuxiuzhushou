@@ -51,6 +51,7 @@ export interface PlanDraft {
   endTime: string;
   useCustomPoints: boolean;
   customPoints: string;
+  approvalRequired: boolean;
   attachments: PlanAttachmentDraft[];
 }
 
@@ -115,6 +116,27 @@ export interface QuickCompleteDraft {
   seconds: string;
   note: string;
   attachments: QuickCompleteAttachmentDraft[];
+}
+
+export type PlanPointsReviewDecision = "approve" | "adjust" | "reject";
+
+export interface PlanPointsReviewDraft {
+  planId: string;
+  completionRecordId: string;
+  decision: PlanPointsReviewDecision;
+  adjustedStars: string;
+  reason: string;
+}
+
+export interface PendingPlanReviewItem {
+  planId: string;
+  completionRecordId: string;
+  title: string;
+  subject: string;
+  completedAt: string;
+  durationSeconds: number;
+  sessionCount: number;
+  suggestedStars: number;
 }
 
 export interface HabitDraft {

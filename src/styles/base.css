@@ -451,6 +451,34 @@ button {
   color: var(--ink);
 }
 
+.plan-review-strip {
+  padding: 16px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 205, 102, 0.5);
+  background: linear-gradient(180deg, rgba(255, 248, 228, 0.96), rgba(255, 255, 255, 0.94));
+}
+
+.plan-review-strip-copy strong {
+  display: block;
+  color: #9f6b09;
+}
+
+.plan-review-strip-copy p {
+  margin: 4px 0 0;
+  color: #af7913;
+  line-height: 1.6;
+}
+
+.plan-review-strip-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .day-strip {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));

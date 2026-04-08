@@ -14,7 +14,14 @@ import {
   getSubjectStyle,
   parseDateKey,
 } from "../app-helpers.js";
-import type { QuickCompleteAttachmentDraft, QuickCompleteDraft, QuickCompleteMode } from "../app-types.js";
+import type {
+  PendingPlanReviewItem,
+  PlanPointsReviewDecision,
+  PlanPointsReviewDraft,
+  QuickCompleteAttachmentDraft,
+  QuickCompleteDraft,
+  QuickCompleteMode,
+} from "../app-types.js";
 import { DateJumpPopover } from "../date-jump-popover.js";
 import { formatPlanRepeatBadgeLabel } from "./plan-repeat.js";
 
@@ -25,6 +32,7 @@ interface PlanBoardProps {
   plans: StudyPlan[];
   pendingPlans: StudyPlan[];
   completedPlans: StudyPlan[];
+  pendingReviewCount: number;
   onSetSelectedDateKey: (dateKey: string) => void;
   onJumpToToday: () => void;
   onShiftSelectedDate: (offset: number) => void;
@@ -33,6 +41,8 @@ interface PlanBoardProps {
   onOpenPlanCreate: () => void;
   onOpenBatchPlanCreate: () => void;
   onOpenQuickComplete: (plan: StudyPlan) => void;
+  onOpenPlanPointsReview: () => void;
+  onApproveAllPlanPointsReview: () => void;
   onOpenStudyTimer: (plan: StudyPlan) => void;
   onOpenPlanDetail: (plan: StudyPlan) => void;
   onOpenFutureFlow: (message: string) => void;
@@ -51,6 +61,15 @@ interface QuickCompleteModalProps {
   onSelectFiles: (files: FileList | null) => void;
   onDropFiles: (event: DragEvent<HTMLButtonElement>) => void;
   onRemoveAttachment: (attachmentId: string) => void;
+}
+
+interface PlanPointsReviewModalProps {
+  item: PendingPlanReviewItem | null;
+  draft: PlanPointsReviewDraft;
+  canSubmit: boolean;
+  onClose: () => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onUpdateDraft: (field: keyof PlanPointsReviewDraft, value: string | PlanPointsReviewDecision) => void;
 }
 
 interface PlanDetailModalProps {
@@ -210,6 +229,7 @@ export function PlanBoard({
   plans,
   pendingPlans,
   completedPlans,
+  pendingReviewCount,
   onSetSelectedDateKey,
   onJumpToToday,
   onShiftSelectedDate,
@@ -218,6 +238,8 @@ export function PlanBoard({
   onOpenPlanCreate,
   onOpenBatchPlanCreate,
   onOpenQuickComplete,
+  onOpenPlanPointsReview,
+  onApproveAllPlanPointsReview,
   onOpenStudyTimer,
   onOpenPlanDetail,
   onOpenFutureFlow,
@@ -290,6 +312,23 @@ export function PlanBoard({
           })}
         </div>
       </section>
+
+      {pendingReviewCount > 0 ? (
+        <section className="plan-review-strip" aria-live="polite">
+          <div className="plan-review-strip-copy">
+            <strong>待审定积分任务</strong>
+            <p>有 {pendingReviewCount} 个任务的积分需要审定</p>
+          </div>
+          <div className="plan-review-strip-actions">
+            <button type="button" className="filter-chip" onClick={onOpenPlanPointsReview}>
+              逐个审定
+            </button>
+            <button type="button" className="filter-chip filter-chip-strong" onClick={onApproveAllPlanPointsReview}>
+              一键通过
+            </button>
+          </div>
+        </section>
+      ) : null}
 
       <section className="board-section">
         <div className="section-head">
@@ -522,6 +561,132 @@ export function QuickCompleteModal({
   );
 }
 
+export function PlanPointsReviewModal({ item, draft, canSubmit, onClose, onSubmit, onUpdateDraft }: PlanPointsReviewModalProps) {
+  if (!item) {
+    return null;
+  }
+
+  const parsedAdjustedStars = Math.round(Number(draft.adjustedStars));
+  const resolvedAdjustedStars = Number.isFinite(parsedAdjustedStars) ? parsedAdjustedStars : 0;
+  const previewStars = draft.decision === "reject" ? 0 : draft.decision === "adjust" ? resolvedAdjustedStars : item.suggestedStars;
+  const statusLabel = draft.decision === "approve" ? "通过" : draft.decision === "adjust" ? "调整" : "拒绝";
+  const statusClassName =
+    draft.decision === "approve"
+      ? "plan-points-review-status is-approved"
+      : draft.decision === "adjust"
+        ? "plan-points-review-status is-adjusted"
+        : "plan-points-review-status is-rejected";
+  const reasonRequired = draft.decision === "adjust";
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-card plan-points-review-modal-card" onClick={(event) => event.stopPropagation()}>
+        <header className="plan-points-review-header">
+          <div className="plan-points-review-header-main">
+            <span className="plan-points-review-icon" aria-hidden="true">
+              ★
+            </span>
+            <div>
+              <h2>积分审定</h2>
+              <p>审定并发放任务积分</p>
+            </div>
+          </div>
+          <div className={statusClassName}>{statusLabel}</div>
+          <button type="button" className="modal-close" onClick={onClose}>
+            ×
+          </button>
+        </header>
+
+        <form className="plan-points-review-form" onSubmit={onSubmit}>
+          <section className="plan-points-review-summary">
+            <div className="plan-points-review-summary-top">
+              <span className="plan-points-review-badge">{item.subject}</span>
+              <span>{formatDateTime(item.completedAt)}</span>
+            </div>
+            <h3>{item.title}</h3>
+            <p>
+              学习时长：{formatDurationSummary(item.durationSeconds)} · 学习次数：{item.sessionCount}
+            </p>
+          </section>
+
+          <section className="plan-points-review-section">
+            <strong>审定操作</strong>
+            <div className="plan-points-review-actions">
+              <button
+                type="button"
+                className={`plan-points-review-action${draft.decision === "approve" ? " is-active is-approved" : ""}`}
+                onClick={() => onUpdateDraft("decision", "approve")}
+              >
+                <span>通过</span>
+                <small>{item.suggestedStars} ⭐</small>
+              </button>
+              <button
+                type="button"
+                className={`plan-points-review-action${draft.decision === "adjust" ? " is-active is-adjusted" : ""}`}
+                onClick={() => onUpdateDraft("decision", "adjust")}
+              >
+                <span>调整</span>
+                <small>修改积分</small>
+              </button>
+              <button
+                type="button"
+                className={`plan-points-review-action${draft.decision === "reject" ? " is-active is-rejected" : ""}`}
+                onClick={() => onUpdateDraft("decision", "reject")}
+              >
+                <span>拒绝</span>
+                <small>0 ⭐</small>
+              </button>
+            </div>
+          </section>
+
+          {draft.decision === "adjust" ? (
+            <label className="field-block plan-points-review-adjust-field">
+              <span>调整后积分数值</span>
+              <input
+                type="number"
+                min={-1000}
+                max={1000}
+                step={1}
+                value={draft.adjustedStars}
+                onChange={(event) => onUpdateDraft("adjustedStars", event.target.value)}
+              />
+              <small>范围：-1000 到 1000 星星</small>
+            </label>
+          ) : null}
+
+          <label className={`field-block${reasonRequired ? " plan-points-review-reason-required" : ""}`}>
+            <span>审定说明 {reasonRequired ? "*" : "(可选)"}</span>
+            <textarea
+              value={draft.reason}
+              onChange={(event) => onUpdateDraft("reason", event.target.value)}
+              placeholder={reasonRequired ? "请说明调整积分的理由..." : "说明通过或拒绝的原因（可选）"}
+              maxLength={200}
+              rows={4}
+            />
+            <small>{draft.reason.length}/200</small>
+          </label>
+
+          <section className="plan-points-review-result">
+            <strong>审定结果预览</strong>
+            <p>
+              发放积分：<span>{previewStars}</span> ⭐
+            </p>
+          </section>
+
+          <div className="modal-actions">
+            <button type="button" className="modal-cancel" onClick={onClose}>
+              取消
+            </button>
+            <button type="submit" className="modal-submit modal-submit-primary" disabled={!canSubmit}>
+              确认审定
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export function PlanDetailModal({
   plan,
   selectedDateKey,
@@ -618,7 +783,7 @@ export function PlanDetailModal({
                   <strong>积分奖励</strong>
                   <p className="plan-detail-badge-line">
                     <span className="plan-detail-star-pill">{plan.stars} 星</span>
-                    <span className="plan-detail-note-pill">固定奖励</span>
+                    <span className="plan-detail-note-pill">{plan.approvalRequired ? "需审定" : "固定奖励"}</span>
                   </p>
                 </div>
               </div>

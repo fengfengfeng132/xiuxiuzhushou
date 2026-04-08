@@ -95,6 +95,16 @@ Assumption:
 - Large content area below the heading.
 - If no plan exists for the selected day, show a friendly empty state with icon and text.
 
+### 6a. Pending Points Review Strip
+
+- When at least one plan completion is waiting for points review, show a highlighted strip between the week navigator and plan list.
+- Strip copy:
+  - title: `待审定积分任务`
+  - summary: `有 N 个任务的积分需要审定`
+- Strip actions:
+  - `逐个审定`: opens the review modal for one pending item
+  - `一键通过`: approves all pending points reviews in one action
+
 ### 7. Populated Plan Card State
 
 - Historical or non-empty days render a vertical list of large plan cards.
@@ -174,6 +184,8 @@ Requirement:
 - Clicking `管理` opens the page documented in `docs/page-specs/plan-management-page.md`.
 - Clicking `快速完成` opens the modal documented in `docs/page-specs/quick-complete-modal.md`.
 - Clicking `开始计时` opens the page documented in `docs/page-specs/study-timer-page.md`.
+- Clicking `逐个审定` opens the points-review modal with approve/adjust/reject actions and result preview.
+- Clicking `一键通过` should pass all pending review records.
 
 ## States Required
 

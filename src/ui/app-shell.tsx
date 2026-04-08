@@ -26,6 +26,7 @@ import {
   PET_RECYCLE_REFUND_STARS,
   recyclePet,
   redeemReward,
+  reviewPlanCompletion,
   switchActivePet,
   summarizeState,
   updatePlan,
@@ -104,6 +105,7 @@ import {
   createInitialWishDraft,
   INITIAL_HABIT_CHECKIN_DRAFT,
   INITIAL_HABIT_DRAFT,
+  INITIAL_PLAN_POINTS_REVIEW_DRAFT,
   INITIAL_QUICK_COMPLETE_DRAFT,
   MORE_FEATURE_SECTIONS,
 } from "./app-content.js";
@@ -132,8 +134,11 @@ import type {
   MoreFeatureCard,
   PlanAttachmentDraft,
   PlanDraft,
+  PlanPointsReviewDecision,
+  PlanPointsReviewDraft,
   PlanRepeatType,
   PlanTimeMode,
+  PendingPlanReviewItem,
   QuickCompleteAttachmentDraft,
   QuickCompleteDraft,
   QuickCompleteMode,
@@ -175,7 +180,7 @@ import { applyManagedPlanOrder, createManagedPlanOrder, reorderManagedPlanIds } 
 import { PlanDeleteSelectedModal, PlanManagementScreen } from "./plans/plan-management-screen.js";
 import { PlanCreateScreen } from "./plans/plan-create-screen.js";
 import { formatPlanRepeatSaveNotice } from "./plans/plan-repeat.js";
-import { PlanBoard, PlanDetailModal, QuickCompleteModal } from "./plans/plans-module.js";
+import { PlanBoard, PlanDetailModal, PlanPointsReviewModal, QuickCompleteModal } from "./plans/plans-module.js";
 import {
   ReadingBookDetailScreen,
   ReadingBookModal,
@@ -233,6 +238,29 @@ function buildPlanDateTime(dateKey: string, time: string): string {
 
 function createLocalUiId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function collectPendingPlanReviewItems(plans: StudyPlan[]): PendingPlanReviewItem[] {
+  const pendingItems: PendingPlanReviewItem[] = [];
+  for (const plan of plans) {
+    for (const record of plan.completionRecords) {
+      if (record.reviewStatus !== "pending") {
+        continue;
+      }
+      pendingItems.push({
+        planId: plan.id,
+        completionRecordId: record.id,
+        title: plan.title,
+        subject: plan.subject,
+        completedAt: record.completedAt,
+        durationSeconds: record.durationSeconds,
+        sessionCount: plan.completionRecords.length,
+        suggestedStars: plan.stars,
+      });
+    }
+  }
+  pendingItems.sort((left, right) => Date.parse(right.completedAt) - Date.parse(left.completedAt));
+  return pendingItems;
 }
 
 function parsePositiveInteger(value: string): number | null {
@@ -320,6 +348,7 @@ function AppShell(): JSX.Element {
   const [activeTab, setActiveTab] = useState<DashboardTab>(() => loadDashboardTabPreference());
   const [screen, setScreen] = useState<Screen>("home");
   const [quickCompleteDraft, setQuickCompleteDraft] = useState<QuickCompleteDraft>(INITIAL_QUICK_COMPLETE_DRAFT);
+  const [planPointsReviewDraft, setPlanPointsReviewDraft] = useState<PlanPointsReviewDraft>(INITIAL_PLAN_POINTS_REVIEW_DRAFT);
   const [habitModalOpen, setHabitModalOpen] = useState(false);
   const [wishModalOpen, setWishModalOpen] = useState(false);
   const [editingWishId, setEditingWishId] = useState<string | null>(null);
@@ -392,6 +421,11 @@ function AppShell(): JSX.Element {
     checkInHabitTarget !== null &&
     (!habitCheckInDraft.useCustomPoints || (Number.isInteger(parsedCheckInPoints) && parsedCheckInPoints >= -1000 && parsedCheckInPoints <= 1000));
   const quickCompletePlanTarget = state.plans.find((plan) => plan.id === quickCompleteDraft.planId) ?? null;
+  const pendingPlanReviewItems = collectPendingPlanReviewItems(state.plans);
+  const activePendingPlanReviewItem =
+    pendingPlanReviewItems.find(
+      (item) => item.planId === planPointsReviewDraft.planId && item.completionRecordId === planPointsReviewDraft.completionRecordId,
+    ) ?? null;
   const activeTimerPlan = state.plans.find((plan) => plan.id === activeTimerPlanId) ?? null;
   const planDetailPlanTarget = state.plans.find((plan) => plan.id === planDetailPlanId) ?? null;
   const planDetailCompletedForSelectedDate = planDetailPlanTarget ? isPlanCompletedForDate(planDetailPlanTarget, selectedDateKey) : false;
@@ -443,6 +477,14 @@ function AppShell(): JSX.Element {
   const quickCompleteSeconds = Math.max(0, Math.round(Number(quickCompleteDraft.seconds) || 0));
   const quickCompleteTotalSeconds = quickCompleteHours * 3600 + quickCompleteMinutes * 60 + quickCompleteSeconds;
   const canSubmitQuickComplete = quickCompletePlanTarget !== null && quickCompletePlanTarget.status === "pending" && quickCompleteTotalSeconds > 0;
+  const parsedPlanPointsReviewStars = Math.round(Number(planPointsReviewDraft.adjustedStars));
+  const canSubmitPlanPointsReview =
+    activePendingPlanReviewItem !== null &&
+    (planPointsReviewDraft.decision !== "adjust" ||
+      (Number.isInteger(parsedPlanPointsReviewStars) &&
+        parsedPlanPointsReviewStars >= -1000 &&
+        parsedPlanPointsReviewStars <= 1000 &&
+        planPointsReviewDraft.reason.trim().length > 0));
   const habitSearchKeyword = habitSearch.trim().toLowerCase();
   const moreFeaturesKeyword = moreFeaturesSearch.trim().toLowerCase();
   const filteredHabits = activeHabits.filter((habit) => {
@@ -531,6 +573,16 @@ function AppShell(): JSX.Element {
   }, [planDetailPlanId, state.plans]);
 
   useEffect(() => {
+    if (!planPointsReviewDraft.planId) {
+      return;
+    }
+    if (activePendingPlanReviewItem) {
+      return;
+    }
+    closePlanPointsReviewModal();
+  }, [activePendingPlanReviewItem, planPointsReviewDraft.planId]);
+
+  useEffect(() => {
     if (!readingDetailBookId || readingState.books.some((book) => book.id === readingDetailBookId)) {
       return;
     }
@@ -594,6 +646,7 @@ function AppShell(): JSX.Element {
       !planDeleteModalOpen &&
       !checkInHabitTarget &&
       !quickCompletePlanTarget &&
+      !activePendingPlanReviewItem &&
       !planDetailPlanTarget &&
       !interestClassModalOpen &&
       !interestRecordModalOpen &&
@@ -622,6 +675,10 @@ function AppShell(): JSX.Element {
         }
         if (quickCompletePlanTarget) {
           closeQuickCompleteModal();
+          return;
+        }
+        if (activePendingPlanReviewItem) {
+          closePlanPointsReviewModal();
           return;
         }
         if (planDetailPlanTarget) {
@@ -657,6 +714,7 @@ function AppShell(): JSX.Element {
     checkInHabitTarget,
     planDetailPlanTarget,
     quickCompletePlanTarget,
+    activePendingPlanReviewItem,
     interestClassModalOpen,
     interestRecordModalOpen,
     readingBookModalOpen,
@@ -1365,6 +1423,30 @@ function AppShell(): JSX.Element {
     }
   }
 
+  function openPlanPointsReviewModal(target?: PendingPlanReviewItem): void {
+    const resolvedTarget = target ?? pendingPlanReviewItems[0] ?? null;
+    if (!resolvedTarget) {
+      setNotice("当前没有待审定的积分任务。");
+      return;
+    }
+
+    setPlanPointsReviewDraft({
+      planId: resolvedTarget.planId,
+      completionRecordId: resolvedTarget.completionRecordId,
+      decision: "approve",
+      adjustedStars: String(resolvedTarget.suggestedStars),
+      reason: "",
+    });
+  }
+
+  function closePlanPointsReviewModal(): void {
+    setPlanPointsReviewDraft(INITIAL_PLAN_POINTS_REVIEW_DRAFT);
+  }
+
+  function updatePlanPointsReviewDraft(field: keyof PlanPointsReviewDraft, value: string | PlanPointsReviewDecision): void {
+    setPlanPointsReviewDraft((current) => ({ ...current, [field]: value }));
+  }
+
   function openPlanDetailModal(plan: StudyPlan): void {
     setPlanDetailPlanId(plan.id);
   }
@@ -1446,6 +1528,41 @@ function AppShell(): JSX.Element {
       ...current,
       attachments: current.attachments.filter((attachment) => attachment.id !== attachmentId),
     }));
+  }
+
+  function handleOpenPlanPointsReviewFromBoard(): void {
+    openPlanPointsReviewModal();
+  }
+
+  function handleApproveAllPendingPlanPoints(): void {
+    if (pendingPlanReviewItems.length === 0) {
+      setNotice("当前没有待审定的积分任务。");
+      return;
+    }
+
+    let nextState = state;
+    let approvedCount = 0;
+    for (const item of pendingPlanReviewItems) {
+      const result = reviewPlanCompletion(
+        nextState,
+        item.planId,
+        item.completionRecordId,
+        {
+          decision: "approve",
+          reason: "一键通过",
+        },
+      );
+      if (!result.ok) {
+        setNotice(`批量通过中断：${result.message}`);
+        return;
+      }
+      nextState = result.nextState;
+      approvedCount += 1;
+    }
+
+    setState(nextState);
+    closePlanPointsReviewModal();
+    setNotice(`已一键通过 ${approvedCount} 个待审积分任务。`);
   }
 
   function updateHabitDraft(field: keyof HabitDraft, value: string | boolean): void {
@@ -1665,6 +1782,7 @@ function AppShell(): JSX.Element {
     setAiPlanSessions([]);
     setActiveAiPlanSessionId(null);
     setQuickCompleteDraft(INITIAL_QUICK_COMPLETE_DRAFT);
+    setPlanPointsReviewDraft(INITIAL_PLAN_POINTS_REVIEW_DRAFT);
     setHabitDraft(INITIAL_HABIT_DRAFT);
     setWishDraft(createInitialWishDraft());
     setHeightState(resetHeightManagementState());
@@ -1996,6 +2114,7 @@ function AppShell(): JSX.Element {
             repeatType: planDraft.repeatType,
             minutes: resolvedMinutesForSave,
             stars: planDraft.useCustomPoints ? parsedPlanCustomPoints : undefined,
+            approvalRequired: planDraft.useCustomPoints ? planDraft.approvalRequired : false,
             createdAt: buildPlanDateTime(startDate, startTimeForSave),
           },
         ),
@@ -2020,6 +2139,7 @@ function AppShell(): JSX.Element {
           repeatType: planDraft.repeatType,
           minutes: resolvedMinutesForSave,
           stars: planDraft.useCustomPoints ? parsedPlanCustomPoints : undefined,
+          approvalRequired: planDraft.useCustomPoints ? planDraft.approvalRequired : false,
         },
         buildPlanDateTime(startDate, startTimeForSave),
       ),
@@ -2356,6 +2476,42 @@ function AppShell(): JSX.Element {
       () => {
         closeQuickCompleteModal();
         setSelectedDateKey(today);
+      },
+    );
+  }
+
+  function handleSubmitPlanPointsReview(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    if (!activePendingPlanReviewItem) {
+      setNotice("待审定记录已不存在。");
+      closePlanPointsReviewModal();
+      return;
+    }
+
+    if (planPointsReviewDraft.decision === "adjust") {
+      if (!Number.isInteger(parsedPlanPointsReviewStars) || parsedPlanPointsReviewStars < -1000 || parsedPlanPointsReviewStars > 1000) {
+        setNotice("调整积分必须是 -1000 到 1000 的整数。");
+        return;
+      }
+      if (planPointsReviewDraft.reason.trim().length === 0) {
+        setNotice("调整积分时需要填写审定说明。");
+        return;
+      }
+    }
+
+    applyMutation(
+      reviewPlanCompletion(state, activePendingPlanReviewItem.planId, activePendingPlanReviewItem.completionRecordId, {
+        decision: planPointsReviewDraft.decision,
+        adjustedStars: parsedPlanPointsReviewStars,
+        reason: planPointsReviewDraft.reason,
+      }),
+      (nextState) => {
+        const nextPending = collectPendingPlanReviewItems(nextState.plans);
+        if (nextPending.length > 0) {
+          openPlanPointsReviewModal(nextPending[0]);
+          return;
+        }
+        closePlanPointsReviewModal();
       },
     );
   }
@@ -2968,6 +3124,7 @@ function AppShell(): JSX.Element {
         plans={state.plans}
         pendingPlans={pendingPlans}
         completedPlans={completedPlans}
+        pendingReviewCount={pendingPlanReviewItems.length}
         onSetSelectedDateKey={setSelectedDateKey}
         onJumpToToday={() => setSelectedDateKey(today)}
         onShiftSelectedDate={(offset) => setSelectedDateKey(shiftDateKey(selectedDateKey, offset))}
@@ -2976,6 +3133,8 @@ function AppShell(): JSX.Element {
         onOpenPlanCreate={handleOpenPlanCreateFromHome}
         onOpenBatchPlanCreate={handleOpenBatchPlanCreateFromHome}
         onOpenQuickComplete={openQuickCompleteModal}
+        onOpenPlanPointsReview={handleOpenPlanPointsReviewFromBoard}
+        onApproveAllPlanPointsReview={handleApproveAllPendingPlanPoints}
         onOpenStudyTimer={openStudyTimer}
         onOpenPlanDetail={openPlanDetailModal}
         onOpenFutureFlow={openFutureFlow}
@@ -3052,6 +3211,14 @@ function AppShell(): JSX.Element {
         onSelectFiles={handleQuickCompleteFileSelection}
         onDropFiles={handleQuickCompleteDrop}
         onRemoveAttachment={removeQuickCompleteAttachment}
+      />
+      <PlanPointsReviewModal
+        item={activePendingPlanReviewItem}
+        draft={planPointsReviewDraft}
+        canSubmit={canSubmitPlanPointsReview}
+        onClose={closePlanPointsReviewModal}
+        onSubmit={handleSubmitPlanPointsReview}
+        onUpdateDraft={updatePlanPointsReviewDraft}
       />
       <PlanDetailModal
         plan={planDetailPlanTarget}

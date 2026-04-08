@@ -1,5 +1,7 @@
 export type PlanStatus = "pending" | "done";
 export type PlanCompletionMode = "duration" | "actual";
+export type PlanCompletionReviewStatus = "pending" | "approved" | "adjusted" | "rejected";
+export type PlanCompletionReviewDecision = "approve" | "adjust" | "reject";
 export type PlanRepeatType =
   | "once"
   | "daily"
@@ -34,6 +36,7 @@ export interface StudyPlan {
   minutes: number;
   stars: number;
   customStarsEnabled: boolean;
+  approvalRequired: boolean;
   status: PlanStatus;
   createdAt: string;
   completedAt: string | null;
@@ -57,6 +60,10 @@ export interface PlanCompletionRecord {
   note: string;
   attachments: PlanCompletionAttachment[];
   completedAt: string;
+  reviewStatus: PlanCompletionReviewStatus;
+  reviewReason: string;
+  reviewedAt: string | null;
+  awardedStars: number | null;
 }
 
 export interface Habit {
@@ -273,6 +280,7 @@ export interface UpdatePlanInput {
   minutes: number;
   stars?: number;
   customStarsEnabled?: boolean;
+  approvalRequired?: boolean;
   createdAt?: string;
 }
 
@@ -287,6 +295,12 @@ export interface CompletePlanInput {
   durationSeconds?: number;
   note?: string;
   attachments?: PlanCompletionAttachment[];
+}
+
+export interface ReviewPlanCompletionInput {
+  decision: PlanCompletionReviewDecision;
+  adjustedStars?: number;
+  reason?: string;
 }
 
 export interface RewardRedeemSummary {

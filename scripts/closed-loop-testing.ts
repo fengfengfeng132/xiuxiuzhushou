@@ -6,6 +6,7 @@ import {
   adoptPet,
   calculateStarBalance,
   checkInHabit,
+  completePlan,
   createHabit,
   createReward,
   createInitialState,
@@ -17,6 +18,7 @@ import {
   isPlanScheduledForDate,
   recyclePet,
   redeemReward,
+  reviewPlanCompletion,
   serializeState,
   updateReward,
   type AppState,
@@ -146,6 +148,74 @@ function runHabitScenario(baseState: AppState): { result: ScenarioResult; state:
       details: "Habit check-in increments completions and star balance exactly once.",
     },
     state: checkInMutation.nextState,
+  };
+}
+
+function runPlanApprovalScenario(baseState: AppState): { result: ScenarioResult; state: AppState } {
+  const createMutation = addPlan(
+    baseState,
+    {
+      title: "审定流程测试任务",
+      subject: "英语",
+      minutes: 30,
+      stars: 6,
+      customStarsEnabled: true,
+      approvalRequired: true,
+    },
+    FIXED_NOW,
+  );
+  const createdPlan = createMutation.nextState.plans.find((plan) => plan.title === "审定流程测试任务");
+
+  assert(createMutation.ok, "Approval-required plan setup should succeed.");
+  assert(Boolean(createdPlan), "Approval-required plan should exist.");
+
+  const beforeCompleteBalance = calculateStarBalance(createMutation.nextState);
+  const completeMutation = completePlan(
+    createMutation.nextState,
+    createdPlan!.id,
+    {
+      mode: "duration",
+      durationSeconds: 30 * 60,
+      note: "完成后待审定",
+    },
+    FIXED_NOW,
+  );
+  const afterCompleteBalance = calculateStarBalance(completeMutation.nextState);
+  const pendingRecord = completeMutation.nextState.plans
+    .find((plan) => plan.id === createdPlan!.id)
+    ?.completionRecords.find((record) => record.reviewStatus === "pending");
+
+  assert(completeMutation.ok, "Completing approval-required plan should succeed.");
+  assert(afterCompleteBalance === beforeCompleteBalance, "Approval-required completion should not change star balance before review.");
+  assert(Boolean(pendingRecord), "Completion should create a pending review record.");
+
+  const reviewMutation = reviewPlanCompletion(
+    completeMutation.nextState,
+    createdPlan!.id,
+    pendingRecord!.id,
+    {
+      decision: "approve",
+      reason: "验证通过",
+    },
+    FIXED_NOW,
+  );
+  const afterReviewBalance = calculateStarBalance(reviewMutation.nextState);
+  const reviewedRecord = reviewMutation.nextState.plans
+    .find((plan) => plan.id === createdPlan!.id)
+    ?.completionRecords.find((record) => record.id === pendingRecord!.id);
+
+  assert(reviewMutation.ok, "Plan review should succeed.");
+  assert(afterReviewBalance > afterCompleteBalance, "Approved review should increase star balance.");
+  assert(reviewedRecord?.reviewStatus === "approved", "Reviewed record should be marked approved.");
+  assert((reviewedRecord?.awardedStars ?? 0) > 0, "Reviewed record should persist awarded stars.");
+
+  return {
+    result: {
+      id: "plan-approval-review-flow",
+      passed: true,
+      details: "Approval-required plans defer star awarding until review confirmation.",
+    },
+    state: reviewMutation.nextState,
   };
 }
 
@@ -284,7 +354,11 @@ async function main(): Promise<void> {
     scenarioResults.push(addPlanScenario.result);
     await writeJson("state-after-add-plan.json", addPlanScenario.state);
 
-    const scopedDeleteScenario = runScopedDeleteScenario(addPlanScenario.state);
+    const planApprovalScenario = runPlanApprovalScenario(addPlanScenario.state);
+    scenarioResults.push(planApprovalScenario.result);
+    await writeJson("state-after-plan-review.json", planApprovalScenario.state);
+
+    const scopedDeleteScenario = runScopedDeleteScenario(planApprovalScenario.state);
     scenarioResults.push(scopedDeleteScenario.result);
     await writeJson("state-after-scoped-delete.json", scopedDeleteScenario.state);
 

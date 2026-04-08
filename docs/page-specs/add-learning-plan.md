@@ -110,6 +110,14 @@ Requirement:
 - Optional section
 - Contains a toggle:
   - `启用自定义积分`
+- Enabled state includes:
+  - `积分数值` numeric input (`1-1000`)
+  - reward preview card (`奖励：X⭐`)
+  - `需要审定` switch
+  - when `需要审定` is on, show a short workflow guide:
+    - completion creates a pending review task
+    - reviewer can approve, adjust, or reject points
+    - stars are credited only after review
 - Toggle-off state shows a system-rule summary card.
 
 Visible rule copy:
@@ -120,9 +128,6 @@ Visible rule copy:
 
 Requirement:
 - V1 may keep custom points off by default and display the system rule first.
-
-Known unknown:
-- The exact input shown after enabling custom points is not visible yet.
 
 ### 8. 附件
 

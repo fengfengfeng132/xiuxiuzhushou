@@ -380,6 +380,81 @@
   line-height: 1.8;
 }
 
+.plan-create-field-helper {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.plan-create-points-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.8fr);
+  gap: 12px;
+  align-items: end;
+}
+
+.plan-create-points-preview {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 245, 219, 0.92);
+  color: #9f6b09;
+}
+
+.plan-create-points-preview strong {
+  display: block;
+}
+
+.plan-create-points-preview p {
+  margin: 6px 0 0;
+  line-height: 1.7;
+}
+
+.plan-create-approval-panel {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(123, 163, 255, 0.32);
+  background: rgba(239, 246, 255, 0.94);
+}
+
+.plan-create-approval-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.plan-create-approval-head strong {
+  display: block;
+}
+
+.plan-create-approval-head p {
+  margin: 4px 0 0;
+  color: #4f637f;
+  line-height: 1.7;
+}
+
+.plan-create-approval-guide {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(123, 163, 255, 0.28);
+}
+
+.plan-create-approval-guide strong {
+  display: block;
+  color: #2f65de;
+}
+
+.plan-create-approval-guide ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: #2f65de;
+  line-height: 1.8;
+}
+
 .plan-create-upload {
   min-height: 168px;
   padding: 20px;
