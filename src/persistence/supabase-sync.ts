@@ -28,6 +28,18 @@ export interface RemoteSyncPushResult {
   remoteUpdatedAt: string;
 }
 
+export interface SupabaseInitializationCheckItem {
+  id: string;
+  label: string;
+  status: "pass" | "warn" | "fail";
+  message: string;
+}
+
+export interface SupabaseInitializationCheckResult {
+  session: SyncAccountSession | null;
+  checks: SupabaseInitializationCheckItem[];
+}
+
 interface SupabaseAuthResponse {
   access_token?: string;
   refresh_token?: string;
@@ -127,6 +139,165 @@ function buildRestHeaders(config: SupabaseSyncConfig, session: SyncAccountSessio
     Authorization: `Bearer ${session.accessToken}`,
     "Content-Type": "application/json",
   };
+}
+
+function buildAnonHeaders(config: SupabaseSyncConfig): Record<string, string> {
+  const anonKey = config.supabaseAnonKey.trim();
+  return {
+    apikey: anonKey,
+    Authorization: `Bearer ${anonKey}`,
+    "Content-Type": "application/json",
+  };
+}
+
+export async function runSupabaseInitializationCheck(
+  config: SupabaseSyncConfig,
+  session: SyncAccountSession | null,
+): Promise<SupabaseInitializationCheckResult> {
+  const checks: SupabaseInitializationCheckItem[] = [];
+  let nextSession: SyncAccountSession | null = session;
+  const trimmedUrl = normalizeBaseUrl(config.supabaseUrl);
+  const trimmedAnonKey = config.supabaseAnonKey.trim();
+
+  if (!trimmedUrl) {
+    checks.push({
+      id: "config-url",
+      label: "Supabase URL",
+      status: "fail",
+      message: "未填写 Supabase URL。",
+    });
+    return { session: nextSession, checks };
+  }
+
+  checks.push({
+    id: "config-url",
+    label: "Supabase URL",
+    status: "pass",
+    message: "URL 已填写。",
+  });
+
+  if (!trimmedAnonKey) {
+    checks.push({
+      id: "config-anon-key",
+      label: "Anon Key",
+      status: "fail",
+      message: "未填写 anon key。",
+    });
+    return { session: nextSession, checks };
+  }
+
+  checks.push({
+    id: "config-anon-key",
+    label: "Anon Key",
+    status: "pass",
+    message: "anon key 已填写。",
+  });
+
+  let authSettingsPayload: Record<string, unknown> | null = null;
+  try {
+    const authSettingsResponse = await fetch(`${trimmedUrl}/auth/v1/settings`, {
+      method: "GET",
+      headers: buildAnonHeaders(config),
+    });
+    if (!authSettingsResponse.ok) {
+      checks.push({
+        id: "auth-settings",
+        label: "项目连通性",
+        status: "fail",
+        message: await parseSupabaseError(authSettingsResponse),
+      });
+      return { session: nextSession, checks };
+    }
+
+    authSettingsPayload = (await authSettingsResponse.json()) as Record<string, unknown>;
+    checks.push({
+      id: "auth-settings",
+      label: "项目连通性",
+      status: "pass",
+      message: "Supabase 项目可访问。",
+    });
+  } catch (error) {
+    checks.push({
+      id: "auth-settings",
+      label: "项目连通性",
+      status: "fail",
+      message: error instanceof Error ? error.message : "请求 Supabase 失败。",
+    });
+    return { session: nextSession, checks };
+  }
+
+  const signupsDisabled = authSettingsPayload?.disable_signup === true;
+  checks.push({
+    id: "auth-signup",
+    label: "注册策略",
+    status: signupsDisabled ? "warn" : "pass",
+    message: signupsDisabled ? "项目已禁用邮箱注册，请使用已有账号登录。" : "邮箱注册可用。",
+  });
+
+  if (!nextSession) {
+    checks.push({
+      id: "session",
+      label: "登录会话",
+      status: "warn",
+      message: "当前未登录，已跳过云表权限检查。",
+    });
+    return { session: nextSession, checks };
+  }
+
+  try {
+    nextSession = await ensureFreshSession(config, nextSession);
+    checks.push({
+      id: "session",
+      label: "登录会话",
+      status: "pass",
+      message: `已登录 ${nextSession.email}`,
+    });
+  } catch (error) {
+    checks.push({
+      id: "session",
+      label: "登录会话",
+      status: "fail",
+      message: error instanceof Error ? error.message : "会话刷新失败。",
+    });
+    return { session: null, checks };
+  }
+
+  try {
+    const query = new URLSearchParams({
+      select: "user_id,updated_at",
+      user_id: `eq.${nextSession.userId}`,
+      limit: "1",
+    });
+    const tableResponse = await fetch(`${trimmedUrl}/rest/v1/${APP_SYNC_STATE_TABLE}?${query.toString()}`, {
+      method: "GET",
+      headers: buildRestHeaders(config, nextSession),
+    });
+    if (!tableResponse.ok) {
+      checks.push({
+        id: "sync-table",
+        label: "同步表权限",
+        status: "fail",
+        message: await parseSupabaseError(tableResponse),
+      });
+      return { session: nextSession, checks };
+    }
+
+    checks.push({
+      id: "sync-table",
+      label: "同步表权限",
+      status: "pass",
+      message: `${APP_SYNC_STATE_TABLE} 可读，RLS 通过。`,
+    });
+  } catch (error) {
+    checks.push({
+      id: "sync-table",
+      label: "同步表权限",
+      status: "fail",
+      message: error instanceof Error ? error.message : "检查同步表失败。",
+    });
+  }
+
+  return { session: nextSession, checks };
 }
 
 export async function signInSupabaseWithPassword(

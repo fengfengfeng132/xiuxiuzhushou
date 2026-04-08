@@ -15,6 +15,7 @@ interface SyncAccountModalProps {
   onSignIn: () => void;
   onSignUp: () => void;
   onRefreshSession: () => void;
+  onInitializationCheck: () => void;
   onPush: () => void;
   onPull: () => void;
   onBidirectionalSync: () => void;
@@ -44,6 +45,7 @@ export function SyncAccountModal({
   onSignIn,
   onSignUp,
   onRefreshSession,
+  onInitializationCheck,
   onPush,
   onPull,
   onBidirectionalSync,
@@ -148,6 +150,9 @@ export function SyncAccountModal({
         </section>
 
         <div className="sync-run-actions">
+          <button type="button" className="modal-cancel" disabled={isBusy} onClick={onInitializationCheck}>
+            初始化检查
+          </button>
           <button type="button" className="modal-submit modal-submit-primary" disabled={isBusy || !session} onClick={onBidirectionalSync}>
             双向同步
           </button>

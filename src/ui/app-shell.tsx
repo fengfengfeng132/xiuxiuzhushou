@@ -48,8 +48,10 @@ import {
   fetchRemoteSyncSnapshot,
   pushRemoteSyncSnapshot,
   refreshSupabaseSession,
+  runSupabaseInitializationCheck,
   signInSupabaseWithPassword,
   signUpSupabaseWithPassword,
+  type SupabaseInitializationCheckItem,
   type SupabaseSyncConfig,
 } from "../persistence/supabase-sync.js";
 import {
@@ -1680,6 +1682,26 @@ function AppShell(): JSX.Element {
     return "同步请求失败，请稍后重试。";
   }
 
+  function renderInitializationSummary(checks: SupabaseInitializationCheckItem[]): string {
+    if (checks.length === 0) {
+      return "初始化检查未返回结果。";
+    }
+
+    const summary = checks
+      .map((check) => {
+        const badge = check.status === "pass" ? "✅" : check.status === "warn" ? "⚠️" : "❌";
+        return `${badge}${check.label}`;
+      })
+      .join(" | ");
+    const failedChecks = checks.filter((check) => check.status === "fail");
+    if (failedChecks.length === 0) {
+      return `初始化检查完成：${summary}`;
+    }
+
+    const failureMessage = failedChecks.map((check) => `${check.label}:${check.message}`).join("；");
+    return `初始化检查完成：${summary}。失败项：${failureMessage}`;
+  }
+
   async function runSyncAction(actionLabel: string, task: () => Promise<string>): Promise<void> {
     if (syncBusy) {
       return;
@@ -1733,6 +1755,15 @@ function AppShell(): JSX.Element {
       const refreshed = await refreshSupabaseSession(config, session);
       setSyncSession(refreshed);
       return `会话已刷新，账号 ${refreshed.email}`;
+    });
+  }
+
+  async function handleSyncInitializationCheck(): Promise<void> {
+    await runSyncAction("初始化检查", async () => {
+      const config = resolveSyncConfig();
+      const result = await runSupabaseInitializationCheck(config, syncSession);
+      setSyncSession(result.session);
+      return renderInitializationSummary(result.checks);
     });
   }
 
@@ -3017,6 +3048,7 @@ function AppShell(): JSX.Element {
         onSignIn={() => void handleSyncSignIn()}
         onSignUp={() => void handleSyncSignUp()}
         onRefreshSession={() => void handleSyncRefreshSession()}
+        onInitializationCheck={() => void handleSyncInitializationCheck()}
         onPush={() => void handleSyncPushLocal()}
         onPull={() => void handleSyncPullRemote()}
         onBidirectionalSync={() => void handleSyncBidirectional()}
