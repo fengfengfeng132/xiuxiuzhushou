@@ -12,7 +12,10 @@ import {
 import { buildPetStatusCopy, createPetNeedCards } from "../app-helpers.js";
 import { getPetArtSrc } from "./pet-art.js";
 
-const CORGI_VIDEO_SRC = "/assets/corgi.webm";
+const ANIMATED_PET_VIDEO_SRC_BY_ID: Partial<Record<string, string>> = {
+  pet_corgi: "/assets/corgi.webm",
+  pet_fox: "/assets/fox.webm",
+};
 
 interface PetCenterScreenProps {
   starBalance: number;
@@ -28,16 +31,17 @@ interface PetCenterScreenProps {
   onInteract: (actionId: "feed" | "bathe" | "park" | "sleep") => void;
 }
 
-function isCorgiAnimated(definitionId: string): boolean {
-  return definitionId === "pet_corgi";
+function getAnimatedPetVideoSrc(definitionId: string): string | null {
+  return ANIMATED_PET_VIDEO_SRC_BY_ID[definitionId] ?? null;
 }
 
 function renderPetFigure(definition: PetDefinition, variant: "card" | "stage" | "roster"): ReactElement {
-  if (isCorgiAnimated(definition.id)) {
+  const videoSrc = getAnimatedPetVideoSrc(definition.id);
+  if (videoSrc) {
     return (
       <video
         className={`pet-art-video pet-art-video-${variant}`}
-        src={CORGI_VIDEO_SRC}
+        src={videoSrc}
         autoPlay
         loop
         muted
@@ -136,7 +140,7 @@ export function PetCenterScreen({
                 "--pet-accent": definition.accent,
                 "--pet-accent-soft": definition.accentSoft,
               } as CSSProperties;
-              const cardFigureClassName = `pet-card-figure${isCorgiAnimated(definition.id) ? " pet-media-transparent" : ""}`;
+              const cardFigureClassName = `pet-card-figure${getAnimatedPetVideoSrc(definition.id) ? " pet-media-transparent" : ""}`;
 
               return (
                 <article key={definition.id} className="pet-shop-card" style={cardStyle}>
@@ -168,7 +172,7 @@ export function PetCenterScreen({
   } as CSSProperties;
   const needCards = createPetNeedCards(activePetCompanion);
   const statusCopy = buildPetStatusCopy(activePetCompanion, activePetDefinition);
-  const stageFigureClassName = `pet-stage-figure${isCorgiAnimated(activePetDefinition.id) ? " pet-media-transparent" : ""}${interactionMotionClass}`;
+  const stageFigureClassName = `pet-stage-figure${getAnimatedPetVideoSrc(activePetDefinition.id) ? " pet-media-transparent" : ""}${interactionMotionClass}`;
 
   return (
     <div className="pet-page">
@@ -294,7 +298,7 @@ export function PetCenterScreen({
                   "--pet-accent": definition.accent,
                   "--pet-accent-soft": definition.accentSoft,
                 } as CSSProperties;
-                const rosterAvatarClassName = `pet-roster-avatar${isCorgiAnimated(definition.id) ? " pet-media-transparent" : ""}`;
+                const rosterAvatarClassName = `pet-roster-avatar${getAnimatedPetVideoSrc(definition.id) ? " pet-media-transparent" : ""}`;
 
                 return (
                   <article key={definition.id} className={`pet-roster-row${isActive ? " is-active" : ""}`} style={itemStyle}>
