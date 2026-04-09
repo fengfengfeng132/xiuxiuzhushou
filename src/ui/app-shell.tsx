@@ -2879,6 +2879,23 @@ function AppShell(): JSX.Element {
     setActiveTimerPlanId(null);
   }
 
+  function handleCompleteFromStudyTimer(planId: string, durationSeconds: number): void {
+    const durationMinutes = Math.max(1, Math.round(durationSeconds / 60));
+    applyMutation(
+      completePlan(state, planId, {
+        mode: "actual",
+        durationSeconds,
+      }),
+      () => {
+        setScreen("home");
+        setActiveTab("plans");
+        setSelectedDateKey(today);
+        setActiveTimerPlanId(null);
+      },
+      `已完成计划，自动记录 ${durationMinutes} 分钟。`,
+    );
+  }
+
   function handleAdoptPet(definitionId: string): void {
     applyMutation(adoptPet(state, definitionId), openPetCenter);
   }
@@ -3069,7 +3086,7 @@ function AppShell(): JSX.Element {
     );
 
     if (screen === "study-timer") {
-      return <StudyTimerScreen plan={activeTimerPlan} onBack={handleBackFromStudyTimer} />;
+      return <StudyTimerScreen plan={activeTimerPlan} onBack={handleBackFromStudyTimer} onComplete={handleCompleteFromStudyTimer} />;
     }
 
     if (screen === "reading-journey") {

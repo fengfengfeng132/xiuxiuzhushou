@@ -70,8 +70,14 @@ function getPrimaryActionLabel(mode: TimerMode, phase: TimerPhase): string {
   return "开始学习";
 }
 
+interface StudyTimerScreenProps {
+  plan: StudyPlan | null;
+  onBack: () => void;
+  onComplete: (planId: string, durationSeconds: number) => void;
+}
+
 // StudyTimerScreen owns timer-specific state so future agents can extend this workflow without reopening AppShell.
-export function StudyTimerScreen({ plan, onBack }: { plan: StudyPlan | null; onBack: () => void }) {
+export function StudyTimerScreen({ plan, onBack, onComplete }: StudyTimerScreenProps) {
   const [mode, setMode] = useState<TimerMode>("elapsed");
   const [phase, setPhase] = useState<TimerPhase>("idle");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -83,6 +89,7 @@ export function StudyTimerScreen({ plan, onBack }: { plan: StudyPlan | null; onB
   const countdownSeconds = Math.max(countdownTargetSeconds - elapsedSeconds, 0);
   const pomodoroSeconds = Math.max(POMODORO_WORK_SECONDS - elapsedSeconds, 0);
   const displaySeconds = mode === "elapsed" ? elapsedSeconds : mode === "countdown" ? countdownSeconds : pomodoroSeconds;
+  const canComplete = plan !== null && plan.status === "pending" && elapsedSeconds > 0;
   const [hours, minutes, seconds] = splitClock(displaySeconds);
 
   useEffect(() => {
@@ -162,6 +169,13 @@ export function StudyTimerScreen({ plan, onBack }: { plan: StudyPlan | null; onB
   function handleSecondaryAction(): void {
     setPhase("idle");
     setElapsedSeconds(0);
+  }
+
+  function handleCompleteAction(): void {
+    if (!plan || !canComplete) {
+      return;
+    }
+    onComplete(plan.id, Math.max(1, elapsedSeconds));
   }
 
   function handleCycleCountdownPreset(): void {
@@ -270,6 +284,9 @@ export function StudyTimerScreen({ plan, onBack }: { plan: StudyPlan | null; onB
           <div className="timer-action-row">
             <button type="button" className="timer-primary-button" onClick={handlePrimaryAction}>
               {getPrimaryActionLabel(mode, phase)}
+            </button>
+            <button type="button" className="timer-complete-button" onClick={handleCompleteAction} disabled={!canComplete}>
+              完成
             </button>
             {phase !== "idle" ? (
               <button type="button" className="timer-secondary-button" onClick={handleSecondaryAction}>

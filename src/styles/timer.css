@@ -100,6 +100,7 @@
 .timer-sound-button,
 .timer-link-button,
 .timer-primary-button,
+.timer-complete-button,
 .timer-secondary-button,
 .timer-recording-trigger {
   border: 0;
@@ -283,7 +284,8 @@
 }
 
 .timer-primary-button,
-.timer-secondary-button {
+.timer-secondary-button,
+.timer-complete-button {
   min-width: 188px;
   padding: 18px 28px;
   border-radius: 18px;
@@ -303,7 +305,19 @@
   color: #334155;
 }
 
+.timer-complete-button {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #fff;
+  box-shadow: 0 16px 30px rgba(22, 163, 74, 0.24);
+}
+
+.timer-complete-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+}
+
 .timer-primary-button:hover,
+.timer-complete-button:hover,
 .timer-secondary-button:hover,
 .timer-recording-trigger:hover,
 .timer-mode-button:hover,
@@ -393,6 +407,7 @@
   }
 
   .timer-primary-button,
+  .timer-complete-button,
   .timer-secondary-button {
     width: 100%;
   }
