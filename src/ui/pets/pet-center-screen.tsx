@@ -12,9 +12,14 @@ import {
 import { buildPetStatusCopy, createPetNeedCards } from "../app-helpers.js";
 import { getPetArtSrc } from "./pet-art.js";
 
-const ANIMATED_PET_VIDEO_SRC_BY_ID: Partial<Record<string, string>> = {
-  pet_corgi: "/assets/corgi.webm",
-  pet_fox: "/assets/fox.webm",
+interface AnimatedPetVideoConfig {
+  idle: string;
+  feed?: string;
+}
+
+const ANIMATED_PET_VIDEO_CONFIG_BY_ID: Partial<Record<string, AnimatedPetVideoConfig>> = {
+  pet_corgi: { idle: "/assets/corgi.webm" },
+  pet_fox: { idle: "/assets/fox.webm", feed: "/assets/fox-feed.webm" },
 };
 
 interface PetCenterScreenProps {
@@ -31,28 +36,39 @@ interface PetCenterScreenProps {
   onInteract: (actionId: "feed" | "bathe" | "park" | "sleep") => void;
 }
 
-function getAnimatedPetVideoSrc(definitionId: string): string | null {
-  return ANIMATED_PET_VIDEO_SRC_BY_ID[definitionId] ?? null;
+function getAnimatedPetVideoConfig(definitionId: string): AnimatedPetVideoConfig | null {
+  return ANIMATED_PET_VIDEO_CONFIG_BY_ID[definitionId] ?? null;
 }
 
 function isFullRangeStageVideo(definitionId: string): boolean {
   return definitionId === "pet_fox";
 }
 
-function renderPetFigure(definition: PetDefinition, variant: "card" | "stage" | "roster"): ReactElement {
-  const videoSrc = getAnimatedPetVideoSrc(definition.id);
-  if (videoSrc) {
+interface PetFigureRenderOptions {
+  loopOverride?: boolean;
+  onVideoEnded?: () => void;
+  videoKey?: string;
+  videoSrcOverride?: string | null;
+}
+
+function renderPetFigure(definition: PetDefinition, variant: "card" | "stage" | "roster", options: PetFigureRenderOptions = {}): ReactElement {
+  const videoConfig = getAnimatedPetVideoConfig(definition.id);
+  const videoSrc = options.videoSrcOverride ?? videoConfig?.idle ?? null;
+  if (videoConfig && videoSrc) {
     const videoClassName = `pet-art-video pet-art-video-${variant}${variant === "stage" && isFullRangeStageVideo(definition.id) ? " pet-art-video-stage-full-range" : ""}`;
+    const shouldLoop = options.loopOverride ?? true;
     return (
       <video
+        key={options.videoKey ?? `${definition.id}-${variant}-${videoSrc}`}
         className={videoClassName}
         src={videoSrc}
         autoPlay
-        loop
+        loop={shouldLoop}
         muted
         playsInline
         aria-hidden="true"
         preload={variant === "stage" ? "auto" : "metadata"}
+        onEnded={options.onVideoEnded}
       />
     );
   }
@@ -94,6 +110,8 @@ export function PetCenterScreen({
 }: PetCenterScreenProps) {
   const interactionCost = 1;
   const canInteract = starBalance >= interactionCost;
+  const [feedPlaybackToken, setFeedPlaybackToken] = useState(0);
+  const [isFeedVideoPlaying, setIsFeedVideoPlaying] = useState(false);
   const [isPetReacting, setIsPetReacting] = useState(false);
   const previousInteractionAtRef = useRef<string | null>(activePetCompanion?.lastInteractionAt ?? null);
   const activeInteractionAt = activePetCompanion?.lastInteractionAt ?? null;
@@ -101,14 +119,22 @@ export function PetCenterScreen({
   const interactionMotionClass = isPetReacting && activeInteractionId ? ` is-reacting is-reacting-${activeInteractionId}` : "";
 
   useEffect(() => {
-    if (!activePetCompanion) {
+    if (!activePetCompanion || !activePetDefinition) {
       previousInteractionAtRef.current = null;
+      setIsFeedVideoPlaying(false);
       setIsPetReacting(false);
       return;
     }
 
     if (activeInteractionAt && activeInteractionAt !== previousInteractionAtRef.current) {
       setIsPetReacting(true);
+      const hasFeedVideo = Boolean(getAnimatedPetVideoConfig(activePetDefinition.id)?.feed);
+      if (activeInteractionId === "feed" && hasFeedVideo) {
+        setIsFeedVideoPlaying(true);
+        setFeedPlaybackToken((current) => current + 1);
+      } else {
+        setIsFeedVideoPlaying(false);
+      }
       previousInteractionAtRef.current = activeInteractionAt;
       const timer = window.setTimeout(() => setIsPetReacting(false), 760);
       return () => window.clearTimeout(timer);
@@ -116,7 +142,7 @@ export function PetCenterScreen({
 
     previousInteractionAtRef.current = activeInteractionAt;
     return;
-  }, [activeInteractionAt, activePetCompanion?.definitionId]);
+  }, [activeInteractionAt, activeInteractionId, activePetCompanion?.definitionId, activePetDefinition?.id]);
 
   if (!activePetCompanion || !activePetDefinition || !activePetLevel) {
     return (
@@ -145,7 +171,7 @@ export function PetCenterScreen({
                 "--pet-accent": definition.accent,
                 "--pet-accent-soft": definition.accentSoft,
               } as CSSProperties;
-              const cardFigureClassName = `pet-card-figure${getAnimatedPetVideoSrc(definition.id) ? " pet-media-transparent" : ""}`;
+              const cardFigureClassName = `pet-card-figure${getAnimatedPetVideoConfig(definition.id) ? " pet-media-transparent" : ""}`;
 
               return (
                 <article key={definition.id} className="pet-shop-card" style={cardStyle}>
@@ -175,9 +201,13 @@ export function PetCenterScreen({
     "--pet-accent": activePetDefinition.accent,
     "--pet-accent-soft": activePetDefinition.accentSoft,
   } as CSSProperties;
+  const activePetVideoConfig = getAnimatedPetVideoConfig(activePetDefinition.id);
+  const stageVideoSrc = isFeedVideoPlaying && activePetVideoConfig?.feed ? activePetVideoConfig.feed : activePetVideoConfig?.idle ?? null;
+  const isStageFeedVideo = Boolean(isFeedVideoPlaying && activePetVideoConfig?.feed);
+  const stageVideoKey = isStageFeedVideo ? `feed-${activePetDefinition.id}-${feedPlaybackToken}` : `idle-${activePetDefinition.id}`;
   const needCards = createPetNeedCards(activePetCompanion);
   const statusCopy = buildPetStatusCopy(activePetCompanion, activePetDefinition);
-  const stageFigureClassName = `pet-stage-figure${getAnimatedPetVideoSrc(activePetDefinition.id) ? " pet-media-transparent" : ""}${isFullRangeStageVideo(activePetDefinition.id) ? " pet-stage-figure-full-range" : ""}${interactionMotionClass}`;
+  const stageFigureClassName = `pet-stage-figure${activePetVideoConfig ? " pet-media-transparent" : ""}${isFullRangeStageVideo(activePetDefinition.id) ? " pet-stage-figure-full-range" : ""}${interactionMotionClass}`;
 
   return (
     <div className="pet-page">
@@ -207,7 +237,12 @@ export function PetCenterScreen({
             <div className="pet-stage">
               <div className="pet-stage-frame">
                 <div className={stageFigureClassName} aria-hidden="true">
-                  {renderPetFigure(activePetDefinition, "stage")}
+                  {renderPetFigure(activePetDefinition, "stage", {
+                    videoKey: stageVideoKey,
+                    videoSrcOverride: stageVideoSrc,
+                    loopOverride: !isStageFeedVideo,
+                    onVideoEnded: isStageFeedVideo ? () => setIsFeedVideoPlaying(false) : undefined,
+                  })}
                 </div>
                 <p>{statusCopy}</p>
               </div>
@@ -303,7 +338,7 @@ export function PetCenterScreen({
                   "--pet-accent": definition.accent,
                   "--pet-accent-soft": definition.accentSoft,
                 } as CSSProperties;
-                const rosterAvatarClassName = `pet-roster-avatar${getAnimatedPetVideoSrc(definition.id) ? " pet-media-transparent" : ""}`;
+                const rosterAvatarClassName = `pet-roster-avatar${getAnimatedPetVideoConfig(definition.id) ? " pet-media-transparent" : ""}`;
 
                 return (
                   <article key={definition.id} className={`pet-roster-row${isActive ? " is-active" : ""}`} style={itemStyle}>
