@@ -18,8 +18,8 @@ interface AnimatedPetVideoConfig {
 }
 
 const ANIMATED_PET_VIDEO_CONFIG_BY_ID: Partial<Record<string, AnimatedPetVideoConfig>> = {
-  pet_corgi: { idle: "/assets/corgi.webm" },
-  pet_fox: { idle: "/assets/fox.webm", feed: "/assets/fox-feed.webm" },
+  pet_corgi: { idle: "/assets/corgi.mp4" },
+  pet_fox: { idle: "/assets/fox.mp4", feed: "/assets/fox-feed.mp4" },
 };
 
 interface PetCenterScreenProps {
@@ -51,38 +51,12 @@ interface PetFigureRenderOptions {
   videoSrcOverride?: string | null;
 }
 
-let cachedWebmPlaybackSupport: boolean | null = null;
-
-function supportsWebmPlayback(): boolean {
-  if (cachedWebmPlaybackSupport !== null) {
-    return cachedWebmPlaybackSupport;
-  }
-
-  if (typeof document === "undefined") {
-    cachedWebmPlaybackSupport = false;
-    return cachedWebmPlaybackSupport;
-  }
-
-  const media = document.createElement("video");
-  if (!media || typeof media.canPlayType !== "function") {
-    cachedWebmPlaybackSupport = false;
-    return cachedWebmPlaybackSupport;
-  }
-
-  const checks = ['video/webm; codecs="vp9,opus"', 'video/webm; codecs="vp8,vorbis"', "video/webm"];
-  cachedWebmPlaybackSupport = checks.some((mime) => {
-    const result = media.canPlayType(mime);
-    return result === "probably" || result === "maybe";
-  });
-  return cachedWebmPlaybackSupport;
-}
-
 function renderPetFigure(definition: PetDefinition, variant: "card" | "stage" | "roster", options: PetFigureRenderOptions = {}): ReactElement {
   const videoConfig = getAnimatedPetVideoConfig(definition.id);
   const videoSrc = options.videoSrcOverride ?? videoConfig?.idle ?? null;
   const imageSrc = getPetArtSrc(definition.id);
   const [videoFailed, setVideoFailed] = useState(false);
-  const canUseVideo = Boolean(videoConfig && videoSrc && !videoFailed && supportsWebmPlayback());
+  const canUseVideo = Boolean(videoConfig && videoSrc && !videoFailed);
   if (canUseVideo) {
     const videoClassName = `pet-art-video pet-art-video-${variant}${variant === "stage" && isFullRangeStageVideo(definition.id) ? " pet-art-video-stage-full-range" : ""}`;
     const shouldLoop = options.loopOverride ?? true;
