@@ -42,12 +42,18 @@ import {
   type StudyPlan,
 } from "../domain/model.js";
 import {
+  MAX_LOCAL_PROFILES,
+  createLocalProfile,
+  loadLocalProfileWorkspace,
   loadAppState,
   loadDashboardTabPreference,
   loadOrCreateSyncDeviceId,
+  logoutLocalProfile,
   resetAppState,
   saveAppState,
   saveDashboardTabPreference,
+  switchLocalProfile,
+  type LocalProfileWorkspace,
   type DashboardTab,
 } from "../persistence/storage.js";
 import {
@@ -150,6 +156,7 @@ import { HabitBoard, HabitCheckInModal, HabitManagementScreen, HabitModal, Habit
 import { HelpCenterScreen } from "./help/help-center-screen.js";
 import { HeightManagementScreen } from "./height/height-management-screen.js";
 import { HomeScreen } from "./home/home-screen.js";
+import { ProfileSwitcherModal } from "./home/profile-switcher-modal.js";
 import { SyncAccountModal } from "./home/sync-account-modal.js";
 import {
   InterestClassModal,
@@ -339,6 +346,9 @@ function AppShell(): JSX.Element {
   const [habitDraft, setHabitDraft] = useState<HabitDraft>(INITIAL_HABIT_DRAFT);
   const [wishDraft, setWishDraft] = useState<WishDraft>(createInitialWishDraft());
   const [notice, setNotice] = useState("本地数据已加载。");
+  const [profileWorkspace, setProfileWorkspace] = useState<LocalProfileWorkspace>(() => loadLocalProfileWorkspace());
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [profileNameDraft, setProfileNameDraft] = useState("");
   const [syncModalOpen, setSyncModalOpen] = useState(false);
   const [syncSettings, setSyncSettings] = useState<SyncAccountSettings>(() => loadSyncAccountSettings());
   const [syncPassword, setSyncPassword] = useState("");
@@ -410,6 +420,8 @@ function AppShell(): JSX.Element {
   const completedPlans = getCompletedPlansForDate(state.plans, selectedDateKey);
   const recentActivity = state.activity.slice(0, 5);
   const rewardsPreview = state.rewards.slice(0, 3);
+  const isProfileLoggedIn = profileWorkspace.activeProfileId !== null;
+  const canCreateMoreProfiles = profileWorkspace.profiles.length < MAX_LOCAL_PROFILES;
   const habitType = getHabitFrequencyOption(habitDraft.frequency);
   const parsedHabitPoints = Number(habitDraft.points);
   const canCreateHabit = habitDraft.name.trim().length > 0 && Number.isInteger(parsedHabitPoints) && parsedHabitPoints >= -100 && parsedHabitPoints <= 100;
@@ -1775,7 +1787,9 @@ function AppShell(): JSX.Element {
     if (!window.confirm("这会清空本地看板数据并恢复默认状态，确定继续吗？")) {
       return;
     }
-    setState(resetAppState());
+    const nextState = resetAppState();
+    setState(nextState);
+    setProfileWorkspace(loadLocalProfileWorkspace());
     setPlanDraft(createInitialPlanDraft(today));
     setBatchPlanDraft(createInitialBatchPlanDraft(today));
     setAiPlanComposerDraft(INITIAL_AI_PLAN_COMPOSER_DRAFT);
@@ -1821,6 +1835,8 @@ function AppShell(): JSX.Element {
     setPlanDeleteModalOpen(false);
     setActiveTimerPlanId(null);
     setWishModalOpen(false);
+    setProfileModalOpen(false);
+    setProfileNameDraft("");
     setSyncModalOpen(false);
     setHabitCheckInDraft(INITIAL_HABIT_CHECKIN_DRAFT);
     setNotice("本地状态已重置。");
@@ -1830,12 +1846,74 @@ function AppShell(): JSX.Element {
     setNotice(message);
   }
 
-  function updateSyncEmail(value: string): void {
-    setSyncSettings((current) => ({ ...current, email: value }));
+  function applyProfileSelection(nextState: AppState, nextWorkspace: LocalProfileWorkspace, noticeMessage: string): void {
+    setState(nextState);
+    setProfileWorkspace(nextWorkspace);
+    setProfileModalOpen(false);
+    setProfileNameDraft("");
+    setSyncModalOpen(false);
+    setSelectedDateKey(today);
+    setScreen("home");
+    setActiveTab("plans");
+    setHabitSearch("");
+    setMoreFeaturesSearch("");
+    setHabitFilter("all");
+    setHabitBoardLayout("grid");
+    setHabitStatsRange("week");
+    setSelectedHabitIds([]);
+    setPlanManagementDateKey(today);
+    setPlanManagementOrderIds([]);
+    setSelectedManagedPlanIds([]);
+    setPlanDeleteModalOpen(false);
+    setActiveTimerPlanId(null);
+    setPlanDetailPlanId(null);
+    setQuickCompleteDraft(INITIAL_QUICK_COMPLETE_DRAFT);
+    setPlanPointsReviewDraft(INITIAL_PLAN_POINTS_REVIEW_DRAFT);
+    setHabitCheckInDraft(INITIAL_HABIT_CHECKIN_DRAFT);
+    setNotice(noticeMessage);
+  }
+
+  function openProfileModal(): void {
+    setProfileModalOpen(true);
+    setProfileNameDraft("");
+  }
+
+  function closeProfileModal(): void {
+    setProfileModalOpen(false);
+    setProfileNameDraft("");
+  }
+
+  function handleCreateProfile(): void {
+    try {
+      const result = createLocalProfile(profileNameDraft);
+      const noticeMessage = isProfileLoggedIn ? `已创建并切换到档案：${result.state.profile.name}` : `欢迎你，${result.state.profile.name}！`;
+      applyProfileSelection(result.state, result.workspace, noticeMessage);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "创建档案失败，请稍后重试。");
+    }
+  }
+
+  function handleSwitchProfile(profileId: string): void {
+    try {
+      const result = switchLocalProfile(profileId);
+      applyProfileSelection(result.state, result.workspace, `已切换到档案：${result.state.profile.name}`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "切换档案失败，请稍后重试。");
+    }
+  }
+
+  function handleLogoutProfile(): void {
+    const result = logoutLocalProfile();
+    applyProfileSelection(result.state, result.workspace, "已退出登录。");
   }
 
   function openSyncAccountModal(): void {
+    setProfileModalOpen(false);
     setSyncModalOpen(true);
+  }
+
+  function updateSyncEmail(value: string): void {
+    setSyncSettings((current) => ({ ...current, email: value }));
   }
 
   function closeSyncAccountModal(): void {
@@ -3185,7 +3263,7 @@ function AppShell(): JSX.Element {
         recentActivity={recentActivity}
         planBoard={planBoard}
         habitBoard={habitBoard}
-        onProfileClick={openSyncAccountModal}
+        onProfileClick={openProfileModal}
         onReset={handleReset}
         onMetricCardAction={handleMetricCardAction}
         onTabChange={handleTabChange}
@@ -3314,6 +3392,20 @@ function AppShell(): JSX.Element {
         reward={deletingWishTarget}
         onClose={closeWishDeleteModal}
         onConfirm={handleConfirmDeleteWish}
+      />
+      <ProfileSwitcherModal
+        open={profileModalOpen}
+        activeProfileId={profileWorkspace.activeProfileId}
+        profiles={profileWorkspace.profiles}
+        draftName={profileNameDraft}
+        maxProfiles={MAX_LOCAL_PROFILES}
+        canCreateMoreProfiles={canCreateMoreProfiles}
+        onClose={closeProfileModal}
+        onUpdateDraftName={setProfileNameDraft}
+        onSubmitName={handleCreateProfile}
+        onSwitchProfile={handleSwitchProfile}
+        onLogout={handleLogoutProfile}
+        onOpenSyncSettings={openSyncAccountModal}
       />
       <SyncAccountModal
         open={syncModalOpen}

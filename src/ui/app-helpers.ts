@@ -109,6 +109,9 @@ export function getPendingPlansForDate(plans: StudyPlan[], dateKey: string): Stu
 }
 
 export function buildHeroSummary(state: AppState, today: string): string {
+  if (state.profile.id === "profile_guest") {
+    return "请点击右上角“用户登录”，创建自己的名字后开始记录学习。";
+  }
   const summary = summarizeState(state, today);
   return `${state.profile.name} 今天还有 ${summary.pendingPlans} 个学习计划待完成，已经记录 ${summary.todayHabitCheckins} 次习惯打卡，当前累计 ${summary.starBalance} 颗星星。`;
 }

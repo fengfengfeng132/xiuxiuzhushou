@@ -955,7 +955,8 @@
 
 @media (max-width: 980px) {
   .sync-auth-actions,
-  .sync-run-actions {
+  .sync-run-actions,
+  .profile-switcher-footer {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -964,7 +965,14 @@
   .sync-status-strip,
   .sync-auth-grid,
   .sync-auth-actions,
-  .sync-run-actions {
+  .sync-run-actions,
+  .profile-switcher-create-row,
+  .profile-switcher-footer {
     grid-template-columns: 1fr;
+  }
+
+  .profile-switcher-item {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
