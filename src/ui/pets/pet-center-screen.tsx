@@ -13,13 +13,16 @@ import { buildPetStatusCopy, createPetNeedCards } from "../app-helpers.js";
 import { getPetArtSrc } from "./pet-art.js";
 
 interface AnimatedPetVideoConfig {
-  idle: string;
-  feed?: string;
+  idle: string[];
+  feed?: string[];
 }
 
 const ANIMATED_PET_VIDEO_CONFIG_BY_ID: Partial<Record<string, AnimatedPetVideoConfig>> = {
-  pet_corgi: { idle: "/assets/corgi.mp4" },
-  pet_fox: { idle: "/assets/fox.mp4", feed: "/assets/fox-feed.mp4" },
+  pet_corgi: { idle: ["/assets/corgi.mp4", "/assets/corgi.webm"] },
+  pet_fox: {
+    idle: ["/assets/fox.mp4", "/assets/fox.webm"],
+    feed: ["/assets/fox-feed.mp4", "/assets/fox-feed.webm"],
+  },
 };
 
 interface PetCenterScreenProps {
@@ -48,23 +51,33 @@ interface PetFigureRenderOptions {
   loopOverride?: boolean;
   onVideoEnded?: () => void;
   videoKey?: string;
-  videoSrcOverride?: string | null;
+  videoSourcesOverride?: string[] | null;
+}
+
+function getVideoMimeTypeFromPath(path: string): string | undefined {
+  if (path.endsWith(".mp4")) {
+    return "video/mp4";
+  }
+  if (path.endsWith(".webm")) {
+    return "video/webm";
+  }
+  return undefined;
 }
 
 function renderPetFigure(definition: PetDefinition, variant: "card" | "stage" | "roster", options: PetFigureRenderOptions = {}): ReactElement {
   const videoConfig = getAnimatedPetVideoConfig(definition.id);
-  const videoSrc = options.videoSrcOverride ?? videoConfig?.idle ?? null;
+  const videoSources = options.videoSourcesOverride ?? videoConfig?.idle ?? null;
   const imageSrc = getPetArtSrc(definition.id);
   const [videoFailed, setVideoFailed] = useState(false);
-  const canUseVideo = Boolean(videoConfig && videoSrc && !videoFailed);
+  const canUseVideo = Boolean(videoConfig && videoSources && videoSources.length > 0 && !videoFailed);
   if (canUseVideo) {
     const videoClassName = `pet-art-video pet-art-video-${variant}${variant === "stage" && isFullRangeStageVideo(definition.id) ? " pet-art-video-stage-full-range" : ""}`;
     const shouldLoop = options.loopOverride ?? true;
+    const resolvedVideoSources = videoSources ?? [];
     return (
       <video
-        key={options.videoKey ?? `${definition.id}-${variant}-${videoSrc}`}
+        key={options.videoKey ?? `${definition.id}-${variant}-${resolvedVideoSources.join("|")}`}
         className={videoClassName}
-        src={videoSrc ?? undefined}
         poster={imageSrc ?? undefined}
         autoPlay
         loop={shouldLoop}
@@ -74,7 +87,11 @@ function renderPetFigure(definition: PetDefinition, variant: "card" | "stage" | 
         preload={variant === "stage" ? "auto" : "metadata"}
         onEnded={options.onVideoEnded}
         onError={() => setVideoFailed(true)}
-      />
+      >
+        {resolvedVideoSources.map((sourcePath) => (
+          <source key={sourcePath} src={sourcePath} type={getVideoMimeTypeFromPath(sourcePath)} />
+        ))}
+      </video>
     );
   }
 
@@ -132,7 +149,7 @@ export function PetCenterScreen({
 
     if (activeInteractionAt && activeInteractionAt !== previousInteractionAtRef.current) {
       setIsPetReacting(true);
-      const hasFeedVideo = Boolean(getAnimatedPetVideoConfig(activePetDefinition.id)?.feed);
+      const hasFeedVideo = Boolean(getAnimatedPetVideoConfig(activePetDefinition.id)?.feed?.length);
       if (activeInteractionId === "feed" && hasFeedVideo) {
         setIsFeedVideoPlaying(true);
         setFeedPlaybackToken((current) => current + 1);
@@ -206,8 +223,8 @@ export function PetCenterScreen({
     "--pet-accent-soft": activePetDefinition.accentSoft,
   } as CSSProperties;
   const activePetVideoConfig = getAnimatedPetVideoConfig(activePetDefinition.id);
-  const stageVideoSrc = isFeedVideoPlaying && activePetVideoConfig?.feed ? activePetVideoConfig.feed : activePetVideoConfig?.idle ?? null;
-  const isStageFeedVideo = Boolean(isFeedVideoPlaying && activePetVideoConfig?.feed);
+  const stageVideoSources = isFeedVideoPlaying && activePetVideoConfig?.feed ? activePetVideoConfig.feed : activePetVideoConfig?.idle ?? null;
+  const isStageFeedVideo = Boolean(isFeedVideoPlaying && activePetVideoConfig?.feed?.length);
   const stageVideoKey = isStageFeedVideo ? `feed-${activePetDefinition.id}-${feedPlaybackToken}` : `idle-${activePetDefinition.id}`;
   const needCards = createPetNeedCards(activePetCompanion);
   const statusCopy = buildPetStatusCopy(activePetCompanion, activePetDefinition);
@@ -243,7 +260,7 @@ export function PetCenterScreen({
                 <div className={stageFigureClassName} aria-hidden="true">
                   {renderPetFigure(activePetDefinition, "stage", {
                     videoKey: stageVideoKey,
-                    videoSrcOverride: stageVideoSrc,
+                    videoSourcesOverride: stageVideoSources,
                     loopOverride: !isStageFeedVideo,
                     onVideoEnded: isStageFeedVideo ? () => setIsFeedVideoPlaying(false) : undefined,
                   })}
