@@ -35,12 +35,17 @@ function getAnimatedPetVideoSrc(definitionId: string): string | null {
   return ANIMATED_PET_VIDEO_SRC_BY_ID[definitionId] ?? null;
 }
 
+function isFullRangeStageVideo(definitionId: string): boolean {
+  return definitionId === "pet_fox";
+}
+
 function renderPetFigure(definition: PetDefinition, variant: "card" | "stage" | "roster"): ReactElement {
   const videoSrc = getAnimatedPetVideoSrc(definition.id);
   if (videoSrc) {
+    const videoClassName = `pet-art-video pet-art-video-${variant}${variant === "stage" && isFullRangeStageVideo(definition.id) ? " pet-art-video-stage-full-range" : ""}`;
     return (
       <video
-        className={`pet-art-video pet-art-video-${variant}`}
+        className={videoClassName}
         src={videoSrc}
         autoPlay
         loop
@@ -172,7 +177,7 @@ export function PetCenterScreen({
   } as CSSProperties;
   const needCards = createPetNeedCards(activePetCompanion);
   const statusCopy = buildPetStatusCopy(activePetCompanion, activePetDefinition);
-  const stageFigureClassName = `pet-stage-figure${getAnimatedPetVideoSrc(activePetDefinition.id) ? " pet-media-transparent" : ""}${interactionMotionClass}`;
+  const stageFigureClassName = `pet-stage-figure${getAnimatedPetVideoSrc(activePetDefinition.id) ? " pet-media-transparent" : ""}${isFullRangeStageVideo(activePetDefinition.id) ? " pet-stage-figure-full-range" : ""}${interactionMotionClass}`;
 
   return (
     <div className="pet-page">

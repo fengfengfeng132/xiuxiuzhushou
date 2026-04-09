@@ -317,6 +317,15 @@
   transition: transform 180ms ease, filter 180ms ease;
 }
 
+.pet-stage-figure-full-range {
+  width: 100%;
+}
+
+.pet-art-video-stage-full-range {
+  width: 100%;
+  max-width: none;
+}
+
 .pet-stage-figure.is-reacting::after {
   content: "";
   position: absolute;
