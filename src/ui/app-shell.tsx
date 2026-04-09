@@ -44,12 +44,14 @@ import {
 import {
   MAX_LOCAL_PROFILES,
   createLocalProfile,
+  clearLocalProfileData,
   deleteLocalProfile,
   loadLocalProfileWorkspace,
   loadAppState,
   loadDashboardTabPreference,
   loadOrCreateSyncDeviceId,
   logoutLocalProfile,
+  renameLocalProfile,
   resetAppState,
   saveAppState,
   saveDashboardTabPreference,
@@ -157,7 +159,6 @@ import { HabitBoard, HabitCheckInModal, HabitManagementScreen, HabitModal, Habit
 import { HelpCenterScreen } from "./help/help-center-screen.js";
 import { HeightManagementScreen } from "./height/height-management-screen.js";
 import { HomeScreen } from "./home/home-screen.js";
-import { ProfileSwitcherModal } from "./home/profile-switcher-modal.js";
 import { SyncAccountModal } from "./home/sync-account-modal.js";
 import {
   InterestClassModal,
@@ -202,6 +203,8 @@ import {
   type ReadingRecordDraft,
 } from "./reading/reading-journey-screen.js";
 import { StudyTimerScreen } from "./timer/study-timer-screen.js";
+import { AddProfileModal } from "./profile/add-profile-modal.js";
+import { ProfileManagementScreen } from "./profile/profile-management-screen.js";
 
 // AppShell keeps state and navigation only. Feature JSX lives in feature modules for future agent handoff.
 function isValidDateKey(value: string): boolean {
@@ -247,6 +250,8 @@ function buildPlanDateTime(dateKey: string, time: string): string {
 function createLocalUiId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
+
+const PROFILE_AVATAR_COLOR_OPTIONS = ["#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6", "#EC4899", "#14B8A6", "#F97316"];
 
 function collectPendingPlanReviewItems(plans: StudyPlan[]): PendingPlanReviewItem[] {
   const pendingItems: PendingPlanReviewItem[] = [];
@@ -348,8 +353,13 @@ function AppShell(): JSX.Element {
   const [wishDraft, setWishDraft] = useState<WishDraft>(createInitialWishDraft());
   const [notice, setNotice] = useState("本地数据已加载。");
   const [profileWorkspace, setProfileWorkspace] = useState<LocalProfileWorkspace>(() => loadLocalProfileWorkspace());
-  const [profileModalOpen, setProfileModalOpen] = useState(false);
-  const [profileNameDraft, setProfileNameDraft] = useState("");
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [addProfileModalOpen, setAddProfileModalOpen] = useState(false);
+  const [addProfileNameDraft, setAddProfileNameDraft] = useState("");
+  const [addProfileAvatarColor, setAddProfileAvatarColor] = useState(PROFILE_AVATAR_COLOR_OPTIONS[0]);
+  const [addProfileAvatarImage, setAddProfileAvatarImage] = useState<string | null>(null);
+  const [profileManagementSearch, setProfileManagementSearch] = useState("");
+  const [profileManagementBackTarget, setProfileManagementBackTarget] = useState<"home" | "more-features">("more-features");
   const [syncModalOpen, setSyncModalOpen] = useState(false);
   const [syncSettings, setSyncSettings] = useState<SyncAccountSettings>(() => loadSyncAccountSettings());
   const [syncPassword, setSyncPassword] = useState("");
@@ -423,6 +433,7 @@ function AppShell(): JSX.Element {
   const rewardsPreview = state.rewards.slice(0, 3);
   const isProfileLoggedIn = profileWorkspace.activeProfileId !== null;
   const canCreateMoreProfiles = profileWorkspace.profiles.length < MAX_LOCAL_PROFILES;
+  const canSubmitAddProfile = addProfileNameDraft.trim().length > 0 && canCreateMoreProfiles;
   const habitType = getHabitFrequencyOption(habitDraft.frequency);
   const parsedHabitPoints = Number(habitDraft.points);
   const canCreateHabit = habitDraft.name.trim().length > 0 && Number.isInteger(parsedHabitPoints) && parsedHabitPoints >= -100 && parsedHabitPoints <= 100;
@@ -558,6 +569,25 @@ function AppShell(): JSX.Element {
   useEffect(() => {
     saveDashboardTabPreference(activeTab);
   }, [activeTab]);
+
+  useEffect(() => {
+    if (!profileMenuOpen) {
+      return;
+    }
+
+    function handleGlobalPointerDown(event: MouseEvent): void {
+      const target = event.target instanceof Element ? event.target : null;
+      if (target && target.closest(".profile-menu-anchor")) {
+        return;
+      }
+      setProfileMenuOpen(false);
+    }
+
+    window.addEventListener("mousedown", handleGlobalPointerDown, true);
+    return () => {
+      window.removeEventListener("mousedown", handleGlobalPointerDown, true);
+    };
+  }, [profileMenuOpen]);
 
   useEffect(() => {
     setSelectedHabitIds((current) => current.filter((habitId) => state.habits.some((habit) => habit.id === habitId && habit.status === "active")));
@@ -1752,6 +1782,7 @@ function AppShell(): JSX.Element {
   function openMoreFeatures(): void {
     setScreen("more-features");
     setMoreFeaturesSearch("");
+    setProfileMenuOpen(false);
   }
 
   function openStudyTimer(plan: StudyPlan): void {
@@ -1836,8 +1867,13 @@ function AppShell(): JSX.Element {
     setPlanDeleteModalOpen(false);
     setActiveTimerPlanId(null);
     setWishModalOpen(false);
-    setProfileModalOpen(false);
-    setProfileNameDraft("");
+    setProfileMenuOpen(false);
+    setAddProfileModalOpen(false);
+    setAddProfileNameDraft("");
+    setAddProfileAvatarColor(PROFILE_AVATAR_COLOR_OPTIONS[0]);
+    setAddProfileAvatarImage(null);
+    setProfileManagementSearch("");
+    setProfileManagementBackTarget("more-features");
     setSyncModalOpen(false);
     setHabitCheckInDraft(INITIAL_HABIT_CHECKIN_DRAFT);
     setNotice("本地状态已重置。");
@@ -1850,8 +1886,13 @@ function AppShell(): JSX.Element {
   function applyProfileSelection(nextState: AppState, nextWorkspace: LocalProfileWorkspace, noticeMessage: string): void {
     setState(nextState);
     setProfileWorkspace(nextWorkspace);
-    setProfileModalOpen(false);
-    setProfileNameDraft("");
+    setProfileMenuOpen(false);
+    setAddProfileModalOpen(false);
+    setAddProfileNameDraft("");
+    setAddProfileAvatarColor(PROFILE_AVATAR_COLOR_OPTIONS[0]);
+    setAddProfileAvatarImage(null);
+    setProfileManagementSearch("");
+    setProfileManagementBackTarget("more-features");
     setSyncModalOpen(false);
     setSelectedDateKey(today);
     setScreen("home");
@@ -1874,19 +1915,62 @@ function AppShell(): JSX.Element {
     setNotice(noticeMessage);
   }
 
-  function openProfileModal(): void {
-    setProfileModalOpen(true);
-    setProfileNameDraft("");
+  function handleToggleProfileMenu(): void {
+    if (profileWorkspace.profiles.length === 0) {
+      openAddProfileModal();
+      return;
+    }
+    setProfileMenuOpen((current) => !current);
   }
 
-  function closeProfileModal(): void {
-    setProfileModalOpen(false);
-    setProfileNameDraft("");
+  function openAddProfileModal(): void {
+    setProfileMenuOpen(false);
+    setAddProfileModalOpen(true);
+    setAddProfileNameDraft("");
+    setAddProfileAvatarColor(PROFILE_AVATAR_COLOR_OPTIONS[profileWorkspace.profiles.length % PROFILE_AVATAR_COLOR_OPTIONS.length]);
+    setAddProfileAvatarImage(null);
+  }
+
+  function closeAddProfileModal(): void {
+    setAddProfileModalOpen(false);
+    setAddProfileNameDraft("");
+    setAddProfileAvatarColor(PROFILE_AVATAR_COLOR_OPTIONS[0]);
+    setAddProfileAvatarImage(null);
+  }
+
+  async function handleAddProfileImageSelect(file: File | null): Promise<void> {
+    if (!file) {
+      setAddProfileAvatarImage(null);
+      return;
+    }
+
+    const maxBytes = 1024 * 1024;
+    if (file.size > maxBytes) {
+      setNotice("头像图片不能超过 1MB。");
+      return;
+    }
+
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
+      reader.onerror = () => reject(new Error("头像读取失败，请重试。"));
+      reader.readAsDataURL(file);
+    }).catch(() => "");
+
+    if (!dataUrl) {
+      setNotice("头像读取失败，请重试。");
+      return;
+    }
+
+    setAddProfileAvatarImage(dataUrl);
   }
 
   function handleCreateProfile(): void {
     try {
-      const result = createLocalProfile(profileNameDraft);
+      const result = createLocalProfile(addProfileNameDraft, new Date().toISOString(), {
+        avatarColor: addProfileAvatarColor,
+        avatarImage: addProfileAvatarImage,
+      });
       const noticeMessage = isProfileLoggedIn ? `已创建并切换到档案：${result.state.profile.name}` : `欢迎你，${result.state.profile.name}！`;
       applyProfileSelection(result.state, result.workspace, noticeMessage);
     } catch (error) {
@@ -1927,14 +2011,37 @@ function AppShell(): JSX.Element {
     }
   }
 
+  function handleClearProfileData(profileId: string, profileName: string): void {
+    if (!window.confirm(`确定清空档案“${profileName}”的学习数据吗？`)) {
+      return;
+    }
+
+    try {
+      const result = clearLocalProfileData(profileId);
+      applyProfileSelection(result.state, result.workspace, `已清空档案：${profileName}`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "清空档案失败，请稍后重试。");
+    }
+  }
+
+  function handleRenameProfile(profileId: string, profileName: string): void {
+    try {
+      const result = renameLocalProfile(profileId, profileName);
+      applyProfileSelection(result.state, result.workspace, `已更新档案名称：${profileName}`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "更新档案失败，请稍后重试。");
+    }
+  }
+
   function handleLogoutProfile(): void {
     const result = logoutLocalProfile();
     applyProfileSelection(result.state, result.workspace, "已退出登录。");
   }
 
-  function openSyncAccountModal(): void {
-    setProfileModalOpen(false);
-    setSyncModalOpen(true);
+  function openProfileManagement(backTarget: "home" | "more-features"): void {
+    setProfileMenuOpen(false);
+    setProfileManagementBackTarget(backTarget);
+    setScreen("profile-management");
   }
 
   function updateSyncEmail(value: string): void {
@@ -2754,6 +2861,7 @@ function AppShell(): JSX.Element {
 
   function handleBackToHome(): void {
     setScreen("home");
+    setProfileMenuOpen(false);
   }
 
   function handleBackToPointsCenter(): void {
@@ -2860,6 +2968,10 @@ function AppShell(): JSX.Element {
     }
     if (card.action === "interest-class") {
       openInterestClass();
+      return;
+    }
+    if (card.action === "profile-management") {
+      openProfileManagement("more-features");
       return;
     }
     openFutureFlow(card.message ?? "该功能仍在开发中。");
@@ -3219,6 +3331,24 @@ function AppShell(): JSX.Element {
       );
     }
 
+    if (screen === "profile-management") {
+      return (
+        <ProfileManagementScreen
+          profiles={profileWorkspace.profiles}
+          activeProfileId={profileWorkspace.activeProfileId}
+          accountEmail={syncSettings.email.trim()}
+          search={profileManagementSearch}
+          onSearchChange={setProfileManagementSearch}
+          onBack={profileManagementBackTarget === "home" ? handleBackToHome : handleBackToMoreFeatures}
+          onOpenAddProfile={openAddProfileModal}
+          onSwitchProfile={handleSwitchProfile}
+          onRenameProfile={handleRenameProfile}
+          onClearProfileData={handleClearProfileData}
+          onDeleteProfile={handleDeleteProfile}
+        />
+      );
+    }
+
     const planBoard = (
       <PlanBoard
         today={today}
@@ -3288,7 +3418,14 @@ function AppShell(): JSX.Element {
         recentActivity={recentActivity}
         planBoard={planBoard}
         habitBoard={habitBoard}
-        onProfileClick={openProfileModal}
+        profileMenuOpen={profileMenuOpen}
+        profiles={profileWorkspace.profiles}
+        activeProfileId={profileWorkspace.activeProfileId}
+        onProfileClick={handleToggleProfileMenu}
+        onSwitchProfile={handleSwitchProfile}
+        onOpenAddProfile={openAddProfileModal}
+        onOpenProfileManagement={() => openProfileManagement("home")}
+        onLogoutProfile={handleLogoutProfile}
         onReset={handleReset}
         onMetricCardAction={handleMetricCardAction}
         onTabChange={handleTabChange}
@@ -3418,20 +3555,22 @@ function AppShell(): JSX.Element {
         onClose={closeWishDeleteModal}
         onConfirm={handleConfirmDeleteWish}
       />
-      <ProfileSwitcherModal
-        open={profileModalOpen}
-        activeProfileId={profileWorkspace.activeProfileId}
-        profiles={profileWorkspace.profiles}
-        draftName={profileNameDraft}
+      <AddProfileModal
+        open={addProfileModalOpen}
+        profileName={addProfileNameDraft}
+        avatarColor={addProfileAvatarColor}
+        avatarImage={addProfileAvatarImage}
+        colorOptions={PROFILE_AVATAR_COLOR_OPTIONS}
+        profileCount={profileWorkspace.profiles.length}
         maxProfiles={MAX_LOCAL_PROFILES}
-        canCreateMoreProfiles={canCreateMoreProfiles}
-        onClose={closeProfileModal}
-        onUpdateDraftName={setProfileNameDraft}
-        onSubmitName={handleCreateProfile}
-        onSwitchProfile={handleSwitchProfile}
-        onDeleteProfile={handleDeleteProfile}
-        onLogout={handleLogoutProfile}
-        onOpenSyncSettings={openSyncAccountModal}
+        canSubmit={canSubmitAddProfile}
+        onClose={closeAddProfileModal}
+        onUpdateProfileName={setAddProfileNameDraft}
+        onSelectColor={setAddProfileAvatarColor}
+        onSelectImage={(file) => {
+          void handleAddProfileImageSelect(file);
+        }}
+        onSubmit={handleCreateProfile}
       />
       <SyncAccountModal
         open={syncModalOpen}

@@ -21,6 +21,7 @@ export type Screen =
   | "height-management"
   | "morning-reading"
   | "interest-class"
+  | "profile-management"
   | "reading-journey"
   | "reading-book-detail"
   | "achievement-system"
@@ -243,6 +244,7 @@ export type MoreFeatureAction =
   | "morning-reading"
   | "height-management"
   | "interest-class"
+  | "profile-management"
   | "home-habits"
   | "placeholder";
 

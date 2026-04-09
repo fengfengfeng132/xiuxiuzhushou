@@ -955,9 +955,25 @@
 
 @media (max-width: 980px) {
   .sync-auth-actions,
-  .sync-run-actions,
-  .profile-switcher-footer {
+  .sync-run-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-management-table-head,
+  .profile-management-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-management-table-head {
+    display: none;
+  }
+
+  .profile-management-row {
+    gap: 6px;
+  }
+
+  .profile-management-actions-cell {
+    justify-self: start;
   }
 }
 
@@ -965,20 +981,26 @@
   .sync-status-strip,
   .sync-auth-grid,
   .sync-auth-actions,
-  .sync-run-actions,
-  .profile-switcher-create-row,
-  .profile-switcher-footer {
+  .sync-run-actions {
     grid-template-columns: 1fr;
   }
 
-  .profile-switcher-item {
-    flex-direction: column;
-    align-items: stretch;
+  .profile-quick-menu {
+    right: auto;
+    left: 0;
+    width: min(300px, calc(100vw - 24px));
   }
 
-  .profile-switcher-actions {
+  .profile-management-hero {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .profile-management-add-button {
     width: 100%;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .add-profile-modal-footer {
+    grid-template-columns: 1fr;
   }
 }

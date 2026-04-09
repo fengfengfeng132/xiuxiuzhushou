@@ -17,6 +17,9 @@ export type DashboardTab = "plans" | "habits";
 interface StoredProfileEntry {
   id: string;
   name: string;
+  createdAt: string;
+  avatarColor: string;
+  avatarImage: string | null;
   state: string;
 }
 
@@ -29,6 +32,9 @@ interface StoredProfileWorkspace {
 export interface LocalProfileSummary {
   id: string;
   name: string;
+  createdAt: string;
+  avatarColor: string;
+  avatarImage: string | null;
 }
 
 export interface LocalProfileWorkspace {
@@ -41,12 +47,50 @@ export interface LocalProfileStateResult {
   workspace: LocalProfileWorkspace;
 }
 
+export interface CreateLocalProfileOptions {
+  avatarColor?: string;
+  avatarImage?: string | null;
+}
+
+const PROFILE_AVATAR_COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#8B5CF6", "#EC4899", "#14B8A6", "#F97316"];
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
 function normalizeString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeIsoTime(value: unknown, fallback: string): string {
+  if (typeof value !== "string" || !value) {
+    return fallback;
+  }
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? new Date(parsed).toISOString() : fallback;
+}
+
+function normalizeHexColor(value: unknown, fallback: string): string {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+  const normalized = value.trim().toUpperCase();
+  if (!/^#[0-9A-F]{6}$/.test(normalized)) {
+    return fallback;
+  }
+  return normalized;
+}
+
+function pickProfileAvatarColor(index: number): string {
+  return PROFILE_AVATAR_COLORS[index % PROFILE_AVATAR_COLORS.length];
+}
+
+function normalizeAvatarImage(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
 }
 
 function createGuestState(now: string = new Date().toISOString()): AppState {
@@ -104,7 +148,13 @@ function createEmptyWorkspace(): StoredProfileWorkspace {
 function toWorkspaceSummary(workspace: StoredProfileWorkspace): LocalProfileWorkspace {
   return {
     activeProfileId: workspace.activeProfileId,
-    profiles: workspace.profiles.map((profile) => ({ id: profile.id, name: profile.name })),
+    profiles: workspace.profiles.map((profile) => ({
+      id: profile.id,
+      name: profile.name,
+      createdAt: profile.createdAt,
+      avatarColor: profile.avatarColor,
+      avatarImage: profile.avatarImage,
+    })),
   };
 }
 
@@ -122,6 +172,9 @@ function normalizeStoredEntry(value: unknown, index: number, fallbackTime: strin
 
   const id = normalizeString(value.id) || createRandomProfileId();
   const name = normalizeString(value.name) || `档案${index + 1}`;
+  const createdAt = normalizeIsoTime(value.createdAt, fallbackTime);
+  const avatarColor = normalizeHexColor(value.avatarColor, pickProfileAvatarColor(index));
+  const avatarImage = normalizeAvatarImage(value.avatarImage);
   const fallbackState = createProfileState(id, name, fallbackTime);
 
   const parsedState =
@@ -149,6 +202,9 @@ function normalizeStoredEntry(value: unknown, index: number, fallbackTime: strin
   return {
     id,
     name,
+    createdAt,
+    avatarColor,
+    avatarImage,
     state: serializeState(safeState),
   };
 }
@@ -192,6 +248,9 @@ function migrateLegacyState(fallbackTime: string): StoredProfileWorkspace {
       {
         id,
         name,
+        createdAt: normalizeIsoTime(parsedState.meta.lastUpdatedAt, fallbackTime),
+        avatarColor: pickProfileAvatarColor(0),
+        avatarImage: null,
         state: serializeState(safeState),
       },
     ],
@@ -414,7 +473,11 @@ export function resetAppState(now: string = new Date().toISOString()): AppState 
   return nextState;
 }
 
-export function createLocalProfile(profileName: string, now: string = new Date().toISOString()): LocalProfileStateResult {
+export function createLocalProfile(
+  profileName: string,
+  now: string = new Date().toISOString(),
+  options: CreateLocalProfileOptions = {},
+): LocalProfileStateResult {
   const trimmedName = normalizeString(profileName);
   if (!trimmedName) {
     throw new Error("请先输入档案名称。");
@@ -422,11 +485,21 @@ export function createLocalProfile(profileName: string, now: string = new Date()
 
   if (typeof window === "undefined") {
     const fallbackState = createProfileState("profile_server", trimmedName, now);
+    const fallbackColor = normalizeHexColor(options.avatarColor, pickProfileAvatarColor(0));
+    const fallbackImage = normalizeAvatarImage(options.avatarImage);
     return {
       state: fallbackState,
       workspace: {
         activeProfileId: fallbackState.profile.id,
-        profiles: [{ id: fallbackState.profile.id, name: fallbackState.profile.name }],
+        profiles: [
+          {
+            id: fallbackState.profile.id,
+            name: fallbackState.profile.name,
+            createdAt: now,
+            avatarColor: fallbackColor,
+            avatarImage: fallbackImage,
+          },
+        ],
       },
     };
   }
@@ -441,11 +514,16 @@ export function createLocalProfile(profileName: string, now: string = new Date()
     profileId = createRandomProfileId();
   }
 
+  const avatarColor = normalizeHexColor(options.avatarColor, pickProfileAvatarColor(workspace.profiles.length));
+  const avatarImage = normalizeAvatarImage(options.avatarImage);
   const state = createProfileState(profileId, trimmedName, now);
   const serialized = serializeState(state);
   workspace.profiles.push({
     id: profileId,
     name: trimmedName,
+    createdAt: now,
+    avatarColor,
+    avatarImage,
     state: serialized,
   });
   workspace.activeProfileId = profileId;
@@ -527,6 +605,95 @@ export function deleteLocalProfile(profileId: string, now: string = new Date().t
   }
 
   const nextState = buildStateFromEntry(activeProfile, loadOrCreateSyncDeviceId(), now);
+  activeProfile.state = serializeState(nextState);
+  writeWorkspace(workspace);
+  window.localStorage.setItem(STORAGE_KEY, activeProfile.state);
+
+  return {
+    state: nextState,
+    workspace: toWorkspaceSummary(workspace),
+  };
+}
+
+export function clearLocalProfileData(profileId: string, now: string = new Date().toISOString()): LocalProfileStateResult {
+  const normalizedId = normalizeString(profileId);
+  if (!normalizedId) {
+    throw new Error("请选择要清空的档案。");
+  }
+
+  if (typeof window === "undefined") {
+    throw new Error("当前环境不支持清空本地档案数据。");
+  }
+
+  const workspace = readWorkspace(now);
+  const targetProfile = workspace.profiles.find((profile) => profile.id === normalizedId);
+  if (!targetProfile) {
+    throw new Error("未找到该档案，请刷新后重试。");
+  }
+
+  const nextProfileState = createProfileState(targetProfile.id, targetProfile.name, now);
+  targetProfile.state = serializeState(nextProfileState);
+
+  const activeProfile = resolveActiveProfile(workspace);
+  if (!activeProfile) {
+    writeWorkspace(workspace);
+    const guestState = assignSyncDeviceId(createGuestState(now), loadOrCreateSyncDeviceId());
+    window.localStorage.setItem(STORAGE_KEY, serializeState(guestState));
+    return {
+      state: guestState,
+      workspace: toWorkspaceSummary(workspace),
+    };
+  }
+
+  const nextState = buildStateFromEntry(activeProfile, loadOrCreateSyncDeviceId(), now);
+  activeProfile.state = serializeState(nextState);
+  writeWorkspace(workspace);
+  window.localStorage.setItem(STORAGE_KEY, activeProfile.state);
+
+  return {
+    state: nextState,
+    workspace: toWorkspaceSummary(workspace),
+  };
+}
+
+export function renameLocalProfile(profileId: string, profileName: string, now: string = new Date().toISOString()): LocalProfileStateResult {
+  const normalizedId = normalizeString(profileId);
+  if (!normalizedId) {
+    throw new Error("请选择要编辑的档案。");
+  }
+
+  const normalizedName = normalizeString(profileName);
+  if (!normalizedName) {
+    throw new Error("档案名称不能为空。");
+  }
+
+  if (typeof window === "undefined") {
+    throw new Error("当前环境不支持编辑本地档案。");
+  }
+
+  const workspace = readWorkspace(now);
+  const targetProfile = workspace.profiles.find((profile) => profile.id === normalizedId);
+  if (!targetProfile) {
+    throw new Error("未找到该档案，请刷新后重试。");
+  }
+
+  targetProfile.name = normalizedName;
+  const targetState = buildStateFromEntry(targetProfile, loadOrCreateSyncDeviceId(), now);
+  targetProfile.state = serializeState(targetState);
+
+  const activeProfile = resolveActiveProfile(workspace);
+  if (!activeProfile) {
+    writeWorkspace(workspace);
+    const guestState = assignSyncDeviceId(createGuestState(now), loadOrCreateSyncDeviceId());
+    window.localStorage.setItem(STORAGE_KEY, serializeState(guestState));
+    return {
+      state: guestState,
+      workspace: toWorkspaceSummary(workspace),
+    };
+  }
+
+  const nextState =
+    activeProfile.id === targetProfile.id ? targetState : buildStateFromEntry(activeProfile, loadOrCreateSyncDeviceId(), now);
   activeProfile.state = serializeState(nextState);
   writeWorkspace(workspace);
   window.localStorage.setItem(STORAGE_KEY, activeProfile.state);

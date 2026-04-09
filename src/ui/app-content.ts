@@ -544,9 +544,8 @@ export const MORE_FEATURE_SECTIONS: MoreFeatureSection[] = [
         description: "管理用户账户和权限",
         icon: "👥",
         accent: "#9b53f6",
-        action: "placeholder",
+        action: "profile-management",
         keywords: ["用户", "管理", "权限"],
-        message: "用户管理还没有独立截图和下游表单，当前只保留入口。",
       },
       {
         id: "dashboard-config",

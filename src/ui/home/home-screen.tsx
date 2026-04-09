@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 import type { ActivityEntry, Reward } from "../../domain/model.js";
-import type { DashboardTab } from "../../persistence/storage.js";
+import type { DashboardTab, LocalProfileSummary } from "../../persistence/storage.js";
 import type { MetricCard } from "../app-types.js";
 import { formatActivityKind } from "../app-helpers.js";
 import { RewardPreviewPanel } from "../points/reward-preview-panel.js";
+import { ProfileQuickMenu } from "./profile-quick-menu.js";
 
 interface HomeScreenProps {
   profileName: string;
@@ -15,7 +16,14 @@ interface HomeScreenProps {
   recentActivity: ActivityEntry[];
   planBoard: ReactNode;
   habitBoard: ReactNode;
+  profileMenuOpen: boolean;
+  profiles: LocalProfileSummary[];
+  activeProfileId: string | null;
   onProfileClick: () => void;
+  onSwitchProfile: (profileId: string) => void;
+  onOpenAddProfile: () => void;
+  onOpenProfileManagement: () => void;
+  onLogoutProfile: () => void;
   onReset: () => void;
   onMetricCardAction: (card: MetricCard) => void;
   onTabChange: (tab: DashboardTab) => void;
@@ -34,7 +42,14 @@ export function HomeScreen({
   recentActivity,
   planBoard,
   habitBoard,
+  profileMenuOpen,
+  profiles,
+  activeProfileId,
   onProfileClick,
+  onSwitchProfile,
+  onOpenAddProfile,
+  onOpenProfileManagement,
+  onLogoutProfile,
   onReset,
   onMetricCardAction,
   onTabChange,
@@ -50,13 +65,25 @@ export function HomeScreen({
           <p className="hero-summary">{heroSummary}</p>
         </div>
         <div className="hero-side">
-          <button type="button" className="profile-chip" onClick={onProfileClick}>
-            <span className="profile-avatar">{profileName.slice(0, 1)}</span>
-            <span className="profile-meta">
-              <strong>{profileName}</strong>
-              <small>本地档案</small>
-            </span>
-          </button>
+          <div className="profile-menu-anchor">
+            <button type="button" className="profile-chip" onClick={onProfileClick}>
+              <span className="profile-avatar">{profileName.slice(0, 1)}</span>
+              <span className="profile-meta">
+                <strong>{profileName}</strong>
+                <small>本地档案</small>
+              </span>
+              <span className="profile-chip-arrow">{profileMenuOpen ? "▴" : "▾"}</span>
+            </button>
+            <ProfileQuickMenu
+              open={profileMenuOpen}
+              profiles={profiles}
+              activeProfileId={activeProfileId}
+              onSwitchProfile={onSwitchProfile}
+              onOpenAddProfile={onOpenAddProfile}
+              onOpenProfileManagement={onOpenProfileManagement}
+              onLogout={onLogoutProfile}
+            />
+          </div>
           <div className="balance-chip">
             <span>星星余额</span>
             <strong>{starBalance}</strong>
