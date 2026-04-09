@@ -12,6 +12,8 @@ import {
 import { buildPetStatusCopy, createPetNeedCards } from "../app-helpers.js";
 import { getPetArtSrc } from "./pet-art.js";
 
+const CORGI_VIDEO_SRC = "/assets/corgi.webm";
+
 interface PetCenterScreenProps {
   starBalance: number;
   ownedPets: OwnedPet[];
@@ -26,7 +28,26 @@ interface PetCenterScreenProps {
   onInteract: (actionId: "feed" | "bathe" | "park" | "sleep") => void;
 }
 
+function isCorgiAnimated(definitionId: string): boolean {
+  return definitionId === "pet_corgi";
+}
+
 function renderPetFigure(definition: PetDefinition, variant: "card" | "stage" | "roster"): ReactElement {
+  if (isCorgiAnimated(definition.id)) {
+    return (
+      <video
+        className={`pet-art-video pet-art-video-${variant}`}
+        src={CORGI_VIDEO_SRC}
+        autoPlay
+        loop
+        muted
+        playsInline
+        aria-hidden="true"
+        preload={variant === "stage" ? "auto" : "metadata"}
+      />
+    );
+  }
+
   const imageSrc = getPetArtSrc(definition.id);
   if (imageSrc) {
     return (
@@ -115,10 +136,11 @@ export function PetCenterScreen({
                 "--pet-accent": definition.accent,
                 "--pet-accent-soft": definition.accentSoft,
               } as CSSProperties;
+              const cardFigureClassName = `pet-card-figure${isCorgiAnimated(definition.id) ? " pet-media-transparent" : ""}`;
 
               return (
                 <article key={definition.id} className="pet-shop-card" style={cardStyle}>
-                  <div className="pet-card-figure" aria-hidden="true">
+                  <div className={cardFigureClassName} aria-hidden="true">
                     {renderPetFigure(definition, "card")}
                   </div>
                   <div className="pet-card-copy">
@@ -146,6 +168,7 @@ export function PetCenterScreen({
   } as CSSProperties;
   const needCards = createPetNeedCards(activePetCompanion);
   const statusCopy = buildPetStatusCopy(activePetCompanion, activePetDefinition);
+  const stageFigureClassName = `pet-stage-figure${isCorgiAnimated(activePetDefinition.id) ? " pet-media-transparent" : ""}${interactionMotionClass}`;
 
   return (
     <div className="pet-page">
@@ -174,7 +197,7 @@ export function PetCenterScreen({
             </div>
             <div className="pet-stage">
               <div className="pet-stage-frame">
-                <div className={`pet-stage-figure${interactionMotionClass}`} aria-hidden="true">
+                <div className={stageFigureClassName} aria-hidden="true">
                   {renderPetFigure(activePetDefinition, "stage")}
                 </div>
                 <p>{statusCopy}</p>
@@ -271,10 +294,11 @@ export function PetCenterScreen({
                   "--pet-accent": definition.accent,
                   "--pet-accent-soft": definition.accentSoft,
                 } as CSSProperties;
+                const rosterAvatarClassName = `pet-roster-avatar${isCorgiAnimated(definition.id) ? " pet-media-transparent" : ""}`;
 
                 return (
                   <article key={definition.id} className={`pet-roster-row${isActive ? " is-active" : ""}`} style={itemStyle}>
-                    <div className="pet-roster-avatar" aria-hidden="true">
+                    <div className={rosterAvatarClassName} aria-hidden="true">
                       {renderPetFigure(definition, "roster")}
                     </div>
                     <div className="pet-roster-copy">
