@@ -44,6 +44,7 @@ import {
 import {
   MAX_LOCAL_PROFILES,
   createLocalProfile,
+  deleteLocalProfile,
   loadLocalProfileWorkspace,
   loadAppState,
   loadDashboardTabPreference,
@@ -1902,6 +1903,30 @@ function AppShell(): JSX.Element {
     }
   }
 
+  function handleDeleteProfile(profileId: string, profileName: string): void {
+    if (!window.confirm(`确定删除档案“${profileName}”吗？删除后不可恢复。`)) {
+      return;
+    }
+
+    const deletingActiveProfile = state.profile.id === profileId;
+    try {
+      const result = deleteLocalProfile(profileId);
+      if (result.workspace.activeProfileId === null) {
+        applyProfileSelection(result.state, result.workspace, `已删除档案：${profileName}。当前未登录。`);
+        return;
+      }
+
+      if (deletingActiveProfile) {
+        applyProfileSelection(result.state, result.workspace, `已删除当前档案，已切换到：${result.state.profile.name}`);
+        return;
+      }
+
+      applyProfileSelection(result.state, result.workspace, `已删除档案：${profileName}`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "删除档案失败，请稍后重试。");
+    }
+  }
+
   function handleLogoutProfile(): void {
     const result = logoutLocalProfile();
     applyProfileSelection(result.state, result.workspace, "已退出登录。");
@@ -3404,6 +3429,7 @@ function AppShell(): JSX.Element {
         onUpdateDraftName={setProfileNameDraft}
         onSubmitName={handleCreateProfile}
         onSwitchProfile={handleSwitchProfile}
+        onDeleteProfile={handleDeleteProfile}
         onLogout={handleLogoutProfile}
         onOpenSyncSettings={openSyncAccountModal}
       />

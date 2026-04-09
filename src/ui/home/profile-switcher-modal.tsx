@@ -12,6 +12,7 @@ interface ProfileSwitcherModalProps {
   onUpdateDraftName: (value: string) => void;
   onSubmitName: () => void;
   onSwitchProfile: (profileId: string) => void;
+  onDeleteProfile: (profileId: string, profileName: string) => void;
   onLogout: () => void;
   onOpenSyncSettings: () => void;
 }
@@ -27,6 +28,7 @@ export function ProfileSwitcherModal({
   onUpdateDraftName,
   onSubmitName,
   onSwitchProfile,
+  onDeleteProfile,
   onLogout,
   onOpenSyncSettings,
 }: ProfileSwitcherModalProps) {
@@ -151,14 +153,23 @@ export function ProfileSwitcherModal({
                         <small>{isActive ? "当前档案" : "本地档案"}</small>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      className={isActive ? "modal-cancel" : "modal-submit modal-submit-primary"}
-                      disabled={isActive}
-                      onClick={() => onSwitchProfile(profile.id)}
-                    >
-                      {isActive ? "当前使用中" : "切换"}
-                    </button>
+                    <div className="profile-switcher-actions">
+                      <button
+                        type="button"
+                        className={isActive ? "modal-cancel" : "modal-submit modal-submit-primary"}
+                        disabled={isActive}
+                        onClick={() => onSwitchProfile(profile.id)}
+                      >
+                        {isActive ? "当前使用中" : "切换"}
+                      </button>
+                      <button
+                        type="button"
+                        className="modal-cancel profile-switcher-delete-button"
+                        onClick={() => onDeleteProfile(profile.id, profile.name)}
+                      >
+                        删除
+                      </button>
+                    </div>
                   </li>
                 );
               })}

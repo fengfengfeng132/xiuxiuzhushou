@@ -486,6 +486,57 @@ export function switchLocalProfile(profileId: string, now: string = new Date().t
   };
 }
 
+export function deleteLocalProfile(profileId: string, now: string = new Date().toISOString()): LocalProfileStateResult {
+  const normalizedId = normalizeString(profileId);
+  if (!normalizedId) {
+    throw new Error("请选择要删除的档案。");
+  }
+
+  if (typeof window === "undefined") {
+    throw new Error("当前环境不支持删除本地档案。");
+  }
+
+  const workspace = readWorkspace(now);
+  const targetIndex = workspace.profiles.findIndex((profile) => profile.id === normalizedId);
+  if (targetIndex < 0) {
+    throw new Error("未找到该档案，请刷新后重试。");
+  }
+
+  const wasActive = workspace.activeProfileId === normalizedId;
+  workspace.profiles.splice(targetIndex, 1);
+
+  if (workspace.profiles.length === 0) {
+    workspace.activeProfileId = null;
+    writeWorkspace(workspace);
+    const guestState = assignSyncDeviceId(createGuestState(now), loadOrCreateSyncDeviceId());
+    window.localStorage.setItem(STORAGE_KEY, serializeState(guestState));
+    return {
+      state: guestState,
+      workspace: toWorkspaceSummary(workspace),
+    };
+  }
+
+  if (wasActive || !workspace.activeProfileId || !workspace.profiles.some((profile) => profile.id === workspace.activeProfileId)) {
+    const fallbackIndex = Math.max(0, Math.min(targetIndex, workspace.profiles.length - 1));
+    workspace.activeProfileId = workspace.profiles[fallbackIndex].id;
+  }
+
+  const activeProfile = resolveActiveProfile(workspace);
+  if (!activeProfile) {
+    throw new Error("档案状态异常，请重试。");
+  }
+
+  const nextState = buildStateFromEntry(activeProfile, loadOrCreateSyncDeviceId(), now);
+  activeProfile.state = serializeState(nextState);
+  writeWorkspace(workspace);
+  window.localStorage.setItem(STORAGE_KEY, activeProfile.state);
+
+  return {
+    state: nextState,
+    workspace: toWorkspaceSummary(workspace),
+  };
+}
+
 export function logoutLocalProfile(now: string = new Date().toISOString()): LocalProfileStateResult {
   if (typeof window === "undefined") {
     const fallbackState = createGuestState(now);

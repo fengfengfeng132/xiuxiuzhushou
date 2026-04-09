@@ -1184,6 +1184,18 @@
   color: var(--muted);
 }
 
+.profile-switcher-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-switcher-delete-button {
+  color: #b04e6f;
+  background: rgba(255, 241, 246, 0.92);
+  border-color: rgba(226, 130, 164, 0.35);
+}
+
 .profile-switcher-footer {
   display: grid;
   gap: 10px;
