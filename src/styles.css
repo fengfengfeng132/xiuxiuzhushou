@@ -1,4 +1,5 @@
-﻿@import "./styles/base.css";
+@import "./styles/base.css";
+@import "./styles/device-adaptive.css";
 @import "./styles/plans.css";
 @import "./styles/habits.css";
 @import "./styles/pets.css";
