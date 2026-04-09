@@ -2,16 +2,41 @@
 
 .profile-menu-anchor {
   position: relative;
+  width: 132px;
+  flex: 0 0 132px;
+  z-index: 24;
+}
+
+.hero-side .profile-chip,
+.hero-side .balance-chip {
+  width: 132px;
+}
+
+.hero-panel {
+  overflow: visible;
 }
 
 .profile-chip {
+  width: 100%;
   justify-content: space-between;
+  min-height: 68px;
 }
 
 .profile-chip-arrow {
   color: rgba(255, 255, 255, 0.88);
   font-size: 11px;
   line-height: 1;
+  margin-left: auto;
+}
+
+.balance-chip {
+  min-height: 68px;
+}
+
+.profile-meta strong {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profile-quick-menu {
@@ -184,7 +209,7 @@
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.94);
   box-shadow: var(--shadow-soft);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .profile-management-table-head,

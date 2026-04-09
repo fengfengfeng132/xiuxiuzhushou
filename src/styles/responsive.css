@@ -991,6 +991,11 @@
     width: min(300px, calc(100vw - 24px));
   }
 
+  .profile-menu-anchor {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
   .profile-management-hero {
     grid-template-columns: 1fr;
     justify-items: start;
