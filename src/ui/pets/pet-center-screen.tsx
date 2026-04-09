@@ -81,6 +81,7 @@ function PetFigureMedia({
   const videoSources = videoSourcesOverride ?? videoConfig?.idle ?? null;
   const imageSrc = getPetArtSrc(definition.id);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const playbackProbeTimerRef = useRef<number | null>(null);
   const [videoFailed, setVideoFailed] = useState(false);
   const [playbackBlocked, setPlaybackBlocked] = useState(false);
   const canUseVideo = Boolean(videoConfig && videoSources && videoSources.length > 0 && !videoFailed);
@@ -90,6 +91,9 @@ function PetFigureMedia({
     if (!videoElement) {
       return;
     }
+    videoElement.setAttribute("playsinline", "true");
+    videoElement.setAttribute("webkit-playsinline", "true");
+    videoElement.playsInline = true;
     videoElement.defaultMuted = true;
     videoElement.muted = true;
     const playResult = videoElement.play();
@@ -97,9 +101,15 @@ function PetFigureMedia({
       playResult
         .then(() => setPlaybackBlocked(false))
         .catch(() => setPlaybackBlocked(true));
-    } else {
-      setPlaybackBlocked(false);
     }
+
+    if (playbackProbeTimerRef.current !== null) {
+      window.clearTimeout(playbackProbeTimerRef.current);
+    }
+    playbackProbeTimerRef.current = window.setTimeout(() => {
+      const probeTarget = videoRef.current;
+      setPlaybackBlocked(Boolean(probeTarget && probeTarget.paused));
+    }, 260);
   };
 
   const resolvedVideoSources = videoSources ?? [];
@@ -109,6 +119,10 @@ function PetFigureMedia({
   useEffect(() => {
     setVideoFailed(false);
     setPlaybackBlocked(false);
+    if (playbackProbeTimerRef.current !== null) {
+      window.clearTimeout(playbackProbeTimerRef.current);
+      playbackProbeTimerRef.current = null;
+    }
   }, [videoSourceKey]);
 
   useEffect(() => {
@@ -133,6 +147,33 @@ function PetFigureMedia({
     };
   }, [playbackBlocked, videoSourceKey]);
 
+  useEffect(() => {
+    if (!canUseVideo || typeof window === "undefined") {
+      return;
+    }
+    const unlockPlayback = () => {
+      const target = videoRef.current;
+      if (target && target.paused) {
+        tryPlayVideo();
+      }
+    };
+    window.addEventListener("pointerdown", unlockPlayback, { passive: true });
+    window.addEventListener("touchstart", unlockPlayback, { passive: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlockPlayback);
+      window.removeEventListener("touchstart", unlockPlayback);
+    };
+  }, [canUseVideo, videoSourceKey]);
+
+  useEffect(
+    () => () => {
+      if (playbackProbeTimerRef.current !== null) {
+        window.clearTimeout(playbackProbeTimerRef.current);
+      }
+    },
+    [],
+  );
+
   if (canUseVideo) {
     const videoClassName = `pet-art-video pet-art-video-${variant}${variant === "stage" && isFullRangeStageVideo(definition.id) ? " pet-art-video-stage-full-range" : ""}`;
     return (
@@ -146,8 +187,9 @@ function PetFigureMedia({
         muted
         playsInline
         aria-hidden="true"
-        preload={variant === "stage" ? "auto" : "metadata"}
+        preload="auto"
         onCanPlay={tryPlayVideo}
+        onLoadedData={tryPlayVideo}
         onPlaying={() => setPlaybackBlocked(false)}
         onEnded={onVideoEnded}
         onError={() => setVideoFailed(true)}
@@ -166,7 +208,7 @@ function PetFigureMedia({
         src={imageSrc}
         alt=""
         aria-hidden="true"
-        loading={variant === "stage" ? "eager" : "lazy"}
+        loading="eager"
         decoding="async"
       />
     );
