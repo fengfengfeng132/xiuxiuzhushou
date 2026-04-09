@@ -54,6 +54,11 @@ interface PetFigureRenderOptions {
   videoSourcesOverride?: string[] | null;
 }
 
+interface PetFigureMediaProps extends PetFigureRenderOptions {
+  definition: PetDefinition;
+  variant: "card" | "stage" | "roster";
+}
+
 function getVideoMimeTypeFromPath(path: string): string | undefined {
   if (path.endsWith(".mp4")) {
     return "video/mp4";
@@ -64,19 +69,76 @@ function getVideoMimeTypeFromPath(path: string): string | undefined {
   return undefined;
 }
 
-function renderPetFigure(definition: PetDefinition, variant: "card" | "stage" | "roster", options: PetFigureRenderOptions = {}): ReactElement {
+function PetFigureMedia({
+  definition,
+  variant,
+  loopOverride,
+  onVideoEnded,
+  videoKey,
+  videoSourcesOverride,
+}: PetFigureMediaProps): ReactElement {
   const videoConfig = getAnimatedPetVideoConfig(definition.id);
-  const videoSources = options.videoSourcesOverride ?? videoConfig?.idle ?? null;
+  const videoSources = videoSourcesOverride ?? videoConfig?.idle ?? null;
   const imageSrc = getPetArtSrc(definition.id);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const [videoFailed, setVideoFailed] = useState(false);
+  const [playbackBlocked, setPlaybackBlocked] = useState(false);
   const canUseVideo = Boolean(videoConfig && videoSources && videoSources.length > 0 && !videoFailed);
+
+  const tryPlayVideo = () => {
+    const videoElement = videoRef.current;
+    if (!videoElement) {
+      return;
+    }
+    videoElement.defaultMuted = true;
+    videoElement.muted = true;
+    const playResult = videoElement.play();
+    if (playResult && typeof playResult.catch === "function") {
+      playResult
+        .then(() => setPlaybackBlocked(false))
+        .catch(() => setPlaybackBlocked(true));
+    } else {
+      setPlaybackBlocked(false);
+    }
+  };
+
+  const resolvedVideoSources = videoSources ?? [];
+  const videoSourceKey = resolvedVideoSources.join("|");
+  const shouldLoop = loopOverride ?? true;
+
+  useEffect(() => {
+    setVideoFailed(false);
+    setPlaybackBlocked(false);
+  }, [videoSourceKey]);
+
+  useEffect(() => {
+    if (!canUseVideo) {
+      return;
+    }
+    tryPlayVideo();
+  }, [canUseVideo, videoSourceKey, shouldLoop]);
+
+  useEffect(() => {
+    if (!playbackBlocked || typeof window === "undefined") {
+      return;
+    }
+    const unlockPlayback = () => {
+      tryPlayVideo();
+    };
+    window.addEventListener("pointerdown", unlockPlayback, { passive: true });
+    window.addEventListener("touchend", unlockPlayback, { passive: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlockPlayback);
+      window.removeEventListener("touchend", unlockPlayback);
+    };
+  }, [playbackBlocked, videoSourceKey]);
+
   if (canUseVideo) {
     const videoClassName = `pet-art-video pet-art-video-${variant}${variant === "stage" && isFullRangeStageVideo(definition.id) ? " pet-art-video-stage-full-range" : ""}`;
-    const shouldLoop = options.loopOverride ?? true;
-    const resolvedVideoSources = videoSources ?? [];
     return (
       <video
-        key={options.videoKey ?? `${definition.id}-${variant}-${resolvedVideoSources.join("|")}`}
+        ref={videoRef}
+        key={videoKey ?? `${definition.id}-${variant}-${resolvedVideoSources.join("|")}`}
         className={videoClassName}
         poster={imageSrc ?? undefined}
         autoPlay
@@ -85,7 +147,9 @@ function renderPetFigure(definition: PetDefinition, variant: "card" | "stage" | 
         playsInline
         aria-hidden="true"
         preload={variant === "stage" ? "auto" : "metadata"}
-        onEnded={options.onVideoEnded}
+        onCanPlay={tryPlayVideo}
+        onPlaying={() => setPlaybackBlocked(false)}
+        onEnded={onVideoEnded}
         onError={() => setVideoFailed(true)}
       >
         {resolvedVideoSources.map((sourcePath) => (
@@ -197,7 +261,7 @@ export function PetCenterScreen({
               return (
                 <article key={definition.id} className="pet-shop-card" style={cardStyle}>
                   <div className={cardFigureClassName} aria-hidden="true">
-                    {renderPetFigure(definition, "card")}
+                    <PetFigureMedia definition={definition} variant="card" />
                   </div>
                   <div className="pet-card-copy">
                     <h3>{definition.name}</h3>
@@ -258,12 +322,14 @@ export function PetCenterScreen({
             <div className="pet-stage">
               <div className="pet-stage-frame">
                 <div className={stageFigureClassName} aria-hidden="true">
-                  {renderPetFigure(activePetDefinition, "stage", {
-                    videoKey: stageVideoKey,
-                    videoSourcesOverride: stageVideoSources,
-                    loopOverride: !isStageFeedVideo,
-                    onVideoEnded: isStageFeedVideo ? () => setIsFeedVideoPlaying(false) : undefined,
-                  })}
+                  <PetFigureMedia
+                    definition={activePetDefinition}
+                    variant="stage"
+                    videoKey={stageVideoKey}
+                    videoSourcesOverride={stageVideoSources}
+                    loopOverride={!isStageFeedVideo}
+                    onVideoEnded={isStageFeedVideo ? () => setIsFeedVideoPlaying(false) : undefined}
+                  />
                 </div>
                 <p>{statusCopy}</p>
               </div>
@@ -364,7 +430,7 @@ export function PetCenterScreen({
                 return (
                   <article key={definition.id} className={`pet-roster-row${isActive ? " is-active" : ""}`} style={itemStyle}>
                     <div className={rosterAvatarClassName} aria-hidden="true">
-                      {renderPetFigure(definition, "roster")}
+                      <PetFigureMedia definition={definition} variant="roster" />
                     </div>
                     <div className="pet-roster-copy">
                       <strong>{definition.name}</strong>
