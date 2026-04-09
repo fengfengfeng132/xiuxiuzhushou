@@ -1109,8 +1109,12 @@
 
 .profile-switcher-create-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   gap: 10px;
+}
+
+.profile-switcher-trigger {
+  justify-self: start;
 }
 
 .profile-switcher-list-wrap {

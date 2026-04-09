@@ -1,4 +1,4 @@
-import type { KeyboardEvent } from "react";
+import { useEffect, useState, type KeyboardEvent } from "react";
 import type { LocalProfileSummary } from "../../persistence/storage.js";
 
 interface ProfileSwitcherModalProps {
@@ -30,12 +30,25 @@ export function ProfileSwitcherModal({
   onLogout,
   onOpenSyncSettings,
 }: ProfileSwitcherModalProps) {
+  const [nameStepOpen, setNameStepOpen] = useState(false);
+  const activeProfile = activeProfileId ? profiles.find((profile) => profile.id === activeProfileId) ?? null : null;
+  const remainingProfiles = Math.max(0, maxProfiles - profiles.length);
+  const triggerLabel = activeProfile ? "新建其他档案" : "注册";
+  const submitLabel = activeProfile ? "创建并切换" : "完成注册并登录";
+  const nameFieldLabel = activeProfile ? "新档案名称" : "用户名";
+  const placeholder = activeProfile ? "例如：二宝" : "例如：真真";
+
+  useEffect(() => {
+    if (!open) {
+      setNameStepOpen(false);
+      return;
+    }
+    setNameStepOpen(false);
+  }, [open, activeProfileId]);
+
   if (!open) {
     return null;
   }
-
-  const activeProfile = activeProfileId ? profiles.find((profile) => profile.id === activeProfileId) ?? null : null;
-  const remainingProfiles = Math.max(0, maxProfiles - profiles.length);
 
   function handleNameInputEnter(event: KeyboardEvent<HTMLInputElement>): void {
     if (event.key !== "Enter") {
@@ -46,6 +59,27 @@ export function ProfileSwitcherModal({
       return;
     }
     onSubmitName();
+    setNameStepOpen(false);
+  }
+
+  function handleOpenNameStep(): void {
+    if (!canCreateMoreProfiles) {
+      return;
+    }
+    setNameStepOpen(true);
+  }
+
+  function handleCancelNameStep(): void {
+    onUpdateDraftName("");
+    setNameStepOpen(false);
+  }
+
+  function handleSubmitName(): void {
+    if (!canCreateMoreProfiles || draftName.trim().length === 0) {
+      return;
+    }
+    onSubmitName();
+    setNameStepOpen(false);
   }
 
   return (
@@ -67,27 +101,36 @@ export function ProfileSwitcherModal({
         </section>
 
         <section className="profile-switcher-create">
-          <div className="field-block">
-            <span>{activeProfile ? "新档案名称" : "登录名称"}</span>
-            <div className="profile-switcher-create-row">
-              <input
-                type="text"
-                value={draftName}
-                placeholder={activeProfile ? "例如：二宝" : "例如：真真"}
-                onChange={(event) => onUpdateDraftName(event.target.value)}
-                onKeyDown={handleNameInputEnter}
-                maxLength={16}
-              />
-              <button
-                type="button"
-                className="modal-submit modal-submit-primary"
-                disabled={!canCreateMoreProfiles || draftName.trim().length === 0}
-                onClick={onSubmitName}
-              >
-                {activeProfile ? "创建并切换" : "登录"}
-              </button>
+          {nameStepOpen ? (
+            <div className="field-block">
+              <span>{nameFieldLabel}</span>
+              <div className="profile-switcher-create-row">
+                <input
+                  type="text"
+                  value={draftName}
+                  placeholder={placeholder}
+                  onChange={(event) => onUpdateDraftName(event.target.value)}
+                  onKeyDown={handleNameInputEnter}
+                  maxLength={16}
+                />
+                <button
+                  type="button"
+                  className="modal-submit modal-submit-primary"
+                  disabled={!canCreateMoreProfiles || draftName.trim().length === 0}
+                  onClick={handleSubmitName}
+                >
+                  {submitLabel}
+                </button>
+                <button type="button" className="modal-cancel" onClick={handleCancelNameStep}>
+                  取消
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <button type="button" className="modal-submit modal-submit-primary profile-switcher-trigger" disabled={!canCreateMoreProfiles} onClick={handleOpenNameStep}>
+              {triggerLabel}
+            </button>
+          )}
           <p className="profile-switcher-limit">
             {canCreateMoreProfiles ? `还可创建 ${remainingProfiles} 个档案（最多 ${maxProfiles} 个）。` : `已达到最多 ${maxProfiles} 个档案。`}
           </p>
