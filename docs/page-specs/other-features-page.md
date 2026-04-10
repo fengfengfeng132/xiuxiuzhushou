@@ -111,6 +111,8 @@ Requirement:
 ## Interaction Notes
 
 - Clicking `行为习惯` can resolve to the dedicated habit-management page.
+- Clicking `仪表盘配置` resolves to the dedicated page documented in `docs/page-specs/dashboard-config-page.md`.
+- Clicking `身高管理` resolves to the dedicated height-management module documented in `docs/page-specs/height-management-pages.md`.
 - Clicking `电子宠物` resolves to the dedicated pet center documented in:
   - `docs/page-specs/pet-adoption-page.md`
   - `docs/page-specs/pet-interaction-page.md`

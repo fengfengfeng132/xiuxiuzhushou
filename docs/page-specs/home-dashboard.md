@@ -173,6 +173,7 @@ Requirement:
 - Switching tabs should keep the user on the same homepage shell.
 - Changing date should only refresh date-scoped board content.
 - Summary cards should remain visible regardless of which main tab is active.
+- The homepage summary strip is configurable from `docs/page-specs/dashboard-config-page.md`; saved visibility and order changes apply locally after the user saves.
 - The plan board must support both empty and populated historical states.
 - Clicking an existing plan card opens a detail modal rather than navigating away immediately.
 - The plan board must also support a current-day active state with direct actions on each card.
@@ -193,6 +194,7 @@ Additional interaction note:
 - The homepage summary strip must support a dedicated `电子宠物` entry that opens the local pet center without leaving the local-first shell architecture.
 - The homepage summary strip must support a dedicated `使用帮助` entry that opens a static but navigable help manual for the current product slice.
 - The homepage summary strip must support a dedicated `其他` entry that opens a grouped navigation hub for secondary modules and system tools.
+- The homepage must support both `Tab 形式` and `仅学习计划` display modes from dashboard configuration.
 
 - default dashboard state
 - no plans for selected date

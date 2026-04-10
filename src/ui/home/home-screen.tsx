@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { ActivityEntry, Reward } from "../../domain/model.js";
-import type { DashboardTab, LocalProfileSummary } from "../../persistence/storage.js";
+import type { DashboardDisplayMode, DashboardTab, LocalProfileSummary } from "../../persistence/storage.js";
 import type { MetricCard } from "../app-types.js";
 import { formatActivityKind } from "../app-helpers.js";
 import { RewardPreviewPanel } from "../points/reward-preview-panel.js";
@@ -11,6 +11,7 @@ interface HomeScreenProps {
   heroSummary: string;
   starBalance: number;
   metricCards: MetricCard[];
+  displayMode: DashboardDisplayMode;
   activeTab: DashboardTab;
   rewardsPreview: Reward[];
   recentActivity: ActivityEntry[];
@@ -37,6 +38,7 @@ export function HomeScreen({
   heroSummary,
   starBalance,
   metricCards,
+  displayMode,
   activeTab,
   rewardsPreview,
   recentActivity,
@@ -56,6 +58,9 @@ export function HomeScreen({
   onOpenPointsCenter,
   onRedeemReward,
 }: HomeScreenProps) {
+  const usesTabs = displayMode === "tabs";
+  const activeBoard = usesTabs ? (activeTab === "plans" ? planBoard : habitBoard) : planBoard;
+
   return (
     <>
       <header className="hero-panel">
@@ -104,15 +109,17 @@ export function HomeScreen({
       </section>
 
       <section className="home-panel">
-        <div className="tab-bar" role="tablist" aria-label="主页标签页">
-          <button type="button" className={`tab-button${activeTab === "plans" ? " is-active" : ""}`} onClick={() => onTabChange("plans")}>
-            学习计划
-          </button>
-          <button type="button" className={`tab-button${activeTab === "habits" ? " is-active" : ""}`} onClick={() => onTabChange("habits")}>
-            行为习惯
-          </button>
-        </div>
-        <div className="surface-card">{activeTab === "plans" ? planBoard : habitBoard}</div>
+        {usesTabs ? (
+          <div className="tab-bar" role="tablist" aria-label="主页标签页">
+            <button type="button" className={`tab-button${activeTab === "plans" ? " is-active" : ""}`} onClick={() => onTabChange("plans")}>
+              学习计划
+            </button>
+            <button type="button" className={`tab-button${activeTab === "habits" ? " is-active" : ""}`} onClick={() => onTabChange("habits")}>
+              行为习惯
+            </button>
+          </div>
+        ) : null}
+        <div className="surface-card">{activeBoard}</div>
       </section>
 
       <section className="dashboard-extras">

@@ -96,6 +96,7 @@
   .batch-plan-shell,
   .ai-plan-topbar,
   .plan-management-topbar,
+  .dashboard-config-hero,
   .help-hero,
   .more-hero,
   .points-hero,
@@ -149,6 +150,10 @@
   }
 
   .points-history-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-config-display-options {
     grid-template-columns: 1fr;
   }
 
@@ -249,7 +254,8 @@
   .reading-book-actions,
   .reading-card-head,
   .reading-detail-hero,
-  .reading-detail-actions {
+  .reading-detail-actions,
+  .dashboard-config-display-head {
     flex-direction: column;
   }
 
@@ -311,7 +317,11 @@
   .interest-empty-card,
   .more-feature-card,
   .height-card,
-  .more-search-empty {
+  .more-search-empty,
+  .dashboard-config-intro-card,
+  .dashboard-config-display-card,
+  .dashboard-config-row,
+  .dashboard-config-footer {
     border-radius: 24px;
   }
 
@@ -350,6 +360,7 @@
   .points-history-hero,
   .achievement-hero,
   .help-hero,
+  .dashboard-config-hero,
   .more-hero,
   .interest-hero,
   .height-hero,
@@ -768,7 +779,19 @@
     border-radius: 0 0 28px 28px;
   }
 
+  .dashboard-config-hero {
+    gap: 12px;
+    padding: 18px 16px 20px;
+    border-radius: 0 0 28px 28px;
+  }
+
   .more-back-button {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+
+  .dashboard-config-back-button {
     width: 42px;
     height: 42px;
     border-radius: 12px;
@@ -777,6 +800,19 @@
   .more-feature-card {
     min-height: 148px;
     padding: 14px;
+  }
+
+  .dashboard-config-row {
+    grid-template-columns: 44px 48px minmax(0, 1fr);
+  }
+
+  .dashboard-config-toggle-group {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+  }
+
+  .dashboard-config-footer {
+    grid-template-columns: 1fr;
   }
 
   .more-feature-card strong {

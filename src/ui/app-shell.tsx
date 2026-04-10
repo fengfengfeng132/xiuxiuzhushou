@@ -42,18 +42,23 @@ import {
   type StudyPlan,
 } from "../domain/model.js";
 import {
+  createDefaultDashboardConfigPreference,
   MAX_LOCAL_PROFILES,
   createLocalProfile,
   clearLocalProfileData,
+  type DashboardConfigPreference,
+  type DashboardModuleId,
   deleteLocalProfile,
   loadLocalProfileWorkspace,
   loadAppState,
+  loadDashboardConfigPreference,
   loadDashboardTabPreference,
   loadOrCreateSyncDeviceId,
   logoutLocalProfile,
   renameLocalProfile,
   resetAppState,
   saveAppState,
+  saveDashboardConfigPreference,
   saveDashboardTabPreference,
   switchLocalProfile,
   type LocalProfileWorkspace,
@@ -108,6 +113,7 @@ import {
 } from "../persistence/reading-storage.js";
 import {
   INITIAL_AI_PLAN_COMPOSER_DRAFT,
+  DASHBOARD_MODULE_DEFINITIONS,
   createInitialBatchPlanDraft,
   createInitialPlanDraft,
   createPlanDraftFromPlan,
@@ -135,6 +141,7 @@ import type {
   AiPlanMessage,
   AiPlanSession,
   BatchPlanDraft,
+  MetricCard,
   HabitBoardFilter,
   HabitBoardLayout,
   HabitCheckInDraft,
@@ -169,6 +176,7 @@ import {
   type InterestClassDraft,
   type InterestClassRecordDraft,
 } from "./interest/interest-class-screen.js";
+import { DashboardConfigScreen } from "./more-features/dashboard-config-screen.js";
 import { MoreFeaturesScreen } from "./more-features/more-features-screen.js";
 import { MorningReadingScreen } from "./morning-reading/morning-reading-screen.js";
 import { PetCenterScreen } from "./pets/pet-center-screen.js";
@@ -365,6 +373,41 @@ function createLocalUiId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function cloneDashboardConfigPreference(config: DashboardConfigPreference): DashboardConfigPreference {
+  return {
+    displayMode: config.displayMode,
+    moduleOrder: [...config.moduleOrder],
+    visibleModuleIds: [...config.visibleModuleIds],
+  };
+}
+
+function areDashboardConfigPreferencesEqual(left: DashboardConfigPreference, right: DashboardConfigPreference): boolean {
+  return (
+    left.displayMode === right.displayMode &&
+    left.moduleOrder.length === right.moduleOrder.length &&
+    left.visibleModuleIds.length === right.visibleModuleIds.length &&
+    left.moduleOrder.every((moduleId, index) => moduleId === right.moduleOrder[index]) &&
+    left.visibleModuleIds.every((moduleId, index) => moduleId === right.visibleModuleIds[index])
+  );
+}
+
+function reorderDashboardModuleIds(moduleIds: DashboardModuleId[], draggedId: DashboardModuleId, targetId: DashboardModuleId): DashboardModuleId[] {
+  if (draggedId === targetId) {
+    return moduleIds;
+  }
+
+  const draggedIndex = moduleIds.indexOf(draggedId);
+  const targetIndex = moduleIds.indexOf(targetId);
+  if (draggedIndex === -1 || targetIndex === -1) {
+    return moduleIds;
+  }
+
+  const nextIds = [...moduleIds];
+  const [movedId] = nextIds.splice(draggedIndex, 1);
+  nextIds.splice(targetIndex, 0, movedId);
+  return nextIds;
+}
+
 const PROFILE_AVATAR_COLOR_OPTIONS = ["#64A187", "#9F7F69", "#5A9B7E", "#9BA66A", "#7CAD93", "#9F7F69", "#7A9CA4", "#9BA66A"];
 
 function collectPendingPlanReviewItems(plans: StudyPlan[]): PendingPlanReviewItem[] {
@@ -481,6 +524,12 @@ function AppShell(): JSX.Element {
   const [syncBusy, setSyncBusy] = useState(false);
   const [syncStatusMessage, setSyncStatusMessage] = useState("尚未开始同步。");
   const [activeTab, setActiveTab] = useState<DashboardTab>(() => loadDashboardTabPreference());
+  const [dashboardConfig, setDashboardConfig] = useState<DashboardConfigPreference>(() =>
+    loadDashboardConfigPreference(loadLocalProfileWorkspace().activeProfileId),
+  );
+  const [dashboardConfigDraft, setDashboardConfigDraft] = useState<DashboardConfigPreference>(() =>
+    loadDashboardConfigPreference(loadLocalProfileWorkspace().activeProfileId),
+  );
   const [screen, setScreen] = useState<Screen>("home");
   const [quickCompleteDraft, setQuickCompleteDraft] = useState<QuickCompleteDraft>(INITIAL_QUICK_COMPLETE_DRAFT);
   const [planPointsReviewDraft, setPlanPointsReviewDraft] = useState<PlanPointsReviewDraft>(INITIAL_PLAN_POINTS_REVIEW_DRAFT);
@@ -540,7 +589,7 @@ function AppShell(): JSX.Element {
   const ownedPetIds = new Set(ownedPets.map((companion) => companion.definitionId));
   const weekDates = getWeekDates(selectedDateKey);
   const summary = summarizeState(state, today);
-  const metricCards = createMetricCards(state, today);
+  const metricCards = createMetricCards(state, today, dashboardConfig);
   const pendingPlans = getPendingPlansForDate(state.plans, selectedDateKey);
   const completedPlans = getCompletedPlansForDate(state.plans, selectedDateKey);
   const recentActivity = state.activity.slice(0, 5);
@@ -628,6 +677,23 @@ function AppShell(): JSX.Element {
         planPointsReviewDraft.reason.trim().length > 0));
   const habitSearchKeyword = habitSearch.trim().toLowerCase();
   const moreFeaturesKeyword = moreFeaturesSearch.trim().toLowerCase();
+  const dashboardVisibleModuleIds = new Set(dashboardConfigDraft.visibleModuleIds);
+  let visibleDashboardOrder = 0;
+  const dashboardModuleItems = dashboardConfigDraft.moduleOrder
+    .map((moduleId) => {
+      const definition = DASHBOARD_MODULE_DEFINITIONS.find((item) => item.id === moduleId);
+      if (!definition) {
+        return null;
+      }
+      const visible = dashboardVisibleModuleIds.has(moduleId);
+      return {
+        ...definition,
+        order: visible ? (visibleDashboardOrder += 1) : 0,
+        visible,
+      };
+    })
+    .filter((item): item is (typeof DASHBOARD_MODULE_DEFINITIONS)[number] & { order: number; visible: boolean } => item !== null);
+  const dashboardConfigDirty = !areDashboardConfigPreferencesEqual(dashboardConfig, dashboardConfigDraft);
   const filteredHabits = activeHabits.filter((habit) => {
     const matchesSearch =
       habitSearchKeyword.length === 0 ||
@@ -686,6 +752,12 @@ function AppShell(): JSX.Element {
   useEffect(() => {
     saveDashboardTabPreference(activeTab);
   }, [activeTab]);
+
+  useEffect(() => {
+    const nextConfig = loadDashboardConfigPreference(state.profile.id);
+    setDashboardConfig(nextConfig);
+    setDashboardConfigDraft(cloneDashboardConfigPreference(nextConfig));
+  }, [state.profile.id]);
 
   useEffect(() => {
     if (!profileMenuOpen) {
@@ -1902,6 +1974,12 @@ function AppShell(): JSX.Element {
     setProfileMenuOpen(false);
   }
 
+  function openDashboardConfig(): void {
+    setDashboardConfigDraft(cloneDashboardConfigPreference(dashboardConfig));
+    setScreen("dashboard-config");
+    setProfileMenuOpen(false);
+  }
+
   function openStudyTimer(plan: StudyPlan): void {
     setActiveTimerPlanId(plan.id);
     setSelectedDateKey(today);
@@ -3054,6 +3132,55 @@ function AppShell(): JSX.Element {
     setScreen("points-center");
   }
 
+  function handleChangeDashboardDisplayMode(mode: DashboardConfigPreference["displayMode"]): void {
+    setDashboardConfigDraft((current) => ({
+      ...current,
+      displayMode: mode,
+    }));
+  }
+
+  function handleToggleDashboardModule(moduleId: DashboardModuleId): void {
+    setDashboardConfigDraft((current) => {
+      const isVisible = current.visibleModuleIds.includes(moduleId);
+      const nextVisibleSet = new Set(
+        isVisible ? current.visibleModuleIds.filter((item) => item !== moduleId) : [...current.visibleModuleIds, moduleId],
+      );
+      return {
+        ...current,
+        visibleModuleIds: current.moduleOrder.filter((item) => nextVisibleSet.has(item)),
+      };
+    });
+  }
+
+  function handleMoveDashboardModule(draggedId: DashboardModuleId, targetId: DashboardModuleId): void {
+    setDashboardConfigDraft((current) => ({
+      ...current,
+      moduleOrder: reorderDashboardModuleIds(current.moduleOrder, draggedId, targetId),
+    }));
+  }
+
+  function handleRestoreDashboardConfigDefaults(): void {
+    setDashboardConfigDraft(createDefaultDashboardConfigPreference());
+  }
+
+  function handleSaveDashboardConfig(): void {
+    const nextConfig = cloneDashboardConfigPreference(dashboardConfigDraft);
+    setDashboardConfig(nextConfig);
+    saveDashboardConfigPreference(nextConfig, state.profile.id);
+    if (nextConfig.displayMode === "plans-only") {
+      setActiveTab("plans");
+    }
+    setNotice("仪表盘配置已保存。");
+  }
+
+  function handleBackFromDashboardConfig(): void {
+    if (dashboardConfigDirty && !window.confirm("当前有未保存的仪表盘配置，确定返回吗？")) {
+      return;
+    }
+    setDashboardConfigDraft(cloneDashboardConfigPreference(dashboardConfig));
+    setScreen("more-features");
+  }
+
   function handleBackToMoreFeatures(): void {
     setScreen("more-features");
   }
@@ -3126,7 +3253,7 @@ function AppShell(): JSX.Element {
   }
 
   function handleMoreFeatureAction(card: MoreFeatureCard): void {
-    if (card.id === "timer") {
+    if (card.action === "study-timer") {
       const pendingPlan = state.plans.find((plan) => plan.status === "pending") ?? null;
       if (!pendingPlan) {
         openFutureFlow("请先创建一个待完成计划，再打开专注计时页。");
@@ -3139,6 +3266,12 @@ function AppShell(): JSX.Element {
       openHabitManagement();
       return;
     }
+    if (card.action === "home-plans") {
+      setScreen("home");
+      setActiveTab("plans");
+      setSelectedDateKey(today);
+      return;
+    }
     if (card.action === "home-habits") {
       setScreen("home");
       setActiveTab("habits");
@@ -3149,12 +3282,20 @@ function AppShell(): JSX.Element {
       openHabitStatistics();
       return;
     }
+    if (card.action === "points-center") {
+      openPointsCenter();
+      return;
+    }
     if (card.action === "pet-center") {
       openPetCenter();
       return;
     }
     if (card.action === "help-center") {
       openHelpCenter();
+      return;
+    }
+    if (card.action === "more-features") {
+      openMoreFeatures();
       return;
     }
     if (card.action === "reading-journey") {
@@ -3171,6 +3312,10 @@ function AppShell(): JSX.Element {
     }
     if (card.action === "interest-class") {
       openInterestClass();
+      return;
+    }
+    if (card.action === "dashboard-config") {
+      openDashboardConfig();
       return;
     }
     if (card.action === "profile-management") {
@@ -3216,31 +3361,34 @@ function AppShell(): JSX.Element {
     archiveHabitIds(selectedHabitIds);
   }
 
-  function handleMetricCardAction(card: { id: string; title: string }): void {
-    if (card.id === "stars") {
-      openPointsCenter();
+  function handleMetricCardAction(card: MetricCard): void {
+    if (card.action === "study-timer") {
+      const pendingPlan = state.plans.find((plan) => plan.status === "pending") ?? null;
+      if (!pendingPlan) {
+        openFutureFlow("请先创建一个待完成计划，再打开专注计时页。");
+        return;
+      }
+      openStudyTimer(pendingPlan);
       return;
     }
-    if (card.id === "habits") {
-      openHabitManagement();
+
+    const featureCard = {
+      id: card.id,
+      title: card.title,
+      description: card.hint,
+      icon: "",
+      accent: "",
+      action: card.action,
+      keywords: [],
+      message: card.message,
+    } satisfies MoreFeatureCard;
+
+    if (card.action === "placeholder") {
+      openFutureFlow(card.message ?? `${card.title} 仍在开发中。`);
       return;
     }
-    if (card.id === "pet") {
-      openPetCenter();
-      return;
-    }
-    if (card.id === "help") {
-      openHelpCenter();
-      return;
-    }
-    if (card.id === "more") {
-      openMoreFeatures();
-      return;
-    }
-    setScreen("home");
-    setActiveTab("plans");
-    setSelectedDateKey(today);
-    openFutureFlow(`${card.title} 暂时会返回首页看板。`);
+
+    handleMoreFeatureAction(featureCard);
   }
 
   function handleRedeemReward(rewardId: string): void {
@@ -3510,6 +3658,24 @@ function AppShell(): JSX.Element {
       );
     }
 
+    if (screen === "dashboard-config") {
+      return (
+        <DashboardConfigScreen
+          displayMode={dashboardConfigDraft.displayMode}
+          visibleCount={dashboardConfigDraft.visibleModuleIds.length}
+          totalCount={DASHBOARD_MODULE_DEFINITIONS.length}
+          moduleItems={dashboardModuleItems}
+          isDirty={dashboardConfigDirty}
+          onBack={handleBackFromDashboardConfig}
+          onChangeDisplayMode={handleChangeDashboardDisplayMode}
+          onToggleModule={handleToggleDashboardModule}
+          onMoveModule={handleMoveDashboardModule}
+          onRestoreDefaults={handleRestoreDashboardConfigDefaults}
+          onSave={handleSaveDashboardConfig}
+        />
+      );
+    }
+
     if (screen === "interest-class") {
       return (
         <InterestClassScreen
@@ -3618,6 +3784,7 @@ function AppShell(): JSX.Element {
         heroSummary={buildHeroSummary(state, today)}
         starBalance={summary.starBalance}
         metricCards={metricCards}
+        displayMode={dashboardConfig.displayMode}
         activeTab={activeTab}
         rewardsPreview={rewardsPreview}
         recentActivity={recentActivity}

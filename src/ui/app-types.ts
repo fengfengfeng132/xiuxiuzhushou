@@ -8,6 +8,7 @@ import type {
   RewardRepeatMode,
   RewardResetPeriod,
 } from "../domain/model.js";
+import type { DashboardModuleId } from "../persistence/storage.js";
 
 // Local UI state and view-model types live here so future agents can open one small file first.
 export type Screen =
@@ -21,6 +22,7 @@ export type Screen =
   | "pet-center"
   | "help-center"
   | "more-features"
+  | "dashboard-config"
   | "height-management"
   | "morning-reading"
   | "interest-class"
@@ -194,11 +196,13 @@ export interface SubjectStyle {
 }
 
 export interface MetricCard {
-  id: string;
+  id: DashboardModuleId | "more";
   title: string;
   value: string;
   hint: string;
   tone: string;
+  action: FeatureNavigationAction;
+  message?: string;
 }
 
 export type HabitBoardFilter = "all" | "positive" | "negative" | "completed" | "pending" | "dailyMultiple" | "weeklyMultiple";
@@ -248,18 +252,35 @@ export interface HelpFeatureCard {
   tips: string[];
 }
 
-export type MoreFeatureAction =
+export type FeatureNavigationAction =
   | "habit-management"
   | "habit-statistics"
   | "pet-center"
+  | "points-center"
   | "help-center"
+  | "more-features"
   | "reading-journey"
   | "morning-reading"
   | "height-management"
   | "interest-class"
+  | "dashboard-config"
   | "profile-management"
+  | "study-timer"
+  | "home-plans"
   | "home-habits"
   | "placeholder";
+
+export type MoreFeatureAction = FeatureNavigationAction;
+
+export interface DashboardModuleDefinition {
+  id: DashboardModuleId;
+  title: string;
+  icon: string;
+  accent: string;
+  tone: string;
+  action: FeatureNavigationAction;
+  message?: string;
+}
 
 export interface MoreFeatureCard {
   id: string;

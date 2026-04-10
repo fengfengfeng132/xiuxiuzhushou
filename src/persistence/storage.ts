@@ -10,9 +10,47 @@ import {
 export const STORAGE_KEY = "xiuxiuzhushou_v2_state";
 export const PROFILE_WORKSPACE_KEY = "xiuxiuzhushou_profile_workspace_v1";
 export const DASHBOARD_TAB_KEY = "xiuxiuzhushou_dashboard_tab";
+export const DASHBOARD_CONFIG_KEY = "xiuxiuzhushou_dashboard_config_v1";
 export const SYNC_DEVICE_KEY = "xiuxiuzhushou_sync_device_v1";
 export const MAX_LOCAL_PROFILES = 5;
 export type DashboardTab = "plans" | "habits";
+export type DashboardDisplayMode = "plans-only" | "tabs";
+
+export const DASHBOARD_MODULE_IDS = [
+  "remaining-time",
+  "study-time",
+  "exercise-time",
+  "task-count",
+  "star-count",
+  "completion-rate",
+  "chart-stats",
+  "points-achievement",
+  "habit-management",
+  "score-tracking",
+  "score-analysis",
+  "morning-reading",
+  "reading-journey",
+  "height-management",
+  "interest-class",
+  "todos",
+  "listening",
+  "focus-timer",
+  "savings",
+  "pet",
+  "plan-selection",
+  "printing",
+  "help",
+] as const;
+
+export type DashboardModuleId = (typeof DASHBOARD_MODULE_IDS)[number];
+
+export interface DashboardConfigPreference {
+  displayMode: DashboardDisplayMode;
+  moduleOrder: DashboardModuleId[];
+  visibleModuleIds: DashboardModuleId[];
+}
+
+type StoredDashboardConfigMap = Record<string, DashboardConfigPreference>;
 
 interface StoredProfileEntry {
   id: string;
@@ -51,6 +89,17 @@ export interface CreateLocalProfileOptions {
   avatarColor?: string;
   avatarImage?: string | null;
 }
+
+const DEFAULT_DASHBOARD_VISIBLE_MODULE_IDS: DashboardModuleId[] = [
+  "study-time",
+  "exercise-time",
+  "task-count",
+  "completion-rate",
+  "points-achievement",
+  "habit-management",
+  "pet",
+  "help",
+];
 
 const PROFILE_AVATAR_COLORS = ["#64A187", "#4F8F74", "#9A844E", "#7FA08D", "#B86A6A", "#6F8F98", "#9A844E"];
 
@@ -91,6 +140,125 @@ function normalizeAvatarImage(value: unknown): string | null {
   }
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
+}
+
+function isDashboardModuleId(value: unknown): value is DashboardModuleId {
+  return typeof value === "string" && DASHBOARD_MODULE_IDS.includes(value as DashboardModuleId);
+}
+
+function normalizeDashboardDisplayMode(value: unknown): DashboardDisplayMode {
+  return value === "plans-only" ? "plans-only" : "tabs";
+}
+
+function normalizeDashboardModuleIdList(value: unknown): DashboardModuleId[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const moduleIds: DashboardModuleId[] = [];
+  const seen = new Set<DashboardModuleId>();
+  for (const item of value) {
+    if (!isDashboardModuleId(item) || seen.has(item)) {
+      continue;
+    }
+    seen.add(item);
+    moduleIds.push(item);
+  }
+  return moduleIds;
+}
+
+function normalizeDashboardConfig(value: unknown): DashboardConfigPreference {
+  const record = isRecord(value) ? value : {};
+  const requestedOrder = normalizeDashboardModuleIdList(record.moduleOrder);
+  const orderSet = new Set(requestedOrder);
+  const moduleOrder = [...requestedOrder, ...DASHBOARD_MODULE_IDS.filter((moduleId) => !orderSet.has(moduleId))];
+  const visibleRequested = normalizeDashboardModuleIdList(record.visibleModuleIds);
+  const visibleSet = new Set(visibleRequested);
+  const visibleModuleIds = moduleOrder.filter((moduleId) => visibleSet.has(moduleId));
+
+  return {
+    displayMode: normalizeDashboardDisplayMode(record.displayMode),
+    moduleOrder,
+    visibleModuleIds,
+  };
+}
+
+function cloneDashboardConfigPreference(config: DashboardConfigPreference): DashboardConfigPreference {
+  return {
+    displayMode: config.displayMode,
+    moduleOrder: [...config.moduleOrder],
+    visibleModuleIds: [...config.visibleModuleIds],
+  };
+}
+
+export function createDefaultDashboardConfigPreference(): DashboardConfigPreference {
+  return {
+    displayMode: "tabs",
+    moduleOrder: [...DASHBOARD_MODULE_IDS],
+    visibleModuleIds: [...DEFAULT_DASHBOARD_VISIBLE_MODULE_IDS],
+  };
+}
+
+function normalizeDashboardConfigProfileId(profileId: string | null | undefined): string {
+  return normalizeString(profileId) || "profile_guest";
+}
+
+function writeDashboardConfigMap(configMap: StoredDashboardConfigMap): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  window.localStorage.setItem(DASHBOARD_CONFIG_KEY, JSON.stringify(configMap));
+}
+
+function readDashboardConfigMap(fallbackTime: string = new Date().toISOString()): StoredDashboardConfigMap {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  const rawConfig = window.localStorage.getItem(DASHBOARD_CONFIG_KEY);
+  if (!rawConfig) {
+    return {};
+  }
+
+  const parsed = (() => {
+    try {
+      return JSON.parse(rawConfig) as unknown;
+    } catch {
+      return null;
+    }
+  })();
+
+  if (parsed === null) {
+    writeDashboardConfigMap({});
+    return {};
+  }
+
+  if (isRecord(parsed) && ("moduleOrder" in parsed || "displayMode" in parsed || "visibleModuleIds" in parsed)) {
+    const workspace = readWorkspace(fallbackTime);
+    const migrated: StoredDashboardConfigMap = {
+      [normalizeDashboardConfigProfileId(workspace.activeProfileId)]: normalizeDashboardConfig(parsed),
+    };
+    writeDashboardConfigMap(migrated);
+    return migrated;
+  }
+
+  if (!isRecord(parsed)) {
+    writeDashboardConfigMap({});
+    return {};
+  }
+
+  const nextConfigMap: StoredDashboardConfigMap = {};
+  for (const [rawProfileId, rawValue] of Object.entries(parsed)) {
+    const profileId = normalizeDashboardConfigProfileId(rawProfileId);
+    nextConfigMap[profileId] = normalizeDashboardConfig(rawValue);
+  }
+
+  const normalizedRaw = JSON.stringify(nextConfigMap);
+  if (normalizedRaw !== rawConfig) {
+    writeDashboardConfigMap(nextConfigMap);
+  }
+
+  return nextConfigMap;
 }
 
 function createGuestState(now: string = new Date().toISOString()): AppState {
@@ -743,4 +911,25 @@ export function saveDashboardTabPreference(tab: DashboardTab): void {
   }
 
   window.localStorage.setItem(DASHBOARD_TAB_KEY, tab);
+}
+
+export function loadDashboardConfigPreference(profileId: string | null | undefined = null): DashboardConfigPreference {
+  if (typeof window === "undefined") {
+    return createDefaultDashboardConfigPreference();
+  }
+
+  const configMap = readDashboardConfigMap();
+  const normalizedProfileId = normalizeDashboardConfigProfileId(profileId);
+  return cloneDashboardConfigPreference(configMap[normalizedProfileId] ?? createDefaultDashboardConfigPreference());
+}
+
+export function saveDashboardConfigPreference(config: DashboardConfigPreference, profileId: string | null | undefined = null): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const configMap = readDashboardConfigMap();
+  const normalizedProfileId = normalizeDashboardConfigProfileId(profileId);
+  configMap[normalizedProfileId] = normalizeDashboardConfig(config);
+  writeDashboardConfigMap(configMap);
 }

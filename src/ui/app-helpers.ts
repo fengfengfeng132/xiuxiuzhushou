@@ -14,7 +14,10 @@ import {
   type PetDefinition,
   type StudyPlan,
 } from "../domain/model.js";
+import type { DashboardConfigPreference, DashboardModuleId } from "../persistence/storage.js";
+import { DASHBOARD_MODULE_DEFINITIONS } from "./app-content.js";
 import type {
+  DashboardModuleDefinition,
   HabitBoardFilter,
   HabitStatsRange,
   HabitStatsSummary,
@@ -116,30 +119,167 @@ export function buildHeroSummary(state: AppState, today: string): string {
   return `${state.profile.name} 今天还有 ${summary.pendingPlans} 个学习计划待完成，已经记录 ${summary.todayHabitCheckins} 次习惯打卡，当前累计 ${summary.starBalance} 颗星星。`;
 }
 
-export function createMetricCards(state: AppState, today: string): MetricCard[] {
+const DASHBOARD_MODULE_LOOKUP = new Map<DashboardModuleId, DashboardModuleDefinition>(
+  DASHBOARD_MODULE_DEFINITIONS.map((definition) => [definition.id, definition]),
+);
+
+function createStaticMetricCard(definition: DashboardModuleDefinition, value: string, hint: string): MetricCard {
+  return {
+    id: definition.id,
+    title: definition.title,
+    value,
+    hint,
+    tone: definition.tone,
+    action: definition.action,
+    message: definition.message,
+  };
+}
+
+function buildDashboardMetricCard(
+  moduleId: DashboardModuleId,
+  context: {
+    state: AppState;
+    today: string;
+    summary: ReturnType<typeof summarizeState>;
+    activeHabits: Habit[];
+    completedToday: StudyPlan[];
+    pendingToday: StudyPlan[];
+  },
+): MetricCard {
+  const definition = DASHBOARD_MODULE_LOOKUP.get(moduleId);
+  if (!definition) {
+    return {
+      id: moduleId,
+      title: moduleId,
+      value: "--",
+      hint: "模块定义缺失。",
+      tone: "slate",
+      action: "placeholder",
+      message: "该模块定义缺失，请刷新后重试。",
+    };
+  }
+
+  const { summary, activeHabits, completedToday, pendingToday } = context;
+  const todayPlanCount = completedToday.length + pendingToday.length;
+  const recordedStudyMinutes = completedToday.reduce((total, plan) => total + getRecordedPlanMinutes(plan), 0);
+  const exerciseMinutes = completedToday
+    .filter((plan) => plan.subject === "运动")
+    .reduce((total, plan) => total + getRecordedPlanMinutes(plan), 0);
+  const remainingMinutes = pendingToday.reduce((total, plan) => total + plan.minutes, 0);
+  const completionRate = todayPlanCount === 0 ? 0 : Math.round((completedToday.length / todayPlanCount) * 100);
+
+  switch (moduleId) {
+    case "remaining-time":
+      return createStaticMetricCard(
+        definition,
+        `${remainingMinutes}分钟`,
+        pendingToday.length > 0 ? `剩余 ${pendingToday.length} 项计划待完成` : "今天暂时没有待完成计划",
+      );
+    case "study-time":
+      return createStaticMetricCard(
+        definition,
+        `${recordedStudyMinutes}分钟`,
+        completedToday.length > 0 ? `已完成 ${completedToday.length} 项学习计划` : "今天还没有完成记录",
+      );
+    case "exercise-time":
+      return createStaticMetricCard(definition, `${exerciseMinutes}分钟`, exerciseMinutes > 0 ? "来自运动类学习计划" : "还没有记录运动类时长");
+    case "task-count":
+      return createStaticMetricCard(
+        definition,
+        `${todayPlanCount}项`,
+        todayPlanCount > 0 ? `其中 ${pendingToday.length} 项待完成` : "今天还没有安排学习计划",
+      );
+    case "star-count":
+      return createStaticMetricCard(definition, `${summary.starBalance}星`, `${summary.redeemableRewards} 个愿望当前可兑换`);
+    case "completion-rate":
+      return createStaticMetricCard(
+        definition,
+        `${completionRate}%`,
+        todayPlanCount > 0 ? `今天已完成 ${completedToday.length}/${todayPlanCount} 项` : "今天还没有学习计划",
+      );
+    case "chart-stats":
+      return createStaticMetricCard(definition, "趋势复盘", activeHabits.length > 0 ? "打开图表统计查看近况" : "创建习惯后可查看统计图表");
+    case "points-achievement":
+      return createStaticMetricCard(definition, `${summary.starBalance}星`, `${summary.redeemableRewards} 个愿望可兑换`);
+    case "habit-management":
+      return createStaticMetricCard(definition, `${activeHabits.length}个`, activeHabits.length > 0 ? "打开习惯管理继续打卡" : "创建第一个行为习惯");
+    case "score-tracking":
+      return createStaticMetricCard(definition, "录入成绩", "考试成绩录入和历史记录仍在开发中");
+    case "score-analysis":
+      return createStaticMetricCard(definition, "专项分析", "薄弱项分析页面将在后续继续补齐");
+    case "morning-reading":
+      return createStaticMetricCard(definition, "晨读计划", "打开 337 晨读继续安排任务");
+    case "reading-journey":
+      return createStaticMetricCard(definition, "阅读旅程", "管理书架、阅读记录和统计");
+    case "height-management":
+      return createStaticMetricCard(definition, "成长档案", "打开身高管理查看趋势和记录");
+    case "interest-class":
+      return createStaticMetricCard(definition, "课程记录", "打开兴趣班记录查看课时消耗");
+    case "todos":
+      return createStaticMetricCard(definition, "待整理", "待办事项模块仍在开发中");
+    case "listening":
+      return createStaticMetricCard(definition, "背诵练习", "听写背诵工作区仍在开发中");
+    case "focus-timer":
+      return createStaticMetricCard(definition, pendingToday.length > 0 ? `待开始 ${pendingToday.length} 项` : "专注模式", "打开专注计时器进入计时页");
+    case "savings":
+      return createStaticMetricCard(definition, "余额流水", "存钱罐模块仍在开发中");
+    case "pet":
+      return createStaticMetricCard(
+        definition,
+        (() => {
+          const activePetCompanion = getActivePetCompanion(context.state);
+          const activePetDefinition = activePetCompanion ? getPetDefinition(activePetCompanion.definitionId) : null;
+          return activePetDefinition ? activePetDefinition.name : context.state.pets.companions.length > 0 ? `${context.state.pets.companions.length}只` : "待领养";
+        })(),
+        (() => {
+          const activePetCompanion = getActivePetCompanion(context.state);
+          const activePetDefinition = activePetCompanion ? getPetDefinition(activePetCompanion.definitionId) : null;
+          if (activePetDefinition) {
+            return `和${activePetDefinition.name}互动，继续提升亲密度`;
+          }
+          return context.state.pets.companions.length > 0 ? "打开电子宠物中心继续陪伴" : "打开电子宠物中心领养第一只伙伴";
+        })(),
+      );
+    case "plan-selection":
+      return createStaticMetricCard(definition, "优质计划", "浏览并复用现成的学习计划模板");
+    case "printing":
+      return createStaticMetricCard(definition, "打印清单", "任务打印功能仍在开发中");
+    case "help":
+      return createStaticMetricCard(definition, "功能手册", "打开完整操作说明");
+    default:
+      return createStaticMetricCard(definition, "--", "暂未提供该模块的统计信息");
+  }
+}
+
+export function createMetricCards(state: AppState, today: string, dashboardConfig: DashboardConfigPreference): MetricCard[] {
   const summary = summarizeState(state, today);
   const activeHabits = state.habits.filter((habit) => habit.status === "active");
   const completedToday = getCompletedPlansForDate(state.plans, today);
-  const totalPlans = state.plans.length;
-  const completionRate = totalPlans === 0 ? 0 : Math.round((state.plans.filter((plan) => plan.status === "done").length / totalPlans) * 100);
-  const activePetCompanion = getActivePetCompanion(state);
-  const activePetDefinition = activePetCompanion ? getPetDefinition(activePetCompanion.definitionId) : null;
-  const petSummaryValue = activePetDefinition ? activePetDefinition.name : state.pets.companions.length > 0 ? `${state.pets.companions.length}只` : "待领养";
-  const petSummaryHint = activePetDefinition
-    ? `和${activePetDefinition.name}互动，继续提升亲密度`
-    : state.pets.companions.length > 0
-      ? "打开电子宠物中心，继续切换和陪伴"
-      : "打开电子宠物中心，领养第一只伙伴";
-  return [
-    { id: "study-minutes", title: "今日学习时间", value: `${completedToday.reduce((sum, plan) => sum + getRecordedPlanMinutes(plan), 0)}分钟`, hint: completedToday.length ? `已完成 ${completedToday.length} 项计划` : "今天还没有完成记录", tone: "blue" },
-    { id: "pending-plans", title: "今日任务量", value: `${summary.pendingPlans}/${Math.max(totalPlans, summary.pendingPlans)}`, hint: "点击回到首页计划面板", tone: "cyan" },
-    { id: "completion-rate", title: "今日完成率", value: `${completionRate}%`, hint: "按已保存学习计划计算", tone: "orange" },
-    { id: "stars", title: "积分成就", value: `${summary.starBalance}星`, hint: `${summary.redeemableRewards} 个愿望可兑换`, tone: "violet" },
-    { id: "habits", title: "行为习惯", value: `${activeHabits.length}个`, hint: activeHabits.length ? "进入习惯管理页" : "创建第一个习惯", tone: "green" },
-    { id: "more", title: "其他", value: "更多功能", hint: "打开完整功能导航", tone: "slate" },
-    { id: "pet", title: "电子宠物", value: petSummaryValue, hint: petSummaryHint, tone: "pet" },
-    { id: "help", title: "使用帮助", value: "功能手册", hint: "打开完整操作说明", tone: "help" },
-  ];
+  const pendingToday = getPendingPlansForDate(state.plans, today);
+  const visibleModuleIds = new Set(dashboardConfig.visibleModuleIds);
+  const context = {
+    state,
+    today,
+    summary,
+    activeHabits,
+    completedToday,
+    pendingToday,
+  };
+
+  const metricCards = dashboardConfig.moduleOrder
+    .filter((moduleId) => visibleModuleIds.has(moduleId))
+    .map((moduleId) => buildDashboardMetricCard(moduleId, context));
+
+  metricCards.push({
+    id: "more",
+    title: "其他",
+    value: "更多功能",
+    hint: "打开完整功能导航",
+    tone: "slate",
+    action: "more-features",
+  });
+
+  return metricCards;
 }
 
 export function formatActivityKind(kind: ActivityEntry["kind"]): string {
