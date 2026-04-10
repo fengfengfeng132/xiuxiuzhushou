@@ -17,22 +17,27 @@
 
 /* Global palette override: color-only refresh, no behavior changes. */
 :root {
-  --brand: #64a187;
-  --brand-strong: #3f7a61;
-  --brand-hover: #2f684f;
-  --brand-soft: #bddabf;
-  --hero-bg: #cde1e5;
-  --section-bg: #edf5ef;
-  --accent-bg: #fafbcc;
-  --page-bg: #f7f8f2;
+  --brand: #64a386;
+  --brand-strong: #4b8c70;
+  --brand-hover: #3f7a61;
+  --brand-soft: #bcddbe;
+  --hero-bg: #cde2e8;
+  --section-bg: #e7f1e8;
+  --accent-bg: #fbfccd;
+  --page-bg: #f5f8f0;
   --card-bg: #ffffff;
-  --border: #d8e6dc;
+  --border: #d2e4d8;
   --text-primary: #2f4a3f;
-  --text-secondary: #5f796c;
-  --text-muted: #8aa092;
-  --text-on-brand: #ffffff;
-  --state-success: #4f8f74;
-  --state-warning: #9a844e;
-  --state-danger: #b86a6a;
-  --state-info: #6f8f98;
+  --text-secondary: #5d7769;
+  --text-muted: #879d90;
+  --text-on-brand: #f9fffb;
+  --state-success: #64a386;
+  --state-warning: #9ba66a;
+  --state-danger: #9f7f69;
+  --state-info: #7a9ca4;
+  --tone-mist: #cde2e8;
+  --tone-sage: #bcddbe;
+  --tone-butter: #fbfccd;
+  --tone-deep: #64a386;
+  --tone-deep-strong: #4b8c70;
 }

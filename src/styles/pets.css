@@ -94,7 +94,7 @@
   border-radius: 34px;
   background:
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.22), transparent 34%),
-    radial-gradient(circle at top right, rgba(255, 230, 241, 0.26), transparent 24%),
+    radial-gradient(circle at top right, rgba(205, 226, 232, 0.26), transparent 24%),
     linear-gradient(135deg, var(--brand-soft), var(--hero-bg) 54%, var(--accent-bg));
   color: #fff;
   box-shadow: var(--shadow);
@@ -160,7 +160,7 @@
   object-fit: contain;
   pointer-events: none;
   user-select: none;
-  filter: drop-shadow(0 10px 22px rgba(54, 37, 73, 0.2));
+  filter: drop-shadow(0 10px 22px rgba(75, 140, 112, 0.2));
 }
 
 .pet-art-video {
@@ -173,7 +173,7 @@
   object-fit: contain;
   pointer-events: none;
   user-select: none;
-  filter: drop-shadow(0 10px 22px rgba(54, 37, 73, 0.2));
+  filter: drop-shadow(0 10px 22px rgba(75, 140, 112, 0.2));
   background: transparent;
 }
 
@@ -533,7 +533,7 @@
 }
 
 .pet-level-row.is-current {
-  box-shadow: 0 0 0 3px rgba(47, 109, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(122, 156, 164, 0.08);
 }
 
 .pet-roster-card {
@@ -553,9 +553,9 @@
 }
 
 .pet-roster-row.is-active {
-  border-color: rgba(47, 109, 255, 0.34);
+  border-color: rgba(122, 156, 164, 0.34);
   box-shadow:
-    0 0 0 3px rgba(47, 109, 255, 0.08),
+    0 0 0 3px rgba(122, 156, 164, 0.08),
     var(--shadow-soft);
 }
 

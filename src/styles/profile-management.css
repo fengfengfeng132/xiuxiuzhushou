@@ -54,7 +54,7 @@
 
 .profile-quick-menu-head {
   padding: 12px 14px;
-  border-bottom: 1px solid rgba(82, 117, 193, 0.14);
+  border-bottom: 1px solid rgba(122, 156, 164, 0.14);
   color: var(--ink);
 }
 
@@ -72,7 +72,7 @@
   gap: 10px;
   color: var(--ink);
   background: transparent;
-  border-bottom: 1px solid rgba(82, 117, 193, 0.1);
+  border-bottom: 1px solid rgba(122, 156, 164, 0.1);
 }
 
 .profile-quick-menu-user:last-child {
@@ -100,7 +100,7 @@
 .profile-quick-menu-foot {
   display: grid;
   gap: 0;
-  border-top: 1px solid rgba(82, 117, 193, 0.14);
+  border-top: 1px solid rgba(122, 156, 164, 0.14);
 }
 
 .profile-quick-menu-foot button {
@@ -109,7 +109,7 @@
   text-align: left;
   color: var(--text-primary);
   background: transparent;
-  border-bottom: 1px solid rgba(82, 117, 193, 0.1);
+  border-bottom: 1px solid rgba(122, 156, 164, 0.1);
 }
 
 .profile-quick-menu-foot button:last-child {

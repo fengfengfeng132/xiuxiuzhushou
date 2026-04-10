@@ -82,22 +82,22 @@ export function formatClock(isoDate: string | null): string {
 
 export function getSubjectStyle(subject: string): SubjectStyle {
   const palette: Record<string, SubjectStyle> = {
-    语文: { accent: "#9A844E", tint: "rgba(154, 132, 78, 0.16)", glow: "rgba(154, 132, 78, 0.22)" },
-    数学: { accent: "#3F7A61", tint: "rgba(63, 122, 97, 0.16)", glow: "rgba(63, 122, 97, 0.24)" },
-    英语: { accent: "#6F8F98", tint: "rgba(111, 143, 152, 0.16)", glow: "rgba(111, 143, 152, 0.22)" },
-    物理: { accent: "#5F8D78", tint: "rgba(95, 141, 120, 0.16)", glow: "rgba(95, 141, 120, 0.22)" },
-    化学: { accent: "#4F8F74", tint: "rgba(79, 143, 116, 0.16)", glow: "rgba(79, 143, 116, 0.22)" },
-    生物: { accent: "#6FA88F", tint: "rgba(111, 168, 143, 0.16)", glow: "rgba(111, 168, 143, 0.22)" },
-    历史: { accent: "#9A844E", tint: "rgba(154, 132, 78, 0.16)", glow: "rgba(154, 132, 78, 0.22)" },
-    地理: { accent: "#6F8F98", tint: "rgba(111, 143, 152, 0.16)", glow: "rgba(111, 143, 152, 0.22)" },
-    政治: { accent: "#B86A6A", tint: "rgba(184, 106, 106, 0.16)", glow: "rgba(184, 106, 106, 0.22)" },
-    道德与法治: { accent: "#7FA08D", tint: "rgba(127, 160, 141, 0.16)", glow: "rgba(127, 160, 141, 0.22)" },
-    信息技术: { accent: "#64A187", tint: "rgba(100, 161, 135, 0.16)", glow: "rgba(100, 161, 135, 0.22)" },
-    运动: { accent: "#9A844E", tint: "rgba(154, 132, 78, 0.16)", glow: "rgba(154, 132, 78, 0.22)" },
-    娱乐: { accent: "#B67686", tint: "rgba(182, 118, 134, 0.16)", glow: "rgba(182, 118, 134, 0.22)" },
-    技能: { accent: "#7FA08D", tint: "rgba(127, 160, 141, 0.16)", glow: "rgba(127, 160, 141, 0.22)" },
+    语文: { accent: "#9BA66A", tint: "rgba(155, 166, 106, 0.16)", glow: "rgba(155, 166, 106, 0.22)" },
+    数学: { accent: "#4B8C70", tint: "rgba(75, 140, 112, 0.16)", glow: "rgba(75, 140, 112, 0.24)" },
+    英语: { accent: "#7A9CA4", tint: "rgba(122, 156, 164, 0.16)", glow: "rgba(122, 156, 164, 0.22)" },
+    物理: { accent: "#5E9A80", tint: "rgba(94, 154, 128, 0.16)", glow: "rgba(94, 154, 128, 0.22)" },
+    化学: { accent: "#5A9B7E", tint: "rgba(90, 155, 126, 0.16)", glow: "rgba(90, 155, 126, 0.22)" },
+    生物: { accent: "#74AB90", tint: "rgba(116, 171, 144, 0.16)", glow: "rgba(116, 171, 144, 0.22)" },
+    历史: { accent: "#9BA66A", tint: "rgba(155, 166, 106, 0.16)", glow: "rgba(155, 166, 106, 0.22)" },
+    地理: { accent: "#7A9CA4", tint: "rgba(122, 156, 164, 0.16)", glow: "rgba(122, 156, 164, 0.22)" },
+    政治: { accent: "#9F7F69", tint: "rgba(159, 127, 105, 0.16)", glow: "rgba(159, 127, 105, 0.22)" },
+    道德与法治: { accent: "#7CAD93", tint: "rgba(124, 173, 147, 0.16)", glow: "rgba(124, 173, 147, 0.22)" },
+    信息技术: { accent: "#64A187", tint: "rgba(100, 163, 134, 0.16)", glow: "rgba(100, 163, 134, 0.22)" },
+    运动: { accent: "#9BA66A", tint: "rgba(155, 166, 106, 0.16)", glow: "rgba(155, 166, 106, 0.22)" },
+    娱乐: { accent: "#8FA490", tint: "rgba(143, 164, 144, 0.16)", glow: "rgba(143, 164, 144, 0.22)" },
+    技能: { accent: "#7CAD93", tint: "rgba(124, 173, 147, 0.16)", glow: "rgba(124, 173, 147, 0.22)" },
   };
-  return palette[subject] ?? { accent: "#5F796C", tint: "rgba(95, 121, 108, 0.16)", glow: "rgba(95, 121, 108, 0.22)" };
+  return palette[subject] ?? { accent: "#5D7769", tint: "rgba(93, 119, 105, 0.16)", glow: "rgba(93, 119, 105, 0.22)" };
 }
 
 export function getCompletedPlansForDate(plans: StudyPlan[], dateKey: string): StudyPlan[] {

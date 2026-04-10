@@ -100,7 +100,7 @@
   text-align: left;
   border-radius: 22px;
   border: 1px solid var(--line);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(255, 244, 251, 0.96));
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(247, 252, 246, 0.96));
   box-shadow: var(--shadow-soft);
 }
 
@@ -277,7 +277,7 @@
   width: 100%;
   height: 200px;
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 246, 251, 0.94));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 252, 246, 0.94));
   border: 1px solid rgba(221, 163, 197, 0.28);
 }
 
@@ -324,7 +324,7 @@
   padding: 12px 14px;
   border-radius: 14px;
   border: 1px solid rgba(224, 177, 206, 0.3);
-  background: rgba(255, 247, 252, 0.82);
+  background: rgba(247, 252, 246, 0.82);
 }
 
 .height-record-row strong {
@@ -360,7 +360,7 @@
 .height-assess-metric {
   border-radius: 14px;
   padding: 14px;
-  background: rgba(255, 247, 252, 0.86);
+  background: rgba(247, 252, 246, 0.86);
 }
 
 .height-checkin-summary-grid strong,

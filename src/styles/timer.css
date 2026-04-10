@@ -17,7 +17,7 @@
   padding: 40px;
   border-radius: 28px;
   background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 24px 60px rgba(53, 71, 139, 0.16);
+  box-shadow: 0 24px 60px rgba(93, 119, 105, 0.16);
   text-align: center;
 }
 
@@ -78,7 +78,7 @@
   padding: 32px clamp(20px, 4vw, 46px) 48px;
   border-radius: 28px;
   background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 26px 72px rgba(53, 71, 139, 0.16);
+  box-shadow: 0 26px 72px rgba(93, 119, 105, 0.16);
   backdrop-filter: blur(10px);
 }
 
@@ -355,7 +355,7 @@
   padding: 16px 22px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 16px 30px rgba(51, 65, 85, 0.14);
+  box-shadow: 0 16px 30px rgba(93, 119, 105, 0.14);
   color: var(--brand-strong);
   font-weight: 800;
 }
@@ -365,7 +365,7 @@
   padding: 18px 20px;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 20px 36px rgba(51, 65, 85, 0.14);
+  box-shadow: 0 20px 36px rgba(93, 119, 105, 0.14);
 }
 
 .timer-recording-panel strong,

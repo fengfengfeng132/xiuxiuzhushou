@@ -285,7 +285,7 @@
   padding: 12px 10px;
   border-radius: 14px;
   text-align: center;
-  background: rgba(255, 247, 252, 0.88);
+  background: rgba(247, 252, 246, 0.88);
 }
 
 .interest-metric-card span,
@@ -330,7 +330,7 @@
   border-radius: 12px;
   color: var(--state-danger);
   font-weight: 700;
-  background: rgba(255, 203, 219, 0.3);
+  background: rgba(188, 221, 190, 0.3);
   border: 1px solid rgba(63, 122, 97, 0.24);
 }
 
@@ -369,7 +369,7 @@
   align-items: center;
   padding: 11px 12px;
   border-radius: 12px;
-  background: rgba(255, 245, 251, 0.84);
+  background: rgba(247, 252, 246, 0.84);
 }
 
 .interest-record-copy {
@@ -423,7 +423,7 @@
   padding: 14px;
   border-radius: 12px;
   text-align: center;
-  background: rgba(255, 245, 251, 0.72);
+  background: rgba(247, 252, 246, 0.72);
 }
 
 .interest-modal-card {

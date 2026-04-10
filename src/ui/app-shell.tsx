@@ -251,7 +251,7 @@ function createLocalUiId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-const PROFILE_AVATAR_COLOR_OPTIONS = ["#64A187", "#B86A6A", "#4F8F74", "#9A844E", "#7FA08D", "#B86A6A", "#6F8F98", "#9A844E"];
+const PROFILE_AVATAR_COLOR_OPTIONS = ["#64A187", "#9F7F69", "#5A9B7E", "#9BA66A", "#7CAD93", "#9F7F69", "#7A9CA4", "#9BA66A"];
 
 function collectPendingPlanReviewItems(plans: StudyPlan[]): PendingPlanReviewItem[] {
   const pendingItems: PendingPlanReviewItem[] = [];
