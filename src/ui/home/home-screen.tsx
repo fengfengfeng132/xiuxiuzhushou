@@ -23,6 +23,7 @@ interface HomeScreenProps {
   onSwitchProfile: (profileId: string) => void;
   onOpenAddProfile: () => void;
   onOpenProfileManagement: () => void;
+  onOpenSyncAccount: () => void;
   onLogoutProfile: () => void;
   onMetricCardAction: (card: MetricCard) => void;
   onTabChange: (tab: DashboardTab) => void;
@@ -48,6 +49,7 @@ export function HomeScreen({
   onSwitchProfile,
   onOpenAddProfile,
   onOpenProfileManagement,
+  onOpenSyncAccount,
   onLogoutProfile,
   onMetricCardAction,
   onTabChange,
@@ -79,6 +81,7 @@ export function HomeScreen({
               onSwitchProfile={onSwitchProfile}
               onOpenAddProfile={onOpenAddProfile}
               onOpenProfileManagement={onOpenProfileManagement}
+              onOpenSyncAccount={onOpenSyncAccount}
               onLogout={onLogoutProfile}
             />
           </div>

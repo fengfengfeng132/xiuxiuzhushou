@@ -2044,6 +2044,11 @@ function AppShell(): JSX.Element {
     setScreen("profile-management");
   }
 
+  function openSyncAccountModal(): void {
+    setProfileMenuOpen(false);
+    setSyncModalOpen(true);
+  }
+
   function updateSyncEmail(value: string): void {
     setSyncSettings((current) => ({ ...current, email: value }));
   }
@@ -3358,6 +3363,7 @@ function AppShell(): JSX.Element {
           onSearchChange={setProfileManagementSearch}
           onBack={profileManagementBackTarget === "home" ? handleBackToHome : handleBackToMoreFeatures}
           onOpenAddProfile={openAddProfileModal}
+          onOpenSyncAccount={openSyncAccountModal}
           onSwitchProfile={handleSwitchProfile}
           onRenameProfile={handleRenameProfile}
           onClearProfileData={handleClearProfileData}
@@ -3443,6 +3449,7 @@ function AppShell(): JSX.Element {
         onSwitchProfile={handleSwitchProfile}
         onOpenAddProfile={openAddProfileModal}
         onOpenProfileManagement={() => openProfileManagement("home")}
+        onOpenSyncAccount={openSyncAccountModal}
         onLogoutProfile={handleLogoutProfile}
         onMetricCardAction={handleMetricCardAction}
         onTabChange={handleTabChange}

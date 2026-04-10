@@ -170,6 +170,22 @@
   background: rgba(255, 255, 255, 0.94);
 }
 
+.profile-management-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-management-sync-button {
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 16px;
+  font-weight: 700;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  background: rgba(255, 255, 255, 0.16);
+}
+
 .profile-management-search-card {
   display: grid;
   gap: 10px;

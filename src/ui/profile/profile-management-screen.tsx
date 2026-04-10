@@ -9,6 +9,7 @@ interface ProfileManagementScreenProps {
   onSearchChange: (value: string) => void;
   onBack: () => void;
   onOpenAddProfile: () => void;
+  onOpenSyncAccount: () => void;
   onSwitchProfile: (profileId: string) => void;
   onRenameProfile: (profileId: string, profileName: string) => void;
   onClearProfileData: (profileId: string, profileName: string) => void;
@@ -38,6 +39,7 @@ export function ProfileManagementScreen({
   onSearchChange,
   onBack,
   onOpenAddProfile,
+  onOpenSyncAccount,
   onSwitchProfile,
   onRenameProfile,
   onClearProfileData,
@@ -61,9 +63,14 @@ export function ProfileManagementScreen({
           <h1>档案管理</h1>
           <p>管理学习档案和用户账户</p>
         </div>
-        <button type="button" className="profile-management-add-button" onClick={onOpenAddProfile}>
-          添加档案
-        </button>
+        <div className="profile-management-hero-actions">
+          <button type="button" className="profile-management-sync-button" onClick={onOpenSyncAccount}>
+            同步设置
+          </button>
+          <button type="button" className="profile-management-add-button" onClick={onOpenAddProfile}>
+            添加档案
+          </button>
+        </div>
       </header>
 
       <section className="profile-management-search-card">

@@ -7,6 +7,7 @@ interface ProfileQuickMenuProps {
   onSwitchProfile: (profileId: string) => void;
   onOpenAddProfile: () => void;
   onOpenProfileManagement: () => void;
+  onOpenSyncAccount: () => void;
   onLogout: () => void;
 }
 
@@ -17,6 +18,7 @@ export function ProfileQuickMenu({
   onSwitchProfile,
   onOpenAddProfile,
   onOpenProfileManagement,
+  onOpenSyncAccount,
   onLogout,
 }: ProfileQuickMenuProps) {
   if (!open) {
@@ -51,6 +53,9 @@ export function ProfileQuickMenu({
         </button>
         <button type="button" onClick={onOpenProfileManagement}>
           管理用户
+        </button>
+        <button type="button" onClick={onOpenSyncAccount}>
+          跨设备同步
         </button>
         <button type="button" className="is-danger" onClick={onLogout}>
           退出登录
