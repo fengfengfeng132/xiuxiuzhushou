@@ -23,7 +23,7 @@
   background:
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.22), transparent 30%),
     radial-gradient(circle at top right, rgba(255, 228, 239, 0.28), transparent 26%),
-    linear-gradient(135deg, #ff96c7, #ffb8d5 56%, #ffd0b8);
+    linear-gradient(135deg, var(--brand-soft), var(--hero-bg) 56%, var(--accent-bg));
 }
 
 .help-back-button {
@@ -85,7 +85,7 @@
 }
 
 .help-summary-icon-warm {
-  color: #e28a66;
+  color: var(--state-warning);
   background: rgba(255, 193, 168, 0.22);
 }
 
@@ -116,13 +116,13 @@
   gap: 18px;
   padding: 22px;
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--help-accent, #4f7cff) 7%, #fff 93%), rgba(255, 255, 255, 0.96)),
+    linear-gradient(180deg, color-mix(in srgb, var(--help-accent, var(--brand)) 7%, #fff 93%), rgba(255, 255, 255, 0.96)),
     rgba(255, 255, 255, 0.96);
 }
 
 .help-feature-icon {
   color: var(--help-accent, var(--primary-strong));
-  background: color-mix(in srgb, var(--help-accent, #4f7cff) 12%, white);
+  background: color-mix(in srgb, var(--help-accent, var(--brand)) 12%, white);
 }
 
 .help-feature-button {

@@ -1,5 +1,21 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Quicksand:wght@500;600;700&display=swap");
 @import "tailwindcss";
+@import "./styles/base.css";
+@import "./styles/device-adaptive.css";
+@import "./styles/plans.css";
+@import "./styles/habits.css";
+@import "./styles/pets.css";
+@import "./styles/points.css";
+@import "./styles/help.css";
+@import "./styles/more.css";
+@import "./styles/interest.css";
+@import "./styles/height.css";
+@import "./styles/morning-reading.css";
+@import "./styles/reading.css";
+@import "./styles/profile-management.css";
+@import "./styles/modals.css";
+@import "./styles/timer.css";
+@import "./styles/responsive.css";
 
 :root {
   --brand: #64a187;
@@ -16,6 +32,30 @@
   --text-secondary: #5f796c;
   --text-muted: #8aa092;
   --text-on-brand: #ffffff;
+  --state-success: #4f8f74;
+  --state-warning: #9a844e;
+  --state-danger: #b86a6a;
+  --state-info: #6f8f98;
+
+  /* Legacy aliases used by existing feature-page styles. */
+  --bg-top: var(--page-bg);
+  --bg-bottom: var(--section-bg);
+  --ink: var(--text-primary);
+  --muted: var(--text-secondary);
+  --line: color-mix(in srgb, var(--brand) 24%, transparent);
+  --line-strong: color-mix(in srgb, var(--brand-strong) 30%, transparent);
+  --panel: color-mix(in srgb, white 88%, var(--section-bg) 12%);
+  --panel-strong: color-mix(in srgb, white 94%, var(--section-bg) 6%);
+  --hero-start: var(--brand);
+  --hero-end: var(--hero-bg);
+  --primary: var(--brand);
+  --primary-strong: var(--brand-strong);
+  --warm: var(--accent-bg);
+  --green: var(--state-success);
+  --shadow: 0 28px 72px rgba(63, 122, 97, 0.18);
+  --shadow-soft: 0 16px 38px rgba(63, 122, 97, 0.11);
+  --paper-line: color-mix(in srgb, var(--border) 40%, transparent);
+  --paper-dot: color-mix(in srgb, var(--brand) 36%, transparent);
 }
 
 *,

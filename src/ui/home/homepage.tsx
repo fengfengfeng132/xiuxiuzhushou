@@ -130,7 +130,7 @@ export function Homepage() {
               </a>
             ))}
           </nav>
-          <CtaButton href="#final">开始体验</CtaButton>
+          <CtaButton href="#/app">开始体验</CtaButton>
         </div>
       </header>
 
@@ -152,7 +152,7 @@ export function Homepage() {
                 用低饱和色彩、轻盈结构和温和引导，打造一页就能感受到安心感的生活方式学习主页。
               </p>
               <div className="mt-9 flex flex-wrap items-center gap-4">
-                <CtaButton href="#features">立即探索</CtaButton>
+                <CtaButton href="#/app">立即探索</CtaButton>
                 <CtaButton href="#showcase" variant="secondary">
                   查看界面
                 </CtaButton>
@@ -267,7 +267,7 @@ export function Homepage() {
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
               <a
                 className="inline-flex items-center justify-center rounded-full bg-[var(--card-bg)] px-6 py-3 text-sm font-semibold text-[var(--brand-strong)] transition hover:bg-[var(--section-bg)]"
-                href="#"
+                href="#/app"
               >
                 立即开始
               </a>

@@ -1,4 +1,4 @@
-﻿import type { CSSProperties } from "react";
+import type { CSSProperties } from "react";
 import { APP_INFO_ITEMS } from "../app-content.js";
 import type { MoreFeatureCard, MoreFeatureSection } from "../app-types.js";
 

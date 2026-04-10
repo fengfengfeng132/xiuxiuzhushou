@@ -701,7 +701,7 @@ function normalizeHabit(value: unknown, profileId: string, fallbackTime: string)
         ? value.stars
         : 1;
   const icon = typeof value.icon === "string" && value.icon ? value.icon : "☆";
-  const color = typeof value.color === "string" && value.color ? value.color : "#4f7cff";
+  const color = typeof value.color === "string" && value.color ? value.color : "#64A187";
   const createdAt = typeof value.createdAt === "string" ? value.createdAt : fallbackTime;
   const updatedAt = normalizeEntityUpdatedAt(value.updatedAt, createdAt);
   const version = normalizeEntityVersion(value.version);

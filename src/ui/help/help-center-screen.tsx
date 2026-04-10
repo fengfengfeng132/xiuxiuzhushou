@@ -1,4 +1,4 @@
-﻿import type { CSSProperties } from "react";
+import type { CSSProperties } from "react";
 import { HELP_FEATURE_CARDS, HELP_PLAN_FIELD_LINES, HELP_QUICK_START_STEPS } from "../app-content.js";
 import type { HelpFeatureCard } from "../app-types.js";
 
