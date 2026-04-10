@@ -13,7 +13,7 @@
   background:
     radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.2), transparent 34%),
     radial-gradient(circle at 82% 18%, rgba(255, 223, 238, 0.24), transparent 26%),
-    linear-gradient(135deg, var(--hero-start), var(--hero-end) 54%, #ffd0bc);
+    linear-gradient(135deg, var(--hero-start), var(--hero-end) 54%, var(--accent-bg));
   box-shadow: var(--shadow-soft);
 }
 
@@ -52,7 +52,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  color: rgba(247, 251, 255, 0.86);
+  color: rgba(247, 248, 242, 0.86);
   font-size: 14px;
 }
 
@@ -84,7 +84,7 @@
   gap: 16px;
   padding: 18px;
   border-radius: 26px;
-  border: 1px solid rgba(76, 108, 148, 0.14);
+  border: 1px solid rgba(95, 121, 108, 0.14);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 248, 252, 0.94));
 }
 
@@ -139,31 +139,31 @@
 }
 
 .plan-create-section-icon.is-violet {
-  background: linear-gradient(135deg, #c48fff, #f39ce0);
+  background: linear-gradient(135deg, var(--brand-soft), var(--brand-soft));
 }
 
 .plan-create-section-icon.is-blue {
-  background: linear-gradient(135deg, #ff8cbf, #ffb3d4);
+  background: linear-gradient(135deg, var(--brand), var(--hero-bg));
 }
 
 .plan-create-section-icon.is-green {
-  background: linear-gradient(135deg, #15aa72, #4bc78b);
+  background: linear-gradient(135deg, var(--state-success), var(--state-success));
 }
 
 .plan-create-section-icon.is-orange {
-  background: linear-gradient(135deg, #ff9d8a, #ffc0a3);
+  background: linear-gradient(135deg, var(--accent-bg), var(--accent-bg));
 }
 
 .plan-create-section-icon.is-sky {
-  background: linear-gradient(135deg, #f28bc9, #e0a7ff);
+  background: linear-gradient(135deg, var(--brand-soft), var(--brand-soft));
 }
 
 .plan-create-section-icon.is-gold {
-  background: linear-gradient(135deg, #f59f0c, #ffc041);
+  background: linear-gradient(135deg, var(--state-warning), var(--accent-bg));
 }
 
 .plan-create-section-icon.is-slate {
-  background: linear-gradient(135deg, #586985, #8b98ab);
+  background: linear-gradient(135deg, var(--text-secondary), var(--text-muted));
 }
 
 .plan-create-field {
@@ -199,8 +199,8 @@
 .plan-create-input:focus,
 .plan-create-textarea:focus {
   outline: none;
-  border-color: rgba(33, 99, 255, 0.34);
-  box-shadow: 0 0 0 4px rgba(33, 99, 255, 0.12);
+  border-color: rgba(63, 122, 97, 0.34);
+  box-shadow: 0 0 0 4px rgba(63, 122, 97, 0.12);
 }
 
 .plan-create-meta-row,
@@ -216,7 +216,7 @@
 
 .plan-create-meta-row strong {
   font-family: "Manrope", sans-serif;
-  color: #8191a7;
+  color: var(--text-muted);
 }
 
 .plan-create-inline-note {
@@ -228,21 +228,21 @@
 }
 
 .plan-create-inline-note.is-blue {
-  border-left-color: #f36bb2;
+  border-left-color: var(--brand);
   background: rgba(255, 236, 246, 0.94);
-  color: #cc5a99;
+  color: var(--state-danger);
 }
 
 .plan-create-inline-note.is-green {
-  border-left-color: #1faa74;
+  border-left-color: var(--state-success);
   background: rgba(231, 249, 238, 0.96);
-  color: #127352;
+  color: var(--state-success);
 }
 
 .plan-create-inline-note.is-gold {
-  border-left-color: #f1a216;
-  background: rgba(255, 245, 219, 0.96);
-  color: #9f6b09;
+  border-left-color: var(--state-warning);
+  background: rgba(250, 251, 204, 0.96);
+  color: var(--state-warning);
 }
 
 .plan-create-mode-bar {
@@ -265,7 +265,7 @@
 .plan-create-mode-button.is-active {
   background: #fff;
   color: var(--primary-strong);
-  box-shadow: 0 12px 24px rgba(243, 107, 178, 0.12);
+  box-shadow: 0 12px 24px rgba(100, 161, 135, 0.12);
 }
 
 .plan-create-tone-panel {
@@ -296,12 +296,12 @@
   border-radius: 14px;
   border: 1px solid rgba(35, 179, 97, 0.36);
   background: rgba(255, 255, 255, 0.9);
-  color: #177856;
+  color: var(--state-success);
   font-weight: 700;
 }
 
 .plan-create-duration-chip.is-active {
-  background: linear-gradient(135deg, #21c768, #15aa72);
+  background: linear-gradient(135deg, var(--state-success), var(--state-success));
   color: #fff;
   box-shadow: 0 12px 26px rgba(33, 199, 104, 0.24);
 }
@@ -360,7 +360,7 @@
 }
 
 .plan-create-switch.is-active {
-  background: linear-gradient(135deg, #f6a200, #ffcb53);
+  background: linear-gradient(135deg, var(--state-warning), var(--accent-bg));
 }
 
 .plan-create-switch.is-active span {
@@ -397,8 +397,8 @@
 .plan-create-points-preview {
   padding: 14px 16px;
   border-radius: 16px;
-  background: rgba(255, 245, 219, 0.92);
-  color: #9f6b09;
+  background: rgba(250, 251, 204, 0.92);
+  color: var(--state-warning);
 }
 
 .plan-create-points-preview strong {
@@ -432,7 +432,7 @@
 
 .plan-create-approval-head p {
   margin: 4px 0 0;
-  color: #4f637f;
+  color: var(--text-secondary);
   line-height: 1.7;
 }
 
@@ -445,13 +445,13 @@
 
 .plan-create-approval-guide strong {
   display: block;
-  color: #2f65de;
+  color: var(--brand-strong);
 }
 
 .plan-create-approval-guide ul {
   margin: 8px 0 0;
   padding-left: 18px;
-  color: #2f65de;
+  color: var(--brand-strong);
   line-height: 1.8;
 }
 
@@ -474,9 +474,9 @@
   display: grid;
   place-items: center;
   border-radius: 18px;
-  background: rgba(76, 108, 148, 0.08);
+  background: rgba(95, 121, 108, 0.08);
   font-size: 28px;
-  color: #68798f;
+  color: var(--text-secondary);
 }
 
 .plan-create-attachment-list {
@@ -498,7 +498,7 @@
   min-width: 72px;
   min-height: 38px;
   border-radius: 999px;
-  background: rgba(33, 99, 255, 0.08);
+  background: rgba(63, 122, 97, 0.08);
   color: var(--primary-strong);
   font-weight: 700;
 }
@@ -518,13 +518,13 @@
 .plan-create-cancel {
   background: #fff;
   color: var(--ink);
-  border: 1px solid rgba(76, 108, 148, 0.18);
+  border: 1px solid rgba(95, 121, 108, 0.18);
 }
 
 .plan-create-submit {
-  background: linear-gradient(135deg, var(--primary), #ff9ccc);
+  background: linear-gradient(135deg, var(--primary), var(--brand-soft));
   color: #fff;
-  box-shadow: 0 16px 32px rgba(243, 107, 178, 0.22);
+  box-shadow: 0 16px 32px rgba(100, 161, 135, 0.22);
 }
 
 .plan-create-submit:disabled {
@@ -540,7 +540,7 @@
 
 .batch-plan-hero-subtitle {
   margin: 0;
-  color: rgba(247, 251, 255, 0.86);
+  color: rgba(247, 248, 242, 0.86);
   font-size: 16px;
 }
 
@@ -577,7 +577,7 @@
   display: grid;
   place-items: center;
   border-radius: 12px;
-  background: linear-gradient(135deg, #5b94ff, #2b67f6);
+  background: linear-gradient(135deg, var(--brand), var(--brand-strong));
   color: #fff;
   font-weight: 800;
 }
@@ -638,7 +638,7 @@
 .batch-plan-guide-list {
   margin: 0;
   padding-left: 18px;
-  color: #2f62d6;
+  color: var(--brand-strong);
   line-height: 1.8;
 }
 
@@ -670,7 +670,7 @@
   min-height: 40px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(76, 108, 148, 0.16);
+  border: 1px solid rgba(95, 121, 108, 0.16);
   color: var(--ink);
   font-weight: 700;
 }
@@ -714,7 +714,7 @@
   display: grid;
   gap: 10px;
   border-radius: 22px;
-  border: 1px solid rgba(76, 108, 148, 0.16);
+  border: 1px solid rgba(95, 121, 108, 0.16);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 255, 0.92)),
     var(--batch-plan-tint);
@@ -738,7 +738,7 @@
 
 .batch-plan-preview-line {
   background: rgba(244, 247, 252, 0.96);
-  color: #79879a;
+  color: var(--text-muted);
 }
 
 .batch-plan-preview-meta {
@@ -829,7 +829,7 @@
   align-items: center;
   border-bottom: 1px solid rgba(242, 171, 68, 0.18);
   background: rgba(255, 249, 234, 0.94);
-  color: #9d6510;
+  color: var(--state-warning);
 }
 
 .ai-plan-layout {
@@ -839,7 +839,7 @@
 }
 
 .ai-plan-sidebar {
-  border-right: 1px solid rgba(76, 108, 148, 0.12);
+  border-right: 1px solid rgba(95, 121, 108, 0.12);
   background: rgba(248, 251, 255, 0.78);
 }
 
@@ -865,7 +865,7 @@
   padding: 0 14px;
   border-radius: 999px;
   background: #fff;
-  border: 1px solid rgba(76, 108, 148, 0.16);
+  border: 1px solid rgba(95, 121, 108, 0.16);
   color: var(--ink);
   font-weight: 700;
 }
@@ -887,7 +887,7 @@
   gap: 6px;
   text-align: left;
   border-radius: 18px;
-  border: 1px solid rgba(76, 108, 148, 0.12);
+  border: 1px solid rgba(95, 121, 108, 0.12);
   background: rgba(255, 255, 255, 0.94);
 }
 
@@ -900,8 +900,8 @@
 }
 
 .ai-plan-session-item.is-active {
-  border-color: rgba(33, 99, 255, 0.24);
-  box-shadow: 0 14px 26px rgba(33, 99, 255, 0.08);
+  border-color: rgba(63, 122, 97, 0.24);
+  box-shadow: 0 14px 26px rgba(63, 122, 97, 0.08);
 }
 
 .ai-plan-chat-panel {
@@ -926,7 +926,7 @@
   display: grid;
   place-items: center;
   border-radius: 28px;
-  background: linear-gradient(135deg, #5f7dff, #8a5cff);
+  background: linear-gradient(135deg, var(--brand), var(--brand));
   color: #fff;
   font-size: 38px;
   box-shadow: 0 20px 40px rgba(95, 125, 255, 0.24);
@@ -934,7 +934,7 @@
 
 .ai-plan-empty-state h2 {
   margin: 0;
-  color: #2f58de;
+  color: var(--brand-strong);
   font-size: clamp(32px, 4vw, 44px);
 }
 
@@ -955,7 +955,7 @@
   min-height: 40px;
   padding: 0 16px;
   border-radius: 999px;
-  border: 1px solid rgba(76, 108, 148, 0.16);
+  border: 1px solid rgba(95, 121, 108, 0.16);
   background: #fff;
   color: var(--ink);
   font-weight: 700;
@@ -965,7 +965,7 @@
   min-height: 44px;
   padding: 0 20px;
   border-radius: 16px;
-  border: 1px solid rgba(33, 99, 255, 0.24);
+  border: 1px solid rgba(63, 122, 97, 0.24);
   background: rgba(255, 255, 255, 0.96);
   color: var(--primary-strong);
   font-weight: 700;
@@ -997,7 +997,7 @@
   display: grid;
   gap: 10px;
   border-radius: 24px;
-  box-shadow: 0 18px 34px rgba(18, 49, 100, 0.08);
+  box-shadow: 0 18px 34px rgba(95, 121, 108, 0.08);
 }
 
 .ai-plan-message-bubble p {
@@ -1041,7 +1041,7 @@
   display: grid;
   gap: 12px;
   padding-top: 18px;
-  border-top: 1px solid rgba(76, 108, 148, 0.12);
+  border-top: 1px solid rgba(95, 121, 108, 0.12);
 }
 
 .ai-plan-composer-attachments {
@@ -1065,7 +1065,7 @@
   min-width: 52px;
   min-height: 28px;
   border-radius: 999px;
-  background: rgba(33, 99, 255, 0.08);
+  background: rgba(63, 122, 97, 0.08);
   color: var(--primary-strong);
   font-weight: 700;
 }
@@ -1089,12 +1089,12 @@
 
 .ai-plan-composer-icon {
   background: #fff;
-  border: 1px solid rgba(76, 108, 148, 0.18);
+  border: 1px solid rgba(95, 121, 108, 0.18);
   color: var(--ink);
 }
 
 .ai-plan-send-button {
-  background: linear-gradient(135deg, #a592ff, #8f6dff);
+  background: linear-gradient(135deg, var(--brand-soft), var(--brand));
   color: #fff;
   box-shadow: 0 16px 28px rgba(143, 109, 255, 0.22);
 }
@@ -1104,15 +1104,15 @@
   min-height: 48px;
   padding: 0 18px;
   border-radius: 18px;
-  border: 1px solid rgba(76, 108, 148, 0.18);
+  border: 1px solid rgba(95, 121, 108, 0.18);
   background: rgba(255, 255, 255, 0.98);
   color: var(--ink);
 }
 
 .ai-plan-composer-input:focus {
   outline: none;
-  border-color: rgba(33, 99, 255, 0.34);
-  box-shadow: 0 0 0 4px rgba(33, 99, 255, 0.12);
+  border-color: rgba(63, 122, 97, 0.34);
+  box-shadow: 0 0 0 4px rgba(63, 122, 97, 0.12);
 }
 
 .plan-management-page {
@@ -1185,7 +1185,7 @@
   justify-self: end;
   background: #fff;
   color: var(--primary-strong);
-  box-shadow: 0 18px 34px rgba(18, 49, 100, 0.14);
+  box-shadow: 0 18px 34px rgba(95, 121, 108, 0.14);
 }
 
 .plan-management-nav-button,
@@ -1213,7 +1213,7 @@
 .plan-management-date-chip.is-main strong {
   padding: 0 10px;
   border-radius: 999px;
-  background: rgba(33, 99, 255, 0.1);
+  background: rgba(63, 122, 97, 0.1);
   font-size: 13px;
 }
 
@@ -1261,7 +1261,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  border: 1px solid rgba(76, 108, 148, 0.24);
+  border: 1px solid rgba(95, 121, 108, 0.24);
   background: #fff;
   color: #fff;
   font-size: 14px;
@@ -1269,8 +1269,8 @@
 }
 
 .plan-management-checkmark.is-active {
-  border-color: #121212;
-  background: #121212;
+  border-color: var(--text-primary);
+  background: var(--text-primary);
 }
 
 .plan-management-action-group {
@@ -1289,19 +1289,19 @@
 .plan-management-action.is-green {
   border-color: rgba(39, 191, 106, 0.32);
   background: rgba(237, 252, 243, 0.92);
-  color: #179458;
+  color: var(--state-success);
 }
 
 .plan-management-action.is-blue {
   border-color: rgba(76, 123, 255, 0.28);
   background: rgba(238, 244, 255, 0.96);
-  color: #2f65de;
+  color: var(--brand-strong);
 }
 
 .plan-management-action.is-red {
   border-color: rgba(255, 104, 104, 0.28);
   background: rgba(255, 241, 241, 0.94);
-  color: #e04e4e;
+  color: var(--state-danger);
 }
 
 .plan-management-tips {
@@ -1315,7 +1315,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  color: #2258cb;
+  color: var(--brand-strong);
 }
 
 .plan-management-tips-head span {
@@ -1325,7 +1325,7 @@
 .plan-management-tips ul {
   margin: 12px 0 0;
   padding-left: 22px;
-  color: #2559c7;
+  color: var(--brand-strong);
   line-height: 1.85;
 }
 
@@ -1343,8 +1343,8 @@
 }
 
 .plan-management-card.is-selected {
-  border-color: rgba(33, 99, 255, 0.22);
-  box-shadow: 0 22px 38px rgba(33, 99, 255, 0.08);
+  border-color: rgba(63, 122, 97, 0.22);
+  box-shadow: 0 22px 38px rgba(63, 122, 97, 0.08);
 }
 
 .plan-management-checkbox {
@@ -1365,13 +1365,13 @@
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  border: 1px solid rgba(76, 108, 148, 0.24);
+  border: 1px solid rgba(95, 121, 108, 0.24);
   background: #fff;
 }
 
 .plan-management-checkbox input:checked + span {
-  border-color: #121212;
-  background: #121212;
+  border-color: var(--text-primary);
+  background: var(--text-primary);
 }
 
 .plan-management-checkbox input:checked + span::after {
@@ -1406,7 +1406,7 @@
 
 .plan-management-card-tag.is-muted {
   background: rgba(244, 247, 252, 0.96);
-  color: #708099;
+  color: var(--text-muted);
 }
 
 .plan-management-card-main strong {
@@ -1419,7 +1419,7 @@
   min-height: 52px;
   border-radius: 14px;
   background: rgba(248, 250, 253, 0.98);
-  color: #9aa6b8;
+  color: var(--text-muted);
   font-size: 24px;
   letter-spacing: 2px;
   cursor: grab;

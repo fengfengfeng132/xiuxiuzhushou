@@ -52,7 +52,7 @@ export interface CreateLocalProfileOptions {
   avatarImage?: string | null;
 }
 
-const PROFILE_AVATAR_COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#8B5CF6", "#EC4899", "#14B8A6", "#F97316"];
+const PROFILE_AVATAR_COLORS = ["#64A187", "#4F8F74", "#9A844E", "#7FA08D", "#B86A6A", "#6F8F98", "#9A844E"];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;

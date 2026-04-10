@@ -13,7 +13,7 @@
   background:
     radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.18), transparent 34%),
     radial-gradient(circle at 82% 12%, rgba(255, 255, 255, 0.14), transparent 30%),
-    linear-gradient(135deg, var(--hero-start), var(--hero-end) 56%, color-mix(in srgb, var(--hero-end) 72%, #4f7cff));
+    linear-gradient(135deg, var(--hero-start), var(--hero-end) 56%, color-mix(in srgb, var(--hero-end) 72%, var(--brand)));
   box-shadow: var(--shadow-soft);
 }
 
@@ -52,7 +52,7 @@
 
 .mr-hero-title p {
   margin: 0;
-  color: rgba(247, 251, 255, 0.86);
+  color: rgba(247, 248, 242, 0.86);
   font-size: 15px;
 }
 
@@ -83,13 +83,13 @@
 }
 
 .mr-primary-button {
-  background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 55%, #769dff));
+  background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 55%, var(--hero-bg)));
   color: #fff;
   box-shadow: 0 14px 24px color-mix(in srgb, var(--primary) 28%, transparent);
 }
 
 .mr-primary-button.is-dark {
-  background: #132340;
+  background: var(--text-primary);
   box-shadow: none;
 }
 
@@ -171,7 +171,7 @@
 
 .mr-plan-chip.is-active {
   border-color: transparent;
-  background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 45%, #78a0ff));
+  background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 45%, var(--hero-bg)));
   color: #fff;
 }
 
@@ -199,7 +199,7 @@
 }
 
 .mr-progress-rate strong {
-  color: #3368f5;
+  color: var(--brand);
   font-size: 36px;
   line-height: 1;
 }
@@ -234,13 +234,13 @@
 }
 
 .mr-day-pill.is-current {
-  border-color: rgba(79, 124, 255, 0.32);
+  border-color: rgba(100, 161, 135, 0.32);
   background: rgba(237, 244, 255, 0.98);
 }
 
 .mr-day-pill.is-current strong,
 .mr-day-pill.is-current small {
-  color: #396cf2;
+  color: var(--brand);
 }
 
 .mr-day-pill span {
@@ -259,7 +259,7 @@
   height: 100%;
   width: var(--mr-progress, 0%);
   border-radius: inherit;
-  background: linear-gradient(90deg, #5f8dff, #4f7cff);
+  background: linear-gradient(90deg, var(--brand), var(--brand));
   transition: width 180ms ease;
 }
 
@@ -269,7 +269,7 @@
   padding: 0 12px;
   border-radius: 999px;
   background: rgba(241, 246, 255, 0.92);
-  color: #365bc7;
+  color: var(--brand-strong);
   font-weight: 700;
 }
 
@@ -332,14 +332,14 @@
 }
 
 .mr-task-row.is-done strong {
-  color: #2d8e62;
+  color: var(--state-success);
 }
 
 .mr-task-action {
   min-width: 70px;
   min-height: 32px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #4f7cff, #5b8cff);
+  background: linear-gradient(135deg, var(--brand), var(--brand-soft));
   color: #fff;
   font-size: 13px;
   font-weight: 700;
@@ -347,7 +347,7 @@
 
 .mr-task-action.is-done {
   background: rgba(79, 189, 157, 0.2);
-  color: #26795c;
+  color: var(--state-success);
 }
 
 .mr-manage-plan-head {
@@ -380,12 +380,12 @@
 
 .mr-status-pill.is-active {
   background: rgba(79, 189, 157, 0.2);
-  color: #26795c;
+  color: var(--state-success);
 }
 
 .mr-status-pill.is-completed {
-  background: rgba(79, 124, 255, 0.16);
-  color: #365bc7;
+  background: rgba(100, 161, 135, 0.16);
+  color: var(--brand-strong);
 }
 
 .mr-icon-button {
@@ -405,7 +405,7 @@
 }
 
 .mr-manage-progress strong {
-  color: #3368f5;
+  color: var(--brand);
 }
 
 .mr-manage-grid {
@@ -432,7 +432,7 @@
 
 .mr-manage-article p {
   margin: 0;
-  color: #b6bfce;
+  color: var(--text-muted);
   font-size: 13px;
 }
 
@@ -446,8 +446,8 @@
   min-height: 20px;
   padding: 0 6px;
   border-radius: 999px;
-  background: rgba(79, 124, 255, 0.14);
-  color: #4f7cff;
+  background: rgba(100, 161, 135, 0.14);
+  color: var(--brand);
   font-size: 12px;
   font-weight: 700;
 }
@@ -461,18 +461,18 @@
 }
 
 .mr-article-type.is-poetry {
-  background: rgba(79, 124, 255, 0.16);
-  color: #3d66da;
+  background: rgba(100, 161, 135, 0.16);
+  color: var(--brand-strong);
 }
 
 .mr-article-type.is-classical {
   background: rgba(167, 104, 255, 0.16);
-  color: #8956d6;
+  color: var(--brand-strong);
 }
 
 .mr-article-type.is-modern {
   background: rgba(63, 191, 126, 0.16);
-  color: #2a9a68;
+  color: var(--state-success);
 }
 
 .mr-inline-icon {
@@ -519,7 +519,7 @@
 }
 
 .mr-legend-chip.is-done {
-  color: #2a9a68;
+  color: var(--state-success);
 }
 
 .mr-punch-table {
@@ -551,7 +551,7 @@
   display: grid;
   place-items: center;
   gap: 4px;
-  color: #8c9ab3;
+  color: var(--text-muted);
 }
 
 .mr-punch-cell strong {
@@ -561,11 +561,11 @@
 .mr-punch-cell.is-done {
   border-color: rgba(79, 189, 157, 0.35);
   background: rgba(231, 249, 240, 0.92);
-  color: #2a9a68;
+  color: var(--state-success);
 }
 
 .mr-punch-table td.is-empty {
-  color: #9aa6bb;
+  color: var(--text-muted);
 }
 
 .mr-table-tip {
@@ -678,13 +678,13 @@
 }
 
 .mr-granularity-card.is-active {
-  border-color: rgba(79, 124, 255, 0.4);
+  border-color: rgba(100, 161, 135, 0.4);
   background: rgba(237, 244, 255, 0.98);
 }
 
 .mr-granularity-tip {
   margin: 12px 0 0;
-  color: #396cf2;
+  color: var(--brand);
   font-size: 14px;
 }
 
@@ -729,7 +729,7 @@
   display: block;
   font-size: 34px;
   line-height: 1;
-  color: #4f7cff;
+  color: var(--brand);
 }
 
 .mr-guide-metrics span {
@@ -804,7 +804,7 @@
 .mr-guide-cta {
   border-radius: 24px;
   padding: 22px;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--hero-start) 80%, #4f7cff), color-mix(in srgb, var(--hero-end) 66%, #7b71ff));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--hero-start) 80%, var(--brand)), color-mix(in srgb, var(--hero-end) 66%, var(--brand-soft)));
   color: #fff;
 }
 
@@ -814,7 +814,7 @@
 
 .mr-guide-cta p {
   margin: 8px 0 0;
-  color: rgba(247, 251, 255, 0.88);
+  color: rgba(247, 248, 242, 0.88);
 }
 
 .mr-guide-cta-actions {

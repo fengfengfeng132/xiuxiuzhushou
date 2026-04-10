@@ -1,4 +1,4 @@
-﻿import type { DragEvent, FormEvent, JSX } from "react";
+import type { DragEvent, FormEvent, JSX } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
   acknowledgeSyncedOperations,
@@ -251,7 +251,7 @@ function createLocalUiId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-const PROFILE_AVATAR_COLOR_OPTIONS = ["#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6", "#EC4899", "#14B8A6", "#F97316"];
+const PROFILE_AVATAR_COLOR_OPTIONS = ["#64A187", "#B86A6A", "#4F8F74", "#9A844E", "#7FA08D", "#B86A6A", "#6F8F98", "#9A844E"];
 
 function collectPendingPlanReviewItems(plans: StudyPlan[]): PendingPlanReviewItem[] {
   const pendingItems: PendingPlanReviewItem[] = [];
