@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import type { StudyPlan } from "../../domain/model.js";
 
 type TimerMode = "elapsed" | "countdown" | "pomodoro";

@@ -88,8 +88,8 @@
   border-radius: 26px;
   background:
     radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0) 42%),
-    linear-gradient(135deg, rgba(100, 161, 135, 0.2), rgba(255, 182, 213, 0.44));
-  box-shadow: inset 0 0 0 1px rgba(100, 161, 135, 0.08);
+    linear-gradient(135deg, rgba(243, 107, 178, 0.2), rgba(255, 182, 213, 0.44));
+  box-shadow: inset 0 0 0 1px rgba(243, 107, 178, 0.08);
 }
 
 .habit-grid {
@@ -112,11 +112,11 @@
   display: grid;
   place-items: center;
   border-radius: 18px;
-  background: color-mix(in srgb, var(--habit-color, var(--brand)) 18%, white);
-  color: var(--habit-color, var(--brand));
+  background: color-mix(in srgb, var(--habit-color, #4f7cff) 18%, white);
+  color: var(--habit-color, #4f7cff);
   font-size: 24px;
   font-weight: 700;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--habit-color, var(--brand)) 24%, white);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--habit-color, #4f7cff) 24%, white);
 }
 
 .habit-card-head {
@@ -132,14 +132,14 @@
   min-height: 34px;
   padding: 0 12px;
   border-radius: 999px;
-  background: rgba(63, 122, 97, 0.08);
+  background: rgba(33, 99, 255, 0.08);
   color: var(--primary-strong);
   font-weight: 700;
 }
 
 .habit-score.is-negative {
   background: rgba(244, 122, 122, 0.14);
-  color: var(--state-danger);
+  color: #cf4254;
 }
 
 .habit-badges,
@@ -159,7 +159,7 @@
   min-height: 28px;
   padding: 0 10px;
   border-radius: 999px;
-  background: rgba(95, 121, 108, 0.06);
+  background: rgba(18, 49, 100, 0.06);
   color: var(--muted);
   font-size: 13px;
   font-weight: 700;
@@ -167,7 +167,7 @@
 
 .habit-badge-warning {
   background: rgba(255, 151, 87, 0.16);
-  color: var(--state-warning);
+  color: #d46f2d;
 }
 
 .habit-progress-row {
@@ -189,17 +189,17 @@
 .habit-progress-fill {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--state-success), var(--brand-strong));
+  background: linear-gradient(90deg, #34c592, #2f6dff);
 }
 
 .habit-badge-positive {
   background: rgba(255, 207, 86, 0.22);
-  color: var(--state-warning);
+  color: #b77700;
 }
 
 .habit-badge-negative {
   background: rgba(244, 122, 122, 0.16);
-  color: var(--state-danger);
+  color: #cf4254;
 }
 
 .habit-section-head,
@@ -247,8 +247,8 @@
   width: 5px;
   height: 30px;
   border-radius: 999px;
-  background: linear-gradient(180deg, var(--brand), var(--brand));
-  box-shadow: 0 12px 24px rgba(100, 161, 135, 0.18);
+  background: linear-gradient(180deg, #ff8abf, #d86ac2);
+  box-shadow: 0 12px 24px rgba(243, 107, 178, 0.18);
 }
 
 .habit-section-actions,
@@ -280,7 +280,7 @@
   gap: 8px;
   font-size: 14px;
   font-weight: 600;
-  box-shadow: 0 1px 2px rgba(95, 121, 108, 0.12);
+  box-shadow: 0 1px 2px rgba(18, 49, 100, 0.12);
 }
 
 .habit-week-pill-today {
@@ -332,7 +332,7 @@
   padding: 14px 10px;
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(95, 121, 108, 0.1);
+  border: 1px solid rgba(76, 108, 148, 0.1);
   color: var(--muted);
 }
 
@@ -343,8 +343,8 @@
 }
 
 .habit-day-pill.is-selected {
-  background: linear-gradient(180deg, rgba(100, 161, 135, 0.96), rgba(189, 218, 191, 0.9));
-  box-shadow: 0 20px 34px rgba(100, 161, 135, 0.24);
+  background: linear-gradient(180deg, rgba(243, 107, 178, 0.96), rgba(255, 158, 203, 0.9));
+  box-shadow: 0 20px 34px rgba(243, 107, 178, 0.24);
   border-color: transparent;
 }
 
@@ -357,11 +357,11 @@
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: rgba(95, 121, 108, 0.18);
+  background: rgba(76, 108, 148, 0.18);
 }
 
 .habit-day-dot.has-checkin {
-  background: var(--state-success);
+  background: #27c16f;
 }
 
 .habit-day-pill.is-selected .habit-day-dot {
@@ -369,7 +369,7 @@
 }
 
 .habit-day-pill.is-selected .habit-day-dot.has-checkin {
-  background: var(--state-success);
+  background: #32de84;
 }
 
 .habit-toolbar {
@@ -384,12 +384,12 @@
   gap: 10px;
   padding: 0 14px;
   border-radius: 12px;
-  border: 2px solid rgba(100, 161, 135, 0.52);
+  border: 2px solid rgba(243, 107, 178, 0.52);
   background: #fff;
 }
 
 .habit-search-field span {
-  color: var(--text-muted);
+  color: #8f9bb0;
 }
 
 .habit-search-icon {
@@ -420,14 +420,14 @@
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid var(--line);
-  color: var(--text-secondary);
+  color: #6d778b;
   transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
 }
 
 .habit-toolbar-button.is-active {
   color: var(--primary-strong);
-  border-color: rgba(100, 161, 135, 0.32);
-  box-shadow: 0 10px 24px rgba(100, 161, 135, 0.12);
+  border-color: rgba(243, 107, 178, 0.32);
+  box-shadow: 0 10px 24px rgba(243, 107, 178, 0.12);
 }
 
 .habit-layout-toggle {
@@ -446,13 +446,13 @@
   border: 0;
   box-shadow: none;
   background: transparent;
-  color: var(--text-secondary);
+  color: #6b7280;
 }
 
 .habit-layout-option.is-active {
   background: #fff;
   color: var(--primary-strong);
-  box-shadow: 0 1px 2px rgba(95, 121, 108, 0.12);
+  box-shadow: 0 1px 2px rgba(18, 49, 100, 0.12);
 }
 
 .habit-filter-row {
@@ -477,10 +477,10 @@
 }
 
 .habit-filter-pill.is-active {
-  background: linear-gradient(135deg, var(--primary), var(--brand-soft));
+  background: linear-gradient(135deg, var(--primary), #ff9ccc);
   color: #fff;
   border-color: transparent;
-  box-shadow: 0 14px 26px rgba(100, 161, 135, 0.18);
+  box-shadow: 0 14px 26px rgba(243, 107, 178, 0.18);
 }
 
 .habit-board-cards {
@@ -504,7 +504,7 @@
   min-height: 160px;
   padding: 20px;
   border-radius: 24px;
-  border: 1px solid rgba(95, 121, 108, 0.12);
+  border: 1px solid rgba(76, 108, 148, 0.12);
   background: rgba(255, 255, 255, 0.94);
   box-shadow: var(--shadow-soft);
 }
@@ -538,13 +538,13 @@
   min-height: 32px;
   padding: 0 12px;
   border-radius: 999px;
-  background: rgba(63, 122, 97, 0.08);
+  background: rgba(33, 99, 255, 0.08);
   color: var(--primary-strong);
   font-weight: 700;
 }
 
 .habit-status-pill.is-complete {
-  background: rgba(79, 143, 116, 0.14);
+  background: rgba(25, 161, 112, 0.14);
   color: var(--green);
 }
 
@@ -572,7 +572,7 @@
   margin-bottom: 18px;
   padding: 14px 16px;
   border-radius: 20px;
-  background: rgba(247, 248, 242, 0.9);
+  background: rgba(247, 251, 255, 0.9);
   border: 1px solid var(--line);
 }
 
@@ -589,7 +589,7 @@
 .manager-danger-button {
   background: rgba(244, 122, 122, 0.16);
   border: 1px solid rgba(244, 122, 122, 0.24);
-  color: var(--state-danger);
+  color: #cf4254;
 }
 
 .habit-manager-list {
@@ -600,16 +600,16 @@
 .habit-manager-row {
   padding: 16px 18px;
   border-radius: 22px;
-  border: 1px solid rgba(95, 121, 108, 0.12);
+  border: 1px solid rgba(76, 108, 148, 0.12);
   background: rgba(255, 255, 255, 0.92);
   box-shadow: var(--shadow-soft);
 }
 
 .habit-manager-row.is-selected {
-  border-color: rgba(63, 122, 97, 0.32);
+  border-color: rgba(33, 99, 255, 0.32);
   box-shadow:
     var(--shadow-soft),
-    0 0 0 3px rgba(63, 122, 97, 0.08);
+    0 0 0 3px rgba(33, 99, 255, 0.08);
 }
 
 .habit-manager-checkbox {
@@ -637,7 +637,7 @@
   display: grid;
   place-items: center;
   border-radius: 12px;
-  background: rgba(95, 121, 108, 0.06);
+  background: rgba(18, 49, 100, 0.06);
   color: var(--muted);
   font-size: 18px;
 }
@@ -665,7 +665,7 @@
   border-radius: 30px;
   border: 1px solid rgba(255, 255, 255, 0.7);
   box-shadow: var(--shadow);
-  color: var(--text-on-brand);
+  color: #f7fbff;
   background:
     radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.18), transparent 35%),
     linear-gradient(135deg, var(--hero-start), var(--hero-end));
@@ -691,7 +691,7 @@
 
 .manager-hero-copy p {
   margin: 8px 0 0;
-  color: rgba(247, 248, 242, 0.82);
+  color: rgba(247, 251, 255, 0.82);
 }
 
 .manager-actions {
@@ -727,22 +727,22 @@
 
 .habit-stats-card.tone-blue {
   background: rgba(255, 255, 255, 0.94);
-  border-bottom-color: var(--brand-strong);
+  border-bottom-color: #2f6dff;
 }
 
 .habit-stats-card.tone-green {
   background: rgba(255, 255, 255, 0.94);
-  border-bottom-color: var(--state-success);
+  border-bottom-color: #22bb67;
 }
 
 .habit-stats-card.tone-violet {
   background: rgba(255, 255, 255, 0.94);
-  border-bottom-color: var(--brand);
+  border-bottom-color: #b35cff;
 }
 
 .habit-stats-card.tone-orange {
   background: rgba(255, 255, 255, 0.94);
-  border-bottom-color: var(--state-warning);
+  border-bottom-color: #ff7e30;
 }
 
 .habit-stats-range-row {
@@ -763,10 +763,10 @@
 }
 
 .habit-stats-range-chip.is-active {
-  background: linear-gradient(135deg, var(--primary), var(--brand-soft));
+  background: linear-gradient(135deg, var(--primary), #ff9ccc);
   border-color: transparent;
   color: #fff;
-  box-shadow: 0 14px 26px rgba(100, 161, 135, 0.18);
+  box-shadow: 0 14px 26px rgba(243, 107, 178, 0.18);
 }
 
 .habit-stats-surface {
@@ -795,7 +795,7 @@
   gap: 16px;
   padding: 18px 20px;
   border-radius: 22px;
-  border: 1px solid rgba(95, 121, 108, 0.12);
+  border: 1px solid rgba(76, 108, 148, 0.12);
   background: rgba(255, 255, 255, 0.92);
   box-shadow: var(--shadow-soft);
 }
@@ -817,11 +817,11 @@
 }
 
 .habit-stats-row strong.is-positive {
-  color: var(--state-success);
+  color: #1f9a58;
 }
 
 .habit-stats-row strong.is-negative {
-  color: var(--state-danger);
+  color: #cf4254;
 }
 
 .manager-empty-card {
@@ -850,7 +850,7 @@
   border-radius: 28px;
   background:
     radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0) 42%),
-    linear-gradient(135deg, rgba(100, 161, 135, 0.18), rgba(255, 182, 213, 0.42));
+    linear-gradient(135deg, rgba(243, 107, 178, 0.18), rgba(255, 182, 213, 0.42));
 }
 
 .manager-summary-bar {
@@ -861,7 +861,7 @@
   margin-bottom: 18px;
   padding: 18px 20px;
   border-radius: 24px;
-  background: rgba(247, 248, 242, 0.84);
+  background: rgba(247, 251, 255, 0.84);
   border: 1px solid var(--line);
 }
 
@@ -897,8 +897,8 @@
 }
 
 .dropdown-trigger.is-open {
-  border-color: rgba(63, 122, 97, 0.5);
-  box-shadow: 0 0 0 4px rgba(63, 122, 97, 0.08);
+  border-color: rgba(33, 99, 255, 0.5);
+  box-shadow: 0 0 0 4px rgba(33, 99, 255, 0.08);
 }
 
 .dropdown-arrow {
@@ -927,7 +927,7 @@
 }
 
 .dropdown-option.is-selected {
-  background: rgba(63, 122, 97, 0.08);
+  background: rgba(33, 99, 255, 0.08);
 }
 
 .checkin-modal-card {
@@ -952,7 +952,7 @@
   padding: 16px 18px;
   border-radius: 16px;
   background: rgba(255, 231, 163, 0.22);
-  color: var(--state-warning);
+  color: #7a5a00;
 }
 
 .checkin-points-card span {
@@ -966,11 +966,11 @@
 }
 
 .checkin-points-card strong.is-positive {
-  color: var(--state-warning);
+  color: #f19a17;
 }
 
 .checkin-points-card strong.is-negative {
-  color: var(--state-danger);
+  color: #cf4254;
 }
 
 .checkin-modal-actions {

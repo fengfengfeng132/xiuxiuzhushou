@@ -93,7 +93,7 @@
 
 .profile-quick-menu-check {
   margin-left: auto;
-  color: var(--brand-strong);
+  color: #2563eb;
   font-weight: 700;
 }
 
@@ -107,7 +107,7 @@
   min-height: 42px;
   padding: 0 14px;
   text-align: left;
-  color: var(--text-primary);
+  color: #33507f;
   background: transparent;
   border-bottom: 1px solid rgba(82, 117, 193, 0.1);
 }
@@ -117,7 +117,7 @@
 }
 
 .profile-quick-menu-foot button.is-danger {
-  color: var(--state-danger);
+  color: #dc2626;
 }
 
 .profile-management-page {
@@ -133,8 +133,8 @@
   min-height: 108px;
   padding: 20px 28px;
   border-radius: 0 0 40px 40px;
-  color: var(--page-bg);
-  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 58%, var(--brand-strong) 100%);
+  color: #f6f8ff;
+  background: linear-gradient(135deg, #8b35ff 0%, #7c3aed 58%, #6d28d9 100%);
   box-shadow: 0 22px 38px rgba(78, 28, 165, 0.35);
 }
 
@@ -157,7 +157,7 @@
 
 .profile-management-hero-copy p {
   margin: 4px 0 0;
-  color: rgba(247, 248, 242, 0.9);
+  color: rgba(247, 251, 255, 0.9);
   font-size: 16px;
 }
 
@@ -166,7 +166,7 @@
   padding: 0 20px;
   border-radius: 16px;
   font-weight: 700;
-  color: var(--brand-strong);
+  color: #6d28d9;
   background: rgba(255, 255, 255, 0.94);
 }
 
@@ -222,7 +222,7 @@
 }
 
 .profile-management-table-head {
-  color: var(--brand-strong);
+  color: #6d28d9;
   font-weight: 700;
   border-bottom: 1px solid rgba(129, 102, 183, 0.2);
 }
@@ -259,11 +259,11 @@
 }
 
 .profile-management-info-cell small {
-  color: var(--brand-strong);
+  color: #2563eb;
 }
 
 .profile-management-cell {
-  color: var(--text-primary);
+  color: #254168;
 }
 
 .profile-management-actions-cell {
@@ -275,7 +275,7 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  color: var(--text-primary);
+  color: #384a68;
   background: rgba(46, 81, 148, 0.08);
   font-size: 24px;
   line-height: 1;
@@ -299,7 +299,7 @@
   text-align: left;
   padding: 0 12px;
   background: transparent;
-  color: var(--text-primary);
+  color: #284875;
   border-bottom: 1px solid rgba(46, 81, 148, 0.1);
 }
 
@@ -308,7 +308,7 @@
 }
 
 .profile-management-action-menu button.is-danger {
-  color: var(--state-danger);
+  color: #dc2626;
 }
 
 .profile-management-empty-row {
@@ -402,7 +402,7 @@
 
 .add-profile-color-dot.is-active {
   border-color: #fff;
-  box-shadow: 0 0 0 3px var(--brand);
+  box-shadow: 0 0 0 3px #3b82f6;
 }
 
 .add-profile-modal-footer {

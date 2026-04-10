@@ -37,7 +37,7 @@
   width: 36px;
   height: 36px;
   border-radius: 12px;
-  background: rgba(95, 121, 108, 0.06);
+  background: rgba(18, 49, 100, 0.06);
   color: var(--muted);
   font-size: 24px;
   line-height: 1;
@@ -101,7 +101,7 @@
   padding: 10px;
   border-radius: 18px;
   border: 1px solid var(--line);
-  background: rgba(247, 248, 242, 0.84);
+  background: rgba(247, 251, 255, 0.84);
   max-height: 132px;
   overflow: auto;
 }
@@ -120,7 +120,7 @@
   gap: 12px;
   padding: 14px;
   border-radius: 18px;
-  background: rgba(247, 248, 242, 0.84);
+  background: rgba(247, 251, 255, 0.84);
 }
 
 .preview-card strong,
@@ -142,13 +142,13 @@
 }
 
 .modal-submit {
-  background: var(--text-primary);
+  background: #141414;
   color: #fff;
 }
 
 .modal-submit-primary {
-  background: linear-gradient(135deg, var(--primary), var(--brand-soft));
-  box-shadow: 0 18px 34px rgba(100, 161, 135, 0.22);
+  background: linear-gradient(135deg, var(--primary), #ff9ccc);
+  box-shadow: 0 18px 34px rgba(243, 107, 178, 0.22);
 }
 
 .modal-submit:disabled {
@@ -192,7 +192,7 @@
   display: grid;
   place-items: center;
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--state-success), var(--state-success));
+  background: linear-gradient(135deg, #25c26e, #18a957);
   color: #fff;
   font-size: 28px;
   box-shadow: 0 16px 28px rgba(36, 180, 100, 0.22);
@@ -227,8 +227,8 @@
   gap: 14px;
   padding: 16px;
   border-radius: 20px;
-  border: 1px solid rgba(100, 161, 135, 0.16);
-  background: rgba(247, 248, 242, 0.88);
+  border: 1px solid rgba(79, 124, 255, 0.16);
+  background: rgba(247, 251, 255, 0.88);
 }
 
 .quick-complete-summary-top,
@@ -254,12 +254,12 @@
 }
 
 .quick-complete-summary-badge {
-  background: linear-gradient(135deg, var(--primary), var(--hero-bg));
+  background: linear-gradient(135deg, var(--primary), #6aa4ff);
   color: #fff;
 }
 
 .quick-complete-summary-date {
-  background: rgba(100, 161, 135, 0.08);
+  background: rgba(79, 124, 255, 0.08);
   color: var(--muted);
 }
 
@@ -278,7 +278,7 @@
   gap: 10px;
   padding: 6px;
   border-radius: 16px;
-  background: rgba(95, 121, 108, 0.04);
+  background: rgba(18, 49, 100, 0.04);
 }
 
 .quick-complete-tab {
@@ -292,7 +292,7 @@
 .quick-complete-tab.is-active {
   background: #fff;
   color: var(--primary-strong);
-  box-shadow: 0 10px 22px rgba(63, 122, 97, 0.12);
+  box-shadow: 0 10px 22px rgba(33, 99, 255, 0.12);
 }
 
 .quick-complete-time-grid {
@@ -329,7 +329,7 @@
 
 .quick-complete-separator {
   padding-bottom: 18px;
-  color: var(--text-muted);
+  color: #97a5ba;
   font-family: "Manrope", sans-serif;
   font-size: 36px;
   font-weight: 800;
@@ -340,7 +340,7 @@
   display: grid;
   place-items: center;
   border-radius: 14px;
-  background: rgba(95, 121, 108, 0.04);
+  background: rgba(18, 49, 100, 0.04);
   color: var(--ink);
   font-weight: 700;
 }
@@ -365,8 +365,8 @@
 }
 
 .quick-complete-preset.is-active {
-  border-color: rgba(63, 122, 97, 0.38);
-  box-shadow: 0 0 0 3px rgba(63, 122, 97, 0.08);
+  border-color: rgba(33, 99, 255, 0.38);
+  box-shadow: 0 0 0 3px rgba(33, 99, 255, 0.08);
   color: var(--primary-strong);
 }
 
@@ -385,7 +385,7 @@
 
 .quick-complete-upload-icon {
   font-size: 40px;
-  color: var(--text-muted);
+  color: #95a2b4;
 }
 
 .quick-complete-attachment-list {
@@ -400,8 +400,8 @@
   align-items: center;
   padding: 12px 14px;
   border-radius: 16px;
-  background: rgba(247, 248, 242, 0.88);
-  border: 1px solid rgba(95, 121, 108, 0.08);
+  background: rgba(247, 251, 255, 0.88);
+  border: 1px solid rgba(18, 49, 100, 0.08);
 }
 
 .quick-complete-attachment-chip strong {
@@ -413,7 +413,7 @@
   width: 28px;
   height: 28px;
   border-radius: 999px;
-  background: rgba(95, 121, 108, 0.08);
+  background: rgba(18, 49, 100, 0.08);
   color: var(--muted);
   font-size: 18px;
 }
@@ -427,7 +427,7 @@
 }
 
 .quick-complete-submit {
-  background: linear-gradient(135deg, var(--state-success), var(--state-success));
+  background: linear-gradient(135deg, #25c26e, #18a957);
   box-shadow: 0 18px 34px rgba(37, 194, 110, 0.22);
 }
 
@@ -459,7 +459,7 @@
   display: grid;
   place-items: center;
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--brand), var(--brand));
+  background: linear-gradient(135deg, #4f7cff, #6674ff);
   color: #fff;
   font-size: 24px;
 }
@@ -486,17 +486,17 @@
 
 .plan-points-review-status.is-approved {
   background: rgba(37, 194, 110, 0.14);
-  color: var(--state-success);
+  color: #19995a;
 }
 
 .plan-points-review-status.is-adjusted {
   background: rgba(241, 162, 22, 0.18);
-  color: var(--state-warning);
+  color: #ad7310;
 }
 
 .plan-points-review-status.is-rejected {
   background: rgba(238, 99, 99, 0.15);
-  color: var(--state-danger);
+  color: #d04a4a;
 }
 
 .plan-points-review-form {
@@ -513,7 +513,7 @@
   padding: 14px;
   border-radius: 16px;
   border: 1px solid rgba(117, 150, 210, 0.24);
-  background: rgba(247, 248, 242, 0.92);
+  background: rgba(247, 251, 255, 0.92);
 }
 
 .plan-points-review-summary-top {
@@ -529,8 +529,8 @@
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  background: rgba(100, 161, 135, 0.12);
-  color: var(--brand-strong);
+  background: rgba(79, 124, 255, 0.12);
+  color: #2f65de;
   font-size: 13px;
   font-weight: 700;
 }
@@ -560,7 +560,7 @@
   justify-items: center;
   align-content: center;
   border-radius: 14px;
-  border: 1px solid rgba(95, 121, 108, 0.12);
+  border: 1px solid rgba(18, 49, 100, 0.12);
   background: #fff;
   color: var(--ink);
 }
@@ -575,7 +575,7 @@
 }
 
 .plan-points-review-action.is-active {
-  box-shadow: 0 0 0 3px rgba(63, 122, 97, 0.1);
+  box-shadow: 0 0 0 3px rgba(33, 99, 255, 0.1);
 }
 
 .plan-points-review-action.is-active.is-approved {
@@ -585,7 +585,7 @@
 
 .plan-points-review-action.is-active.is-adjusted {
   border-color: rgba(241, 162, 22, 0.5);
-  background: rgba(250, 251, 204, 0.96);
+  background: rgba(255, 245, 219, 0.96);
 }
 
 .plan-points-review-action.is-active.is-rejected {
@@ -646,9 +646,9 @@
   place-items: center;
   flex: 0 0 58px;
   border-radius: 18px;
-  background: linear-gradient(135deg, var(--subject-accent, var(--brand-strong)), rgba(255, 255, 255, 0.18));
+  background: linear-gradient(135deg, var(--subject-accent, #2163ff), rgba(255, 255, 255, 0.18));
   color: #fff;
-  box-shadow: 0 18px 34px rgba(95, 121, 108, 0.16);
+  box-shadow: 0 18px 34px rgba(18, 49, 100, 0.16);
 }
 
 .plan-detail-icon-card span {
@@ -697,21 +697,21 @@
 
 .plan-detail-subject-badge {
   background: rgba(181, 235, 129, 0.22);
-  color: var(--state-success);
+  color: #6aa11d;
 }
 
 .plan-detail-status-badge {
-  background: rgba(79, 143, 116, 0.12);
+  background: rgba(25, 161, 112, 0.12);
   color: var(--green);
 }
 
 .plan-detail-status-badge.is-pending {
-  background: rgba(95, 121, 108, 0.08);
+  background: rgba(18, 49, 100, 0.08);
   color: var(--muted);
 }
 
 .plan-detail-chip {
-  background: rgba(95, 121, 108, 0.06);
+  background: rgba(18, 49, 100, 0.06);
   color: var(--ink);
 }
 
@@ -721,7 +721,7 @@
 }
 
 .plan-detail-chip-active {
-  background: rgba(79, 143, 116, 0.12);
+  background: rgba(25, 161, 112, 0.12);
   color: var(--green);
 }
 
@@ -743,9 +743,9 @@
 .plan-detail-info-card,
 .plan-detail-record-card {
   border-radius: 22px;
-  border: 1px solid rgba(100, 161, 135, 0.14);
+  border: 1px solid rgba(79, 124, 255, 0.14);
   background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 14px 28px rgba(95, 121, 108, 0.06);
+  box-shadow: 0 14px 28px rgba(18, 49, 100, 0.06);
 }
 
 .plan-detail-info-card {
@@ -767,7 +767,7 @@
   place-items: center;
   border-radius: 16px;
   background: rgba(156, 106, 255, 0.12);
-  color: var(--brand);
+  color: #8749ff;
   font-size: 20px;
 }
 
@@ -793,12 +793,12 @@
 
 .plan-detail-star-pill {
   background: rgba(255, 199, 69, 0.2);
-  color: var(--state-warning);
+  color: #d39100;
 }
 
 .plan-detail-note-pill {
   background: rgba(255, 214, 92, 0.16);
-  color: var(--state-warning);
+  color: #be8b0d;
 }
 
 .plan-detail-record-card {
@@ -840,7 +840,7 @@
 }
 
 .plan-detail-record-top span {
-  color: var(--state-warning);
+  color: #f08f1d;
   font-weight: 700;
 }
 
@@ -870,7 +870,7 @@
   padding: 10px 12px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(95, 121, 108, 0.08);
+  border: 1px solid rgba(18, 49, 100, 0.08);
 }
 
 .plan-detail-attachment-type {
@@ -881,7 +881,7 @@
   justify-content: center;
   padding: 0 10px;
   border-radius: 12px;
-  background: rgba(63, 122, 97, 0.1);
+  background: rgba(33, 99, 255, 0.1);
   color: var(--primary-strong);
   font-size: 13px;
   font-weight: 700;
@@ -900,7 +900,7 @@
 .plan-detail-empty-records {
   padding: 18px;
   border-radius: 18px;
-  background: rgba(247, 248, 242, 0.88);
+  background: rgba(247, 251, 255, 0.88);
   color: var(--muted);
   text-align: center;
 }
@@ -916,7 +916,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   padding: 12px 16px 14px;
-  border-top: 1px solid rgba(95, 121, 108, 0.08);
+  border-top: 1px solid rgba(18, 49, 100, 0.08);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), #fff 26%);
 }
 
@@ -928,14 +928,14 @@
 
 .plan-detail-footer-button-danger {
   background: #fff;
-  color: var(--state-warning);
+  color: #f08f1d;
   border: 1px solid rgba(240, 143, 29, 0.5);
 }
 
 .plan-detail-footer-button-primary {
-  background: linear-gradient(135deg, var(--primary), var(--brand));
+  background: linear-gradient(135deg, var(--primary), #4f8cff);
   color: #fff;
-  box-shadow: 0 18px 34px rgba(63, 122, 97, 0.22);
+  box-shadow: 0 18px 34px rgba(33, 99, 255, 0.22);
 }
 
 .plan-delete-modal-card {
@@ -977,7 +977,7 @@
   justify-items: start;
   padding: 16px 18px;
   border-radius: 18px;
-  border: 1px solid rgba(95, 121, 108, 0.14);
+  border: 1px solid rgba(76, 108, 148, 0.14);
   background: rgba(248, 251, 255, 0.9);
   text-align: left;
 }
@@ -1018,8 +1018,8 @@
   gap: 4px;
   padding: 10px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(95, 121, 108, 0.08);
-  background: rgba(247, 248, 242, 0.85);
+  border: 1px solid rgba(18, 49, 100, 0.08);
+  background: rgba(247, 251, 255, 0.85);
 }
 
 .sync-status-strip strong {
@@ -1058,8 +1058,8 @@
   margin: 0;
   padding: 12px;
   border-radius: 16px;
-  border: 1px solid rgba(100, 161, 135, 0.16);
-  background: rgba(247, 248, 242, 0.84);
+  border: 1px solid rgba(79, 124, 255, 0.16);
+  background: rgba(247, 251, 255, 0.84);
 }
 
 .sync-session-card h3 {

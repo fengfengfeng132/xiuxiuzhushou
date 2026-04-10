@@ -17,7 +17,7 @@
   background:
     radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.24), transparent 35%),
     radial-gradient(circle at 88% 0%, rgba(255, 224, 241, 0.28), transparent 28%),
-    linear-gradient(130deg, var(--brand) 0%, var(--brand-soft) 56%, var(--accent-bg) 100%);
+    linear-gradient(130deg, #f36bb2 0%, #ff9ccc 56%, #ffd0b8 100%);
   box-shadow: var(--shadow);
 }
 
@@ -130,19 +130,19 @@
 }
 
 .height-hub-icon.tone-mint {
-  background: linear-gradient(135deg, var(--state-success), var(--state-success));
+  background: linear-gradient(135deg, #1fb495, #3ed0ae);
 }
 
 .height-hub-icon.tone-green {
-  background: linear-gradient(135deg, var(--state-success), var(--state-success));
+  background: linear-gradient(135deg, #70c52e, #46a51f);
 }
 
 .height-hub-icon.tone-blue {
-  background: linear-gradient(135deg, var(--state-info), var(--brand-strong));
+  background: linear-gradient(135deg, #39a1ff, #2d77e3);
 }
 
 .height-hub-icon.tone-orange {
-  background: linear-gradient(135deg, var(--state-warning), var(--state-warning));
+  background: linear-gradient(135deg, #ff9f2f, #ff7e2f);
 }
 
 .height-card {
@@ -229,8 +229,8 @@
 .height-gender-button.is-active {
   color: #fff;
   border-color: transparent;
-  background: linear-gradient(135deg, var(--primary), var(--brand-soft));
-  box-shadow: 0 12px 24px rgba(63, 122, 97, 0.22);
+  background: linear-gradient(135deg, var(--primary), #ff9ccc);
+  box-shadow: 0 12px 24px rgba(216, 79, 151, 0.22);
 }
 
 .height-primary-button {
@@ -241,8 +241,8 @@
   color: #fff;
   font-weight: 800;
   font-size: 17px;
-  background: linear-gradient(135deg, var(--primary), var(--brand-soft));
-  box-shadow: 0 16px 30px rgba(63, 122, 97, 0.26);
+  background: linear-gradient(135deg, var(--primary), #ff9ccc);
+  box-shadow: 0 16px 30px rgba(216, 79, 151, 0.26);
 }
 
 .height-segmented {
@@ -250,7 +250,7 @@
   gap: 8px;
   padding: 4px;
   border-radius: 999px;
-  background: rgba(100, 161, 135, 0.1);
+  background: rgba(243, 107, 178, 0.1);
 }
 
 .height-segment-button {

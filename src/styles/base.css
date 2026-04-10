@@ -1,21 +1,23 @@
 /* Shared shell, dashboard, and global primitives. */
 
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Noto+Sans+SC:wght@400;500;700;800&display=swap");
+
 :root {
   color-scheme: light;
-  --bg-top: var(--page-bg);
-  --bg-bottom: var(--section-bg);
-  --ink: var(--text-primary);
-  --muted: var(--text-secondary);
+  --bg-top: #fff0f8;
+  --bg-bottom: #fff7f0;
+  --ink: #5b3558;
+  --muted: #9a7c96;
   --line: rgba(214, 138, 179, 0.2);
   --line-strong: rgba(205, 108, 164, 0.24);
   --panel: rgba(255, 255, 255, 0.88);
   --panel-strong: rgba(255, 255, 255, 0.95);
-  --hero-start: var(--brand);
-  --hero-end: var(--hero-bg);
-  --primary: var(--brand);
-  --primary-strong: var(--brand-strong);
-  --warm: var(--accent-bg);
-  --green: var(--state-success);
+  --hero-start: #ff7fb7;
+  --hero-end: #ffb5d1;
+  --primary: #f36bb2;
+  --primary-strong: #d84f97;
+  --warm: #ffb08d;
+  --green: #4dbd9d;
   --shadow: 0 28px 72px rgba(183, 107, 150, 0.16);
   --shadow-soft: 0 16px 38px rgba(177, 118, 157, 0.1);
   --paper-line: rgba(233, 183, 208, 0.16);
@@ -42,7 +44,7 @@ body {
     radial-gradient(circle at 50% 0%, rgba(226, 181, 255, 0.18), transparent 26%),
     radial-gradient(circle at 14px 14px, rgba(255, 255, 255, 0.45) 0 2px, transparent 2px),
     linear-gradient(180deg, transparent 0 34px, rgba(255, 255, 255, 0.28) 34px 35px, transparent 35px 100%),
-    linear-gradient(180deg, var(--bg-top) 0%, var(--page-bg) 48%, var(--bg-bottom) 100%);
+    linear-gradient(180deg, var(--bg-top) 0%, #fffafd 48%, var(--bg-bottom) 100%);
   background-size: auto, auto, auto, 28px 28px, auto, auto;
 }
 
@@ -85,11 +87,11 @@ button {
   gap: 18px;
   align-items: start;
   padding: 14px 20px 8px;
-  color: var(--text-on-brand);
+  color: #f7fbff;
   background:
     radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.24), transparent 34%),
     radial-gradient(circle at 82% 18%, rgba(255, 224, 241, 0.3), transparent 26%),
-    linear-gradient(135deg, var(--brand), var(--hero-bg) 52%, var(--accent-bg));
+    linear-gradient(135deg, #ff8ebd, #ffb8d5 52%, #ffd0b8);
 }
 
 .hero-kicker,
@@ -115,7 +117,7 @@ button {
 .hero-summary {
   max-width: 620px;
   margin: 6px 0 0;
-  color: rgba(247, 248, 242, 0.86);
+  color: rgba(247, 251, 255, 0.86);
   line-height: 1.45;
   font-size: 13px;
 }
@@ -167,7 +169,7 @@ button {
 }
 
 .profile-meta small {
-  color: rgba(247, 248, 242, 0.74);
+  color: rgba(247, 251, 255, 0.74);
   font-size: 10px;
   line-height: 1.2;
 }
@@ -191,7 +193,7 @@ button {
 
 .balance-chip span,
 .balance-chip small {
-  color: rgba(247, 248, 242, 0.74);
+  color: rgba(247, 251, 255, 0.74);
 }
 
 .balance-chip span {
@@ -294,7 +296,7 @@ button {
 }
 
 .tone-orange {
-  background: linear-gradient(180deg, rgba(250, 251, 204, 0.98), rgba(255, 255, 255, 0.94));
+  background: linear-gradient(180deg, rgba(255, 241, 233, 0.98), rgba(255, 255, 255, 0.94));
 }
 
 .tone-violet {
@@ -342,9 +344,9 @@ button {
 }
 
 .tab-button.is-active {
-  background: linear-gradient(135deg, var(--primary), var(--brand-soft));
+  background: linear-gradient(135deg, var(--primary), #ff9ccc);
   color: #fff;
-  box-shadow: 0 14px 30px rgba(100, 161, 135, 0.26);
+  box-shadow: 0 14px 30px rgba(243, 107, 178, 0.26);
 }
 
 .surface-card,
@@ -420,13 +422,13 @@ button {
 .inline-primary-button,
 .primary-action,
 .icon-button-strong {
-  background: linear-gradient(135deg, var(--primary), var(--brand-soft));
+  background: linear-gradient(135deg, var(--primary), #ff9ccc);
   color: #fff;
-  box-shadow: 0 16px 30px rgba(100, 161, 135, 0.26);
+  box-shadow: 0 16px 30px rgba(243, 107, 178, 0.26);
 }
 
 .chip-button-violet {
-  background: linear-gradient(135deg, var(--brand-soft), var(--brand-soft));
+  background: linear-gradient(135deg, #d785ff, #ff97cf);
   color: #fff;
   box-shadow: 0 16px 30px rgba(213, 133, 255, 0.24);
 }
@@ -462,12 +464,12 @@ button {
 
 .plan-review-strip-copy strong {
   display: block;
-  color: var(--state-warning);
+  color: #9f6b09;
 }
 
 .plan-review-strip-copy p {
   margin: 4px 0 0;
-  color: var(--state-warning);
+  color: #af7913;
   line-height: 1.6;
 }
 
@@ -490,7 +492,7 @@ button {
   padding: 14px 12px;
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.86);
-  border: 1px solid rgba(95, 121, 108, 0.12);
+  border: 1px solid rgba(76, 108, 148, 0.12);
   text-align: left;
 }
 
@@ -501,9 +503,9 @@ button {
 }
 
 .day-pill.is-selected {
-  background: linear-gradient(180deg, rgba(100, 161, 135, 0.96), rgba(189, 218, 191, 0.9));
+  background: linear-gradient(180deg, rgba(243, 107, 178, 0.96), rgba(255, 158, 203, 0.9));
   border-color: transparent;
-  box-shadow: 0 20px 34px rgba(100, 161, 135, 0.24);
+  box-shadow: 0 20px 34px rgba(243, 107, 178, 0.24);
 }
 
 .day-pill.is-selected span,
@@ -513,7 +515,7 @@ button {
 }
 
 .day-pill.is-today:not(.is-selected) {
-  border-color: rgba(100, 161, 135, 0.3);
+  border-color: rgba(243, 107, 178, 0.3);
 }
 
 .date-jump-popover {
@@ -551,8 +553,8 @@ button {
 
 .date-jump-input:focus {
   outline: none;
-  border-color: rgba(100, 161, 135, 0.42);
-  box-shadow: 0 0 0 4px rgba(100, 161, 135, 0.12);
+  border-color: rgba(243, 107, 178, 0.42);
+  box-shadow: 0 0 0 4px rgba(243, 107, 178, 0.12);
 }
 
 .date-jump-actions {
@@ -570,7 +572,7 @@ button {
 }
 
 .date-jump-action.is-quiet {
-  background: rgba(95, 121, 108, 0.08);
+  background: rgba(18, 49, 100, 0.08);
   color: var(--muted);
 }
 
@@ -626,8 +628,8 @@ button {
   padding: 18px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(245, 249, 255, 0.92)),
-    var(--subject-tint, rgba(63, 122, 97, 0.08));
-  border-color: var(--subject-glow, rgba(63, 122, 97, 0.12));
+    var(--subject-tint, rgba(33, 99, 255, 0.08));
+  border-color: var(--subject-glow, rgba(33, 99, 255, 0.12));
 }
 
 .plan-card.is-clickable {
@@ -635,7 +637,7 @@ button {
 }
 
 .plan-card.is-clickable:focus-visible {
-  outline: 3px solid rgba(63, 122, 97, 0.28);
+  outline: 3px solid rgba(33, 99, 255, 0.28);
   outline-offset: 4px;
 }
 
@@ -643,7 +645,7 @@ button {
   display: grid;
   place-items: center;
   border-radius: 20px;
-  background: linear-gradient(180deg, var(--subject-accent, var(--brand-strong)), rgba(255, 255, 255, 0.08));
+  background: linear-gradient(180deg, var(--subject-accent, #2163ff), rgba(255, 255, 255, 0.08));
   color: #fff;
   font-family: "Manrope", sans-serif;
   font-size: 18px;
@@ -673,7 +675,7 @@ button {
 }
 
 .plan-tag {
-  background: rgba(100, 161, 135, 0.08);
+  background: rgba(243, 107, 178, 0.08);
   color: var(--ink);
 }
 
@@ -682,7 +684,7 @@ button {
 }
 
 .status-pill {
-  background: rgba(79, 143, 116, 0.12);
+  background: rgba(25, 161, 112, 0.12);
   color: var(--green);
 }
 
@@ -709,7 +711,7 @@ button {
 .color-option {
   min-height: 40px;
   border-radius: 12px;
-  border: 1px solid rgba(95, 121, 108, 0.08);
+  border: 1px solid rgba(18, 49, 100, 0.08);
   background: #fff;
 }
 
@@ -720,8 +722,8 @@ button {
 
 .icon-option.is-selected,
 .color-option.is-selected {
-  box-shadow: 0 0 0 3px rgba(63, 122, 97, 0.2);
-  border-color: rgba(63, 122, 97, 0.36);
+  box-shadow: 0 0 0 3px rgba(33, 99, 255, 0.2);
+  border-color: rgba(33, 99, 255, 0.36);
 }
 
 .dashboard-extras {
