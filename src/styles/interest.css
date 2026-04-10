@@ -21,10 +21,7 @@
   align-items: center;
   padding: 26px 28px;
   color: var(--text-on-brand);
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.22), transparent 34%),
-    radial-gradient(circle at 88% 0%, rgba(205, 225, 229, 0.24), transparent 24%),
-    linear-gradient(135deg, var(--brand), var(--hero-bg) 56%, var(--accent-bg));
+  background: var(--brand);
 }
 
 .interest-back-button {
@@ -118,7 +115,7 @@
   gap: 10px;
   padding: 14px;
   border-radius: 16px;
-  background: linear-gradient(180deg, rgba(255, 244, 250, 0.92), rgba(255, 255, 255, 0.94));
+  background: var(--card-bg);
 }
 
 .interest-monthly-head {
@@ -158,7 +155,7 @@
 .interest-month-bar-fill {
   width: 100%;
   border-radius: 8px;
-  background: linear-gradient(180deg, var(--brand-soft), var(--brand-strong));
+  background: var(--brand-strong);
   box-shadow: 0 12px 20px rgba(63, 122, 97, 0.22);
 }
 
@@ -232,7 +229,7 @@
 .interest-empty-action {
   margin-top: 6px;
   color: #fff;
-  background: linear-gradient(135deg, var(--primary), var(--brand-soft));
+  background: var(--primary);
   box-shadow: 0 14px 24px rgba(63, 122, 97, 0.24);
 }
 
@@ -336,7 +333,7 @@
 
 .interest-record-button {
   color: #fff;
-  background: linear-gradient(135deg, var(--primary), var(--brand-soft));
+  background: var(--primary);
   box-shadow: 0 14px 26px rgba(63, 122, 97, 0.28);
 }
 

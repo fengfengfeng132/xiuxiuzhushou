@@ -20,10 +20,7 @@
   align-items: center;
   padding: 18px 24px;
   color: #fff;
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.22), transparent 30%),
-    radial-gradient(circle at top right, rgba(205, 226, 232, 0.28), transparent 26%),
-    linear-gradient(135deg, var(--brand-soft), var(--hero-bg) 56%, var(--accent-bg));
+  background: var(--brand-soft);
 }
 
 .help-back-button {
@@ -115,9 +112,7 @@
   display: grid;
   gap: 18px;
   padding: 22px;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--help-accent, var(--brand)) 7%, #fff 93%), rgba(255, 255, 255, 0.96)),
-    rgba(255, 255, 255, 0.96);
+  background: rgba(255, 255, 255, 0.94);
 }
 
 .help-feature-icon {

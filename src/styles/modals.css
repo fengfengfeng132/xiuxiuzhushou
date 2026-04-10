@@ -17,7 +17,7 @@
   overflow: auto;
   padding: 22px;
   border-radius: 22px;
-  background: linear-gradient(180deg, rgba(255, 252, 254, 0.98), rgba(247, 252, 246, 0.98));
+  background: var(--card-bg);
   box-shadow: 0 24px 60px rgba(166, 96, 139, 0.24);
 }
 
@@ -147,7 +147,7 @@
 }
 
 .modal-submit-primary {
-  background: linear-gradient(135deg, var(--primary), var(--brand-soft));
+  background: var(--primary);
   box-shadow: 0 18px 34px rgba(100, 161, 135, 0.22);
 }
 
@@ -175,9 +175,7 @@
   align-items: flex-start;
   padding: 18px 18px 16px;
   border-bottom: 2px solid rgba(41, 202, 119, 0.18);
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.68), transparent 42%),
-    linear-gradient(180deg, rgba(231, 255, 239, 0.96), rgba(242, 255, 246, 0.96));
+  background: var(--card-bg);
 }
 
 .quick-complete-header-main {
@@ -192,7 +190,7 @@
   display: grid;
   place-items: center;
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--state-success), var(--state-success));
+  background: var(--state-success);
   color: #fff;
   font-size: 28px;
   box-shadow: 0 16px 28px rgba(36, 180, 100, 0.22);
@@ -254,7 +252,7 @@
 }
 
 .quick-complete-summary-badge {
-  background: linear-gradient(135deg, var(--primary), var(--hero-bg));
+  background: var(--primary);
   color: #fff;
 }
 
@@ -423,11 +421,11 @@
   position: sticky;
   bottom: 0;
   padding-top: 6px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), #fff 26%);
+  background: var(--card-bg);
 }
 
 .quick-complete-submit {
-  background: linear-gradient(135deg, var(--state-success), var(--state-success));
+  background: var(--state-success);
   box-shadow: 0 18px 34px rgba(37, 194, 110, 0.22);
 }
 
@@ -444,7 +442,7 @@
   align-items: center;
   padding: 16px;
   border-bottom: 1px solid rgba(122, 156, 164, 0.22);
-  background: linear-gradient(180deg, rgba(236, 243, 255, 0.98), rgba(250, 253, 255, 0.96));
+  background: var(--card-bg);
 }
 
 .plan-points-review-header-main {
@@ -459,7 +457,7 @@
   display: grid;
   place-items: center;
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--brand), var(--brand-soft));
+  background: var(--brand-soft);
   color: #fff;
   font-size: 24px;
 }
@@ -619,9 +617,7 @@
   max-height: min(760px, calc(100vh - 24px));
   padding: 0;
   overflow: hidden;
-  background:
-    radial-gradient(circle at top right, rgba(255, 247, 209, 0.86), transparent 38%),
-    linear-gradient(180deg, rgba(248, 255, 237, 0.96), #fff 24%);
+  background: var(--card-bg);
 }
 
 .plan-detail-header {
@@ -646,7 +642,7 @@
   place-items: center;
   flex: 0 0 58px;
   border-radius: 18px;
-  background: linear-gradient(135deg, var(--subject-accent, var(--brand-strong)), rgba(255, 255, 255, 0.18));
+  background: var(--subject-accent, var(--brand));
   color: #fff;
   box-shadow: 0 18px 34px rgba(95, 121, 108, 0.16);
 }
@@ -824,7 +820,7 @@
   padding: 12px;
   border-radius: 18px;
   border: 1px solid rgba(255, 201, 72, 0.42);
-  background: linear-gradient(180deg, rgba(255, 250, 231, 0.92), rgba(255, 255, 255, 0.98));
+  background: var(--card-bg);
 }
 
 .plan-detail-record-top,
@@ -917,7 +913,7 @@
   gap: 12px;
   padding: 12px 16px 14px;
   border-top: 1px solid rgba(95, 121, 108, 0.08);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), #fff 26%);
+  background: var(--card-bg);
 }
 
 .plan-detail-footer-button {
@@ -933,7 +929,7 @@
 }
 
 .plan-detail-footer-button-primary {
-  background: linear-gradient(135deg, var(--primary), var(--brand-soft));
+  background: var(--primary);
   color: #fff;
   box-shadow: 0 18px 34px rgba(63, 122, 97, 0.22);
 }
@@ -947,9 +943,7 @@
 .plan-delete-modal-head {
   padding: 18px 20px 16px;
   border-bottom: 1px solid rgba(240, 143, 29, 0.16);
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.76), transparent 40%),
-    linear-gradient(180deg, rgba(247, 252, 246, 0.98), rgba(255, 255, 255, 0.98));
+  background: var(--card-bg);
 }
 
 .plan-delete-modal-body {
@@ -989,7 +983,7 @@
 
 .plan-delete-option.is-danger {
   border-color: rgba(240, 143, 29, 0.32);
-  background: linear-gradient(180deg, rgba(255, 243, 238, 0.98), rgba(255, 255, 255, 0.98));
+  background: var(--card-bg);
 }
 
 .plan-delete-modal-warning {

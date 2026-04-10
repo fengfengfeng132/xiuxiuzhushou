@@ -14,10 +14,7 @@
   border-radius: 0 0 40px 40px;
   border: 1px solid rgba(255, 255, 255, 0.72);
   color: #fff;
-  background:
-    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.24), transparent 35%),
-    radial-gradient(circle at 88% 0%, rgba(205, 225, 229, 0.28), transparent 28%),
-    linear-gradient(130deg, var(--brand) 0%, var(--brand-soft) 56%, var(--accent-bg) 100%);
+  background: var(--brand-soft);
   box-shadow: var(--shadow);
 }
 
@@ -100,7 +97,7 @@
   text-align: left;
   border-radius: 22px;
   border: 1px solid var(--line);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(247, 252, 246, 0.96));
+  background: var(--card-bg);
   box-shadow: var(--shadow-soft);
 }
 
@@ -130,19 +127,19 @@
 }
 
 .height-hub-icon.tone-mint {
-  background: linear-gradient(135deg, var(--state-success), var(--state-success));
+  background: var(--state-success);
 }
 
 .height-hub-icon.tone-green {
-  background: linear-gradient(135deg, var(--state-success), var(--state-success));
+  background: var(--state-success);
 }
 
 .height-hub-icon.tone-blue {
-  background: linear-gradient(135deg, var(--state-info), var(--brand-strong));
+  background: var(--brand-strong);
 }
 
 .height-hub-icon.tone-orange {
-  background: linear-gradient(135deg, var(--state-warning), var(--state-warning));
+  background: var(--state-warning);
 }
 
 .height-card {
@@ -229,7 +226,7 @@
 .height-gender-button.is-active {
   color: #fff;
   border-color: transparent;
-  background: linear-gradient(135deg, var(--primary), var(--brand-soft));
+  background: var(--primary);
   box-shadow: 0 12px 24px rgba(63, 122, 97, 0.22);
 }
 
@@ -241,7 +238,7 @@
   color: #fff;
   font-weight: 800;
   font-size: 17px;
-  background: linear-gradient(135deg, var(--primary), var(--brand-soft));
+  background: var(--primary);
   box-shadow: 0 16px 30px rgba(63, 122, 97, 0.26);
 }
 
@@ -277,7 +274,7 @@
   width: 100%;
   height: 200px;
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 252, 246, 0.94));
+  background: var(--card-bg);
   border: 1px solid rgba(221, 163, 197, 0.28);
 }
 

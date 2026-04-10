@@ -23,10 +23,7 @@
   align-items: center;
   padding: 18px 24px;
   color: #fff;
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.22), transparent 30%),
-    radial-gradient(circle at top right, rgba(205, 226, 232, 0.24), transparent 24%),
-    linear-gradient(135deg, var(--brand), var(--brand-soft) 54%, var(--hero-bg));
+  background: var(--brand-soft);
 }
 
 .points-back-button {
@@ -142,7 +139,7 @@
 
 .points-primary-button,
 .points-redeem-button.is-active {
-  background: linear-gradient(135deg, var(--primary), var(--brand-soft));
+  background: var(--primary);
   color: #fff;
   box-shadow: 0 16px 30px rgba(100, 161, 135, 0.24);
 }
@@ -247,7 +244,7 @@
   gap: 8px;
   padding: 16px 18px;
   border-radius: 22px;
-  background: linear-gradient(180deg, rgba(247, 252, 246, 0.98), rgba(255, 255, 255, 0.96));
+  background: var(--card-bg);
   border: 1px solid rgba(100, 161, 135, 0.12);
 }
 
@@ -332,12 +329,12 @@
 }
 
 .points-entry-card.is-achievement {
-  background: linear-gradient(180deg, rgba(237, 245, 239, 0.98), rgba(255, 255, 255, 0.96));
+  background: var(--card-bg);
   border-bottom: 4px solid var(--brand);
 }
 
 .points-entry-card.is-history {
-  background: linear-gradient(180deg, rgba(241, 247, 255, 0.98), rgba(255, 255, 255, 0.96));
+  background: var(--card-bg);
   border-bottom: 4px solid var(--brand-strong);
 }
 
@@ -374,7 +371,7 @@
   padding: 44px 24px;
   border-radius: 24px;
   border: 1px dashed rgba(100, 163, 134, 0.26);
-  background: linear-gradient(180deg, rgba(247, 252, 246, 0.98), rgba(255, 255, 255, 0.96));
+  background: var(--card-bg);
   text-align: center;
 }
 
@@ -416,9 +413,7 @@
   display: grid;
   gap: 16px;
   padding: 20px;
-  background:
-    linear-gradient(180deg, rgba(247, 252, 246, 0.98), rgba(255, 255, 255, 0.98)),
-    rgba(255, 255, 255, 0.98);
+  background: rgba(255, 255, 255, 0.98);
 }
 
 .points-wish-head {
@@ -434,7 +429,7 @@
   display: grid;
   place-items: center;
   border-radius: 22px;
-  background: linear-gradient(135deg, rgba(255, 215, 133, 0.62), rgba(255, 240, 205, 0.92));
+  background: var(--card-bg);
   font-size: 34px;
 }
 
@@ -536,9 +531,7 @@
   align-items: flex-start;
   padding: 22px 22px 18px;
   border-bottom: 1px solid rgba(100, 163, 134, 0.14);
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.8), transparent 36%),
-    linear-gradient(180deg, rgba(247, 252, 246, 0.98), rgba(255, 255, 255, 0.98));
+  background: var(--card-bg);
 }
 
 .wish-modal-title-row {
@@ -553,7 +546,7 @@
   display: grid;
   place-items: center;
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--brand), var(--brand));
+  background: var(--brand);
   color: #fff;
   font-size: 24px;
   box-shadow: 0 16px 28px rgba(100, 163, 134, 0.22);
@@ -597,7 +590,7 @@
   padding: 16px;
   border-radius: 24px;
   border: 1px solid rgba(100, 163, 134, 0.14);
-  background: linear-gradient(180deg, rgba(237, 245, 239, 0.98), rgba(255, 255, 255, 0.98));
+  background: var(--card-bg);
 }
 
 .wish-preview-visual {
@@ -642,7 +635,7 @@
 
 .wish-icon-category-tab.is-active,
 .wish-reset-chip.is-active {
-  background: linear-gradient(135deg, var(--brand), var(--brand));
+  background: var(--brand);
   color: #fff;
   box-shadow: 0 12px 24px rgba(100, 163, 134, 0.18);
 }
@@ -700,7 +693,7 @@
   padding: 16px 18px;
   border-radius: 20px;
   border: 1px solid rgba(244, 193, 59, 0.38);
-  background: linear-gradient(180deg, rgba(255, 249, 236, 0.98), rgba(255, 255, 255, 0.98));
+  background: var(--card-bg);
 }
 
 .wish-cost-guide strong {
@@ -754,7 +747,7 @@
 .wish-repeat-card.is-active {
   border-color: rgba(100, 163, 134, 0.44);
   box-shadow: 0 0 0 3px rgba(100, 163, 134, 0.08);
-  background: linear-gradient(180deg, rgba(237, 245, 239, 0.98), rgba(255, 255, 255, 0.98));
+  background: var(--card-bg);
 }
 
 .wish-cycle-panel {
@@ -771,11 +764,11 @@
   position: sticky;
   bottom: 0;
   padding-top: 6px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), #fff 26%);
+  background: var(--card-bg);
 }
 
 .wish-submit-button {
-  background: linear-gradient(135deg, var(--brand), var(--brand));
+  background: var(--brand);
   box-shadow: 0 18px 34px rgba(100, 163, 134, 0.22);
 }
 
@@ -788,9 +781,7 @@
 .wish-delete-modal-head {
   padding: 20px 22px 16px;
   border-bottom: 1px solid rgba(233, 73, 123, 0.2);
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.78), transparent 40%),
-    linear-gradient(180deg, rgba(247, 252, 246, 0.98), rgba(255, 255, 255, 0.98));
+  background: var(--card-bg);
 }
 
 .wish-delete-title-row {
@@ -805,7 +796,7 @@
   display: grid;
   place-items: center;
   border-radius: 14px;
-  background: linear-gradient(135deg, var(--brand), var(--state-danger));
+  background: var(--brand);
   color: #fff;
   font-size: 22px;
   box-shadow: 0 14px 26px rgba(228, 71, 103, 0.24);
@@ -834,7 +825,7 @@
   padding: 14px 16px;
   border-radius: 18px;
   border: 1px solid rgba(228, 71, 103, 0.2);
-  background: linear-gradient(180deg, rgba(247, 252, 246, 0.98), rgba(255, 255, 255, 0.98));
+  background: var(--card-bg);
 }
 
 .wish-delete-warning strong {
@@ -865,7 +856,7 @@
   place-items: center;
   border-radius: 18px;
   overflow: hidden;
-  background: linear-gradient(135deg, rgba(255, 215, 133, 0.62), rgba(255, 240, 205, 0.92));
+  background: var(--card-bg);
   font-size: 30px;
 }
 
@@ -909,7 +900,7 @@
 .wish-delete-confirm {
   min-height: 48px;
   border-radius: 14px;
-  background: linear-gradient(135deg, var(--brand), var(--state-danger));
+  background: var(--brand);
   color: #fff;
   box-shadow: 0 18px 34px rgba(228, 71, 103, 0.24);
 }
@@ -937,9 +928,7 @@
   align-items: center;
   padding: 18px 24px;
   color: #fff;
-  background:
-    radial-gradient(circle at top right, rgba(255, 255, 255, 0.18), transparent 28%),
-    linear-gradient(135deg, var(--state-warning), var(--state-warning) 55%, var(--state-danger));
+  background: var(--state-warning);
 }
 
 .achievement-back-button,
@@ -1074,9 +1063,7 @@
   gap: 14px;
   align-items: center;
   padding: 16px 18px;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--achievement-accent, var(--state-warning)) 7%, #fff 93%), rgba(255, 255, 255, 0.98)),
-    rgba(255, 255, 255, 0.98);
+  background: rgba(255, 255, 255, 0.98);
 }
 
 .achievement-badge-icon,
@@ -1173,9 +1160,7 @@
   align-items: center;
   padding: 18px 24px;
   color: #fff;
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 28%),
-    linear-gradient(135deg, var(--state-info), var(--brand-strong) 55%, var(--brand));
+  background: var(--brand-strong);
 }
 
 .points-history-back-button {
@@ -1320,7 +1305,7 @@
 }
 
 .points-history-summary-item.is-green {
-  background: linear-gradient(180deg, rgba(235, 255, 245, 0.98), rgba(255, 255, 255, 0.98));
+  background: var(--card-bg);
   border-color: rgba(37, 184, 116, 0.18);
 }
 
@@ -1329,7 +1314,7 @@
 }
 
 .points-history-summary-item.is-violet {
-  background: linear-gradient(180deg, rgba(247, 238, 255, 0.98), rgba(255, 255, 255, 0.98));
+  background: var(--card-bg);
   border-color: rgba(122, 156, 164, 0.18);
 }
 
@@ -1338,7 +1323,7 @@
 }
 
 .points-history-summary-item.is-blue {
-  background: linear-gradient(180deg, rgba(237, 245, 255, 0.98), rgba(255, 255, 255, 0.98));
+  background: var(--card-bg);
   border-color: rgba(122, 156, 164, 0.18);
 }
 
@@ -1347,7 +1332,7 @@
 }
 
 .points-history-summary-item.is-orange {
-  background: linear-gradient(180deg, rgba(255, 248, 232, 0.98), rgba(255, 255, 255, 0.98));
+  background: var(--card-bg);
   border-color: rgba(229, 132, 24, 0.18);
 }
 
@@ -1376,17 +1361,17 @@
 }
 
 .points-history-type-chip.is-all.is-active {
-  background: linear-gradient(135deg, var(--brand), var(--brand-soft));
+  background: var(--brand-soft);
   box-shadow: 0 16px 28px rgba(100, 163, 134, 0.24);
 }
 
 .points-history-type-chip.is-gain.is-active {
-  background: linear-gradient(135deg, var(--state-success), var(--state-success));
+  background: var(--state-success);
   box-shadow: 0 16px 28px rgba(39, 197, 97, 0.24);
 }
 
 .points-history-type-chip.is-spend.is-active {
-  background: linear-gradient(135deg, var(--brand), var(--state-danger));
+  background: var(--brand);
   box-shadow: 0 16px 28px rgba(122, 156, 164, 0.24);
 }
 
@@ -1464,11 +1449,11 @@
 }
 
 .points-history-record-row.is-gain {
-  background: linear-gradient(180deg, rgba(239, 255, 247, 0.98), rgba(248, 255, 251, 0.98));
+  background: var(--card-bg);
 }
 
 .points-history-record-row.is-spend {
-  background: linear-gradient(180deg, rgba(248, 242, 255, 0.98), rgba(247, 252, 246, 0.98));
+  background: var(--card-bg);
 }
 
 .points-history-record-rail {
@@ -1600,10 +1585,7 @@
   align-items: center;
   padding: 18px 24px;
   color: #fff;
-  background:
-    radial-gradient(circle at top right, rgba(255, 255, 255, 0.18), transparent 28%),
-    radial-gradient(circle at top left, rgba(148, 248, 200, 0.2), transparent 34%),
-    linear-gradient(135deg, var(--state-success), var(--state-success) 56%, var(--state-info));
+  background: var(--state-success);
 }
 
 .star-rules-back-button {
@@ -1697,17 +1679,17 @@
 
 .star-rules-rule-card.is-morning {
   border-color: rgba(255, 162, 95, 0.42);
-  background: linear-gradient(180deg, rgba(255, 247, 238, 0.98), rgba(255, 255, 255, 0.98));
+  background: var(--card-bg);
 }
 
 .star-rules-rule-card.is-weekend {
   border-color: rgba(236, 116, 116, 0.32);
-  background: linear-gradient(180deg, rgba(255, 241, 241, 0.98), rgba(255, 255, 255, 0.98));
+  background: var(--card-bg);
 }
 
 .star-rules-rule-card.is-stack {
   border-color: rgba(122, 156, 164, 0.28);
-  background: linear-gradient(180deg, rgba(250, 242, 255, 0.98), rgba(255, 255, 255, 0.98));
+  background: var(--card-bg);
 }
 
 .star-rules-rule-head {
@@ -1820,11 +1802,11 @@
   padding: 14px 16px;
   border-radius: 20px;
   border: 1px solid rgba(244, 193, 59, 0.38);
-  background: linear-gradient(180deg, rgba(255, 251, 236, 0.98), rgba(255, 255, 255, 0.98));
+  background: var(--card-bg);
 }
 
 .star-rules-primary-button {
-  background: linear-gradient(135deg, var(--primary), var(--brand-strong));
+  background: var(--primary);
   color: #fff;
   box-shadow: 0 16px 28px rgba(255, 82, 146, 0.2);
 }

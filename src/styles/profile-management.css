@@ -134,7 +134,7 @@
   padding: 20px 28px;
   border-radius: 0 0 40px 40px;
   color: var(--page-bg);
-  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 58%, var(--brand-strong) 100%);
+  background: var(--brand-strong);
   box-shadow: 0 22px 38px rgba(78, 28, 165, 0.35);
 }
 
