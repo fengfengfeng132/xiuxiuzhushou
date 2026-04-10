@@ -346,7 +346,7 @@
 
 .habit-day-pill.is-selected span,
 .habit-day-pill.is-selected strong {
-  color: #fff;
+  color: var(--ink);
 }
 
 .habit-day-dot {
