@@ -916,6 +916,10 @@
   background: var(--card-bg);
 }
 
+.plan-detail-footer.has-three-actions {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .plan-detail-footer-button {
   min-height: 44px;
   border-radius: 16px;
@@ -926,6 +930,12 @@
   background: #fff;
   color: var(--state-warning);
   border: 1px solid rgba(240, 143, 29, 0.5);
+}
+
+.plan-detail-footer-button-secondary {
+  background: rgba(237, 252, 243, 0.92);
+  color: var(--state-success);
+  border: 1px solid rgba(39, 191, 106, 0.34);
 }
 
 .plan-detail-footer-button-primary {

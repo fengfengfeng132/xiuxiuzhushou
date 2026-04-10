@@ -2389,6 +2389,61 @@ function AppShell(): JSX.Element {
     setActiveTab("plans");
   }
 
+  function handleEditCurrentOccurrenceFromDetail(plan: StudyPlan): void {
+    if (plan.repeatType === "once") {
+      setNotice("当前计划已是仅当天任务，可直接编辑计划。");
+      return;
+    }
+
+    if (!isPlanScheduledForDate(plan, selectedDateKey)) {
+      setNotice("当前日期不在该重复计划的执行范围内。");
+      return;
+    }
+
+    const fallbackTime = /^\d{2}:\d{2}$/.test(plan.createdAt.slice(11, 16)) ? plan.createdAt.slice(11, 16) : "08:00";
+    const occurrenceCreatedAt = buildPlanDateTime(selectedDateKey, fallbackTime);
+    const deleteForDateResult = deletePlansForDate(state, [plan.id], selectedDateKey, occurrenceCreatedAt);
+    if (!deleteForDateResult.ok) {
+      setNotice(deleteForDateResult.message);
+      return;
+    }
+
+    const addSingleResult = addPlan(
+      deleteForDateResult.nextState,
+      {
+        title: plan.title,
+        subject: plan.subject,
+        repeatType: "once",
+        repeatConfig: null,
+        minutes: plan.minutes,
+        stars: plan.customStarsEnabled ? plan.stars : undefined,
+        customStarsEnabled: plan.customStarsEnabled,
+        approvalRequired: plan.approvalRequired,
+      },
+      occurrenceCreatedAt,
+    );
+
+    if (!addSingleResult.ok) {
+      setNotice(addSingleResult.message);
+      return;
+    }
+
+    const singlePlan = addSingleResult.nextState.plans[0] ?? null;
+    if (!singlePlan) {
+      setNotice("创建仅当天任务失败，请重试。");
+      return;
+    }
+
+    setState(addSingleResult.nextState);
+    setSelectedDateKey(selectedDateKey);
+    setPlanDraft(createPlanDraftFromPlan(singlePlan));
+    setEditingPlanId(singlePlan.id);
+    closePlanDetailModal();
+    setScreen("plan-create");
+    setActiveTab("plans");
+    setNotice("已转为仅当天任务，现在可仅修改本次。");
+  }
+
   function handleDeleteRepeatFromDetail(plan: StudyPlan): void {
     const deleteLabel = plan.repeatType === "once" ? "这个计划" : "这个重复计划";
     if (!window.confirm(`确定删除${deleteLabel}吗？`)) {
@@ -3617,6 +3672,7 @@ function AppShell(): JSX.Element {
         completionRecordsForSelectedDate={planDetailCompletionRecordsForSelectedDate}
         onClose={closePlanDetailModal}
         onEditPlan={handleEditPlanFromDetail}
+        onEditCurrentOccurrence={handleEditCurrentOccurrenceFromDetail}
         onDeleteRepeat={handleDeleteRepeatFromDetail}
       />
       <HabitModal

@@ -79,6 +79,7 @@ interface PlanDetailModalProps {
   completionRecordsForSelectedDate: StudyPlan["completionRecords"];
   onClose: () => void;
   onEditPlan: (plan: StudyPlan) => void;
+  onEditCurrentOccurrence: (plan: StudyPlan) => void;
   onDeleteRepeat: (plan: StudyPlan) => void;
 }
 
@@ -153,25 +154,25 @@ function PlanCard({
     "--subject-accent": style.accent,
   } as CSSProperties;
 
-  function handleHistoryOpen(): void {
+  function handleOpenDetail(): void {
     onOpenPlanDetail(plan);
   }
 
-  function handleHistoryKeyDown(event: KeyboardEvent<HTMLElement>): void {
+  function handleCardKeyDown(event: KeyboardEvent<HTMLElement>): void {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      handleHistoryOpen();
+      handleOpenDetail();
     }
   }
 
   return (
     <article
-      className={`plan-card plan-card-${variant}${variant === "history" ? " is-clickable" : ""}`}
+      className={`plan-card plan-card-${variant} is-clickable`}
       style={cardStyle}
-      onClick={variant === "history" ? handleHistoryOpen : undefined}
-      onKeyDown={variant === "history" ? handleHistoryKeyDown : undefined}
-      role={variant === "history" ? "button" : undefined}
-      tabIndex={variant === "history" ? 0 : undefined}
+      onClick={handleOpenDetail}
+      onKeyDown={handleCardKeyDown}
+      role="button"
+      tabIndex={0}
     >
       <div className="plan-rail">
         <span>{plan.subject.slice(0, 2)}</span>
@@ -198,10 +199,24 @@ function PlanCard({
       <div className="plan-side">
         {variant === "active" ? (
           <>
-            <button type="button" className="card-action primary-action" onClick={() => onOpenQuickComplete(plan)}>
+            <button
+              type="button"
+              className="card-action primary-action"
+              onClick={(event) => {
+                event.stopPropagation();
+                onOpenQuickComplete(plan);
+              }}
+            >
               快速完成
             </button>
-            <button type="button" className="card-action ghost-action" onClick={() => onOpenStudyTimer(plan)}>
+            <button
+              type="button"
+              className="card-action ghost-action"
+              onClick={(event) => {
+                event.stopPropagation();
+                onOpenStudyTimer(plan);
+              }}
+            >
               开始计时
             </button>
           </>
@@ -211,7 +226,7 @@ function PlanCard({
             className="card-action ghost-action"
             onClick={(event) => {
               event.stopPropagation();
-              handleHistoryOpen();
+              handleOpenDetail();
             }}
           >
             查看详情
@@ -694,6 +709,7 @@ export function PlanDetailModal({
   completionRecordsForSelectedDate,
   onClose,
   onEditPlan,
+  onEditCurrentOccurrence,
   onDeleteRepeat,
 }: PlanDetailModalProps) {
   if (!plan) {
@@ -709,6 +725,7 @@ export function PlanDetailModal({
   const totalSeconds = scopedRecords.length > 0 ? scopedTotalSeconds : getRecordedSeconds(plan);
   const statusLabel = completedForSelectedDate ? "已完成" : "待完成";
   const statusClassName = completedForSelectedDate ? "plan-detail-status-badge" : "plan-detail-status-badge is-pending";
+  const showEditCurrentOccurrence = plan.repeatType !== "once" && !completedForSelectedDate;
   const detailStyle = {
     "--subject-tint": style.tint,
     "--subject-glow": style.glow,
@@ -854,10 +871,15 @@ export function PlanDetailModal({
           </section>
         </div>
 
-        <div className="plan-detail-footer">
+        <div className={`plan-detail-footer${showEditCurrentOccurrence ? " has-three-actions" : ""}`}>
           <button type="button" className="plan-detail-footer-button plan-detail-footer-button-danger" onClick={() => onDeleteRepeat(plan)}>
             删除重复任务
           </button>
+          {showEditCurrentOccurrence ? (
+            <button type="button" className="plan-detail-footer-button plan-detail-footer-button-secondary" onClick={() => onEditCurrentOccurrence(plan)}>
+              仅修改本次
+            </button>
+          ) : null}
           <button type="button" className="plan-detail-footer-button plan-detail-footer-button-primary" onClick={() => onEditPlan(plan)}>
             编辑计划
           </button>
