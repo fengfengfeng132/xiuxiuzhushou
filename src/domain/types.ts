@@ -14,6 +14,9 @@ export type PlanRepeatType =
   | "weekly-cross-day-once"
   | "biweekly-cross-day-once"
   | "monthly-cross-day-once";
+export type PlanWeekday = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type PlanEbbinghausPreset = "standard" | "gentle" | "exam" | "intensive";
+export type PlanCompletionDateLimitMode = "anytime" | "workday" | "weekend" | "custom";
 export type HabitFrequency = "dailyOnce" | "dailyMultiple" | "weeklyMultiple";
 export type HabitStatus = "active" | "archived";
 export type PetInteractionId = "feed" | "bathe" | "park" | "sleep";
@@ -33,6 +36,17 @@ export interface StudyPlan {
   title: string;
   subject: string;
   repeatType: PlanRepeatType;
+  repeatConfig: {
+    dateRangeStart: string | null;
+    dateRangeEnd: string | null;
+    weeklyDays: PlanWeekday[] | null;
+    ebbinghausPreset: PlanEbbinghausPreset | null;
+    ebbinghausOffsets: number[] | null;
+    completionDateLimitMode: PlanCompletionDateLimitMode | null;
+    completionDateLimitDays: PlanWeekday[] | null;
+    requiredCompletionsPerPeriod: number | null;
+    maxCompletionsPerDay: number | null;
+  } | null;
   minutes: number;
   stars: number;
   customStarsEnabled: boolean;
@@ -277,6 +291,7 @@ export interface UpdatePlanInput {
   title: string;
   subject: string;
   repeatType: PlanRepeatType;
+  repeatConfig?: StudyPlan["repeatConfig"];
   minutes: number;
   stars?: number;
   customStarsEnabled?: boolean;

@@ -65,6 +65,14 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .plan-repeat-weekday-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .plan-ebbinghaus-grid {
+    grid-template-columns: 1fr;
+  }
+
   .plan-card {
     grid-template-columns: 70px minmax(0, 1fr);
   }
@@ -109,7 +117,9 @@
   .day-strip,
   .habit-day-strip,
   .picker-grid,
-  .plan-create-time-grid {
+  .plan-create-time-grid,
+  .plan-repeat-date-grid,
+  .plan-repeat-completion-grid {
     grid-template-columns: 1fr;
   }
 
@@ -610,6 +620,9 @@
   .plan-create-duration-grid,
   .plan-create-custom-row,
   .plan-create-points-grid,
+  .plan-repeat-weekday-grid,
+  .plan-repeat-date-grid,
+  .plan-repeat-completion-grid,
   .ai-plan-composer-row,
   .plan-management-card,
   .wish-preview-card {

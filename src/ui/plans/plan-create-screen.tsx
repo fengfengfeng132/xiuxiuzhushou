@@ -1,8 +1,20 @@
 import type { ChangeEvent, DragEvent, FormEvent } from "react";
 import { useRef } from "react";
 import { PLAN_DURATION_PRESETS, SUBJECT_OPTIONS } from "../app-content.js";
-import type { PlanAttachmentDraft, PlanDraft, PlanRepeatType, PlanTimeMode } from "../app-types.js";
-import { PLAN_REPEAT_OPTIONS, formatPlanRepeatHelper, formatPlanRepeatOptionLabel } from "./plan-repeat.js";
+import type { PlanDraft } from "../app-types.js";
+import {
+  PLAN_COMPLETION_DATE_LIMIT_OPTIONS,
+  PLAN_EBBINGHAUS_PRESET_OPTIONS,
+  PLAN_REPEAT_OPTIONS,
+  PLAN_WEEKDAY_OPTIONS,
+  formatPlanRepeatHelper,
+  formatPlanRepeatOptionLabel,
+  getCrossDayRepeatSummary,
+  isCrossDayRepeatType,
+  isCustomWeekdayRepeatType,
+  isEbbinghausRepeatType,
+  requiresRepeatDateRange,
+} from "./plan-repeat.js";
 
 interface PlanCreateScreenProps {
   mode: "create" | "edit";
@@ -12,7 +24,7 @@ interface PlanCreateScreenProps {
   onBack: () => void;
   onCancel: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-  onUpdateDraft: (field: keyof PlanDraft, value: string | boolean | PlanRepeatType | PlanTimeMode | PlanAttachmentDraft[]) => void;
+  onUpdateDraft: <K extends keyof PlanDraft>(field: K, value: PlanDraft[K]) => void;
   onApplyDurationPreset: (minutes: number) => void;
   onSelectFiles: (files: FileList | null) => void;
   onDropFiles: (event: DragEvent<HTMLElement>) => void;
@@ -76,6 +88,21 @@ function getAttachmentHint(count: number): string {
   return `已暂存 ${count} 个附件。当前版本仅保留文件名和大小预览，不写入本地计划正文。`;
 }
 
+function normalizeWeekdays(values: ReadonlyArray<number>): Array<1 | 2 | 3 | 4 | 5 | 6 | 7> {
+  const filtered = values.filter((value): value is 1 | 2 | 3 | 4 | 5 | 6 | 7 => value >= 1 && value <= 7);
+  const unique = [...new Set(filtered)];
+  unique.sort((left, right) => left - right);
+  return unique;
+}
+
+function toggleWeekday(values: ReadonlyArray<number>, target: 1 | 2 | 3 | 4 | 5 | 6 | 7): Array<1 | 2 | 3 | 4 | 5 | 6 | 7> {
+  const current = normalizeWeekdays(values);
+  if (current.includes(target)) {
+    return current.filter((value) => value !== target);
+  }
+  return normalizeWeekdays([...current, target]);
+}
+
 export function PlanCreateScreen({
   mode,
   today,
@@ -95,6 +122,28 @@ export function PlanCreateScreen({
   const selectedDuration = Math.round(Number(draft.durationMinutes));
   const derivedStars = getDerivedStars(draft);
   const effectiveDate = draft.startDate || today;
+  const isCustomRepeat = isCustomWeekdayRepeatType(draft.repeatType);
+  const isEbbinghausRepeat = isEbbinghausRepeatType(draft.repeatType);
+  const isCrossDayRepeat = isCrossDayRepeatType(draft.repeatType);
+  const showRepeatDateRange = requiresRepeatDateRange(draft.repeatType);
+  const repeatWeekdays = normalizeWeekdays(draft.repeatWeekdays);
+  const completionLimitDays = normalizeWeekdays(draft.completionDateLimitDays);
+  const completionLimitHint =
+    draft.completionDateLimitMode === "workday"
+      ? "仅可在工作日完成此任务"
+      : draft.completionDateLimitMode === "weekend"
+        ? "仅可在周末完成此任务"
+        : draft.completionDateLimitMode === "custom"
+          ? "仅可在自定义选择的日期完成此任务"
+          : "可以在任何一天完成此任务";
+
+  function updateRepeatWeekdays(nextValues: ReadonlyArray<number>): void {
+    onUpdateDraft("repeatWeekdays", normalizeWeekdays(nextValues));
+  }
+
+  function updateCompletionLimitDays(nextValues: ReadonlyArray<number>): void {
+    onUpdateDraft("completionDateLimitDays", normalizeWeekdays(nextValues));
+  }
 
   return (
     <div className="plan-create-page">
@@ -115,23 +164,25 @@ export function PlanCreateScreen({
       </header>
 
       <form className="plan-create-card" onSubmit={onSubmit}>
-        <section className="plan-create-section">
-          <div className="plan-create-section-head">
-            <span className="plan-create-section-icon is-violet">日</span>
-            <div>
-              <h2>
-                起始日期 <small>可选</small>
-              </h2>
-              <p>选择计划的起始日期。默认是今天；仅当天任务只会出现在当天，其他重复类型会记录为从这里开始。</p>
+        {!showRepeatDateRange ? (
+          <section className="plan-create-section">
+            <div className="plan-create-section-head">
+              <span className="plan-create-section-icon is-violet">日</span>
+              <div>
+                <h2>
+                  起始日期 <small>可选</small>
+                </h2>
+                <p>选择计划的起始日期。默认是今天；仅当天任务只会出现在当天，其他重复类型会记录为从这里开始。</p>
+              </div>
             </div>
-          </div>
-          <input
-            type="date"
-            className="plan-create-input"
-            value={draft.startDate}
-            onChange={(event) => onUpdateDraft("startDate", event.target.value)}
-          />
-        </section>
+            <input
+              type="date"
+              className="plan-create-input"
+              value={draft.startDate}
+              onChange={(event) => onUpdateDraft("startDate", event.target.value)}
+            />
+          </section>
+        ) : null}
 
         <section className="plan-create-section">
           <div className="plan-create-section-head">
@@ -218,7 +269,7 @@ export function PlanCreateScreen({
           <select
             className="plan-create-input"
             value={draft.repeatType}
-            onChange={(event) => onUpdateDraft("repeatType", event.target.value)}
+            onChange={(event) => onUpdateDraft("repeatType", event.target.value as PlanDraft["repeatType"])}
           >
             {PLAN_REPEAT_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -227,6 +278,197 @@ export function PlanCreateScreen({
             ))}
           </select>
           <div className="plan-create-inline-note is-blue">{formatPlanRepeatHelper(draft.repeatType, effectiveDate)}</div>
+
+          {showRepeatDateRange ? (
+            <section className="plan-repeat-config-card is-green">
+              <div className="plan-repeat-config-head">
+                <span className="plan-create-section-icon is-green">日</span>
+                <div>
+                  <h3>
+                    计划起止日期 <small>(可选)</small>
+                  </h3>
+                  <p>设置起止日期后，系统将在这个时间范围内生成任务。不设置则默认持续生成。</p>
+                </div>
+              </div>
+              <div className="plan-repeat-date-grid">
+                <label className="plan-create-field">
+                  <span>开始日期</span>
+                  <input
+                    type="date"
+                    className="plan-create-input"
+                    value={draft.startDate}
+                    onChange={(event) => onUpdateDraft("startDate", event.target.value)}
+                  />
+                </label>
+                <label className="plan-create-field">
+                  <span>结束日期</span>
+                  <input
+                    type="date"
+                    className="plan-create-input"
+                    value={draft.endDate}
+                    onChange={(event) => onUpdateDraft("endDate", event.target.value)}
+                  />
+                </label>
+              </div>
+            </section>
+          ) : null}
+
+          {isCustomRepeat ? (
+            <section className="plan-repeat-config-card is-blue">
+              <div className="plan-repeat-config-head">
+                <span className="plan-create-section-icon is-blue">周</span>
+                <div>
+                  <h3>
+                    选择重复日期 <small>*</small>
+                  </h3>
+                  <p>按勾选的星期生成任务。</p>
+                </div>
+              </div>
+              {draft.repeatType === "biweekly-custom" ? (
+                <div className="plan-create-inline-note is-blue">
+                  双周重复：从创建日期开始，每两周在选定的星期几出现一次。
+                </div>
+              ) : null}
+              <div className="plan-repeat-quick-actions">
+                <button type="button" className="filter-chip" onClick={() => updateRepeatWeekdays([1, 2, 3, 4, 5, 6, 7])}>
+                  全选
+                </button>
+                <button type="button" className="filter-chip" onClick={() => updateRepeatWeekdays([1, 2, 3, 4, 5])}>
+                  工作日
+                </button>
+                <button type="button" className="filter-chip" onClick={() => updateRepeatWeekdays([6, 7])}>
+                  周末
+                </button>
+              </div>
+              <div className="plan-repeat-weekday-grid">
+                {PLAN_WEEKDAY_OPTIONS.map((option) => {
+                  const active = repeatWeekdays.includes(option.value);
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={`plan-repeat-weekday-chip${active ? " is-active" : ""}`}
+                      onClick={() => updateRepeatWeekdays(toggleWeekday(repeatWeekdays, option.value))}
+                    >
+                      <span className="plan-repeat-weekday-check">{active ? "✓" : ""}</span>
+                      <span>{option.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          ) : null}
+
+          {isEbbinghausRepeat ? (
+            <section className="plan-repeat-config-card is-purple">
+              <div className="plan-repeat-config-head">
+                <span className="plan-create-section-icon is-violet">记</span>
+                <div>
+                  <h3>
+                    选择记忆周期 <small>*</small>
+                  </h3>
+                  <p>根据场景选择复习节奏。</p>
+                </div>
+              </div>
+              <div className="plan-ebbinghaus-grid">
+                {PLAN_EBBINGHAUS_PRESET_OPTIONS.map((option) => {
+                  const active = draft.ebbinghausPreset === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={`plan-ebbinghaus-card${active ? " is-active" : ""}`}
+                      onClick={() => onUpdateDraft("ebbinghausPreset", option.value)}
+                    >
+                      <strong>{option.label}</strong>
+                      <span>{option.description}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="plan-create-inline-note is-purple">
+                艾宾浩斯记忆曲线：根据遗忘规律设计复习时间表，数字表示从起始日期算起的天数。
+              </div>
+            </section>
+          ) : null}
+
+          {isCrossDayRepeat ? (
+            <section className="plan-repeat-config-card is-indigo">
+              <div className="plan-repeat-config-head">
+                <span className="plan-create-section-icon is-blue">限</span>
+                <div>
+                  <h3>完成日期限制</h3>
+                  <p>设置跨日任务可完成的日期范围。</p>
+                </div>
+              </div>
+              <label className="plan-create-field">
+                <span>完成日期</span>
+                <select
+                  className="plan-create-input"
+                  value={draft.completionDateLimitMode}
+                  onChange={(event) => onUpdateDraft("completionDateLimitMode", event.target.value as PlanDraft["completionDateLimitMode"])}
+                >
+                  {PLAN_COMPLETION_DATE_LIMIT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              {draft.completionDateLimitMode === "custom" ? (
+                <div className="plan-repeat-weekday-grid">
+                  {PLAN_WEEKDAY_OPTIONS.map((option) => {
+                    const active = completionLimitDays.includes(option.value);
+                    return (
+                      <button
+                        key={`limit-${option.value}`}
+                        type="button"
+                        className={`plan-repeat-weekday-chip${active ? " is-active" : ""}`}
+                        onClick={() => updateCompletionLimitDays(toggleWeekday(completionLimitDays, option.value))}
+                      >
+                        <span className="plan-repeat-weekday-check">{active ? "✓" : ""}</span>
+                        <span>{option.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
+
+              <div className="plan-repeat-completion-grid">
+                <label className="plan-create-field">
+                  <span>完成次数</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={99}
+                    step={1}
+                    className="plan-create-input"
+                    value={draft.requiredCompletionsPerPeriod}
+                    onChange={(event) => onUpdateDraft("requiredCompletionsPerPeriod", event.target.value)}
+                  />
+                  <small className="plan-create-field-helper">例如：本周3次、每周2次</small>
+                </label>
+                <label className="plan-create-field">
+                  <span>每日最多次数 (可选)</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={99}
+                    step={1}
+                    className="plan-create-input"
+                    value={draft.maxCompletionsPerDay}
+                    onChange={(event) => onUpdateDraft("maxCompletionsPerDay", event.target.value)}
+                    placeholder="不限制"
+                  />
+                  <small className="plan-create-field-helper">留空表示不限制次数</small>
+                </label>
+              </div>
+
+              <div className="plan-create-inline-note is-indigo">{completionLimitHint}</div>
+              <div className="plan-create-inline-note is-slate">{getCrossDayRepeatSummary(draft.repeatType)}</div>
+            </section>
+          ) : null}
         </section>
 
         <section className="plan-create-section">

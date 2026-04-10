@@ -242,6 +242,162 @@
   color: var(--state-warning);
 }
 
+.plan-create-inline-note.is-purple {
+  border-left-color: var(--brand-soft);
+  background: rgba(245, 237, 255, 0.94);
+  color: var(--brand-strong);
+}
+
+.plan-create-inline-note.is-indigo {
+  border-left-color: rgba(84, 97, 240, 0.42);
+  background: rgba(237, 240, 255, 0.94);
+  color: #3e43a8;
+}
+
+.plan-create-inline-note.is-slate {
+  border-left-color: rgba(102, 117, 148, 0.38);
+  background: rgba(241, 244, 250, 0.94);
+  color: var(--text-primary);
+}
+
+.plan-repeat-config-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(95, 121, 108, 0.18);
+}
+
+.plan-repeat-config-card.is-green {
+  border-color: rgba(39, 191, 106, 0.26);
+  background: rgba(237, 252, 243, 0.92);
+}
+
+.plan-repeat-config-card.is-blue {
+  border-color: rgba(122, 156, 255, 0.28);
+  background: rgba(238, 244, 255, 0.95);
+}
+
+.plan-repeat-config-card.is-purple {
+  border-color: rgba(148, 100, 255, 0.32);
+  background: rgba(246, 239, 255, 0.94);
+}
+
+.plan-repeat-config-card.is-indigo {
+  border-color: rgba(84, 97, 240, 0.28);
+  background: rgba(238, 240, 255, 0.95);
+}
+
+.plan-repeat-config-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.plan-repeat-config-head h3 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.plan-repeat-config-head h3 small {
+  margin-left: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.plan-repeat-config-head p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.plan-repeat-date-grid,
+.plan-repeat-completion-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.plan-repeat-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.plan-repeat-weekday-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.plan-repeat-weekday-chip {
+  min-height: 48px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(95, 121, 108, 0.2);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.plan-repeat-weekday-chip.is-active {
+  border-color: var(--brand-strong);
+  background: rgba(95, 121, 108, 0.12);
+}
+
+.plan-repeat-weekday-check {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid rgba(95, 121, 108, 0.32);
+  font-size: 12px;
+}
+
+.plan-repeat-weekday-chip.is-active .plan-repeat-weekday-check {
+  background: var(--brand-strong);
+  border-color: var(--brand-strong);
+  color: #fff;
+}
+
+.plan-ebbinghaus-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.plan-ebbinghaus-card {
+  min-height: 94px;
+  padding: 12px 14px;
+  display: grid;
+  gap: 6px;
+  text-align: left;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 100, 255, 0.38);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink);
+}
+
+.plan-ebbinghaus-card strong {
+  font-size: 16px;
+}
+
+.plan-ebbinghaus-card span {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.plan-ebbinghaus-card.is-active {
+  border-color: rgba(148, 100, 255, 0.75);
+  box-shadow: 0 10px 20px rgba(148, 100, 255, 0.2);
+}
+
 .plan-create-mode-bar {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

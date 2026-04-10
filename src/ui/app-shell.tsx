@@ -141,12 +141,10 @@ import type {
   HabitDraft,
   HabitStatsRange,
   MoreFeatureCard,
-  PlanAttachmentDraft,
   PlanDraft,
   PlanPointsReviewDecision,
   PlanPointsReviewDraft,
   PlanRepeatType,
-  PlanTimeMode,
   PendingPlanReviewItem,
   QuickCompleteAttachmentDraft,
   QuickCompleteDraft,
@@ -188,7 +186,13 @@ import { BatchPlanCreateScreen } from "./plans/batch-plan-create-screen.js";
 import { applyManagedPlanOrder, createManagedPlanOrder, reorderManagedPlanIds } from "./plans/plan-management-helpers.js";
 import { PlanDeleteSelectedModal, PlanManagementScreen } from "./plans/plan-management-screen.js";
 import { PlanCreateScreen } from "./plans/plan-create-screen.js";
-import { formatPlanRepeatSaveNotice } from "./plans/plan-repeat.js";
+import {
+  PLAN_EBBINGHAUS_PRESET_OPTIONS,
+  formatPlanRepeatSaveNotice,
+  isCrossDayRepeatType,
+  isCustomWeekdayRepeatType,
+  isEbbinghausRepeatType,
+} from "./plans/plan-repeat.js";
 import { PlanBoard, PlanDetailModal, PlanPointsReviewModal, QuickCompleteModal } from "./plans/plans-module.js";
 import {
   ReadingBookDetailScreen,
@@ -239,6 +243,116 @@ function resolvePlanDurationMinutes(draft: PlanDraft): number | null {
   }
 
   return endMinutes - startMinutes;
+}
+
+const PLAN_ALL_WEEKDAYS: ReadonlyArray<1 | 2 | 3 | 4 | 5 | 6 | 7> = [1, 2, 3, 4, 5, 6, 7];
+const PLAN_WORKDAYS: ReadonlyArray<1 | 2 | 3 | 4 | 5> = [1, 2, 3, 4, 5];
+const PLAN_WEEKENDS: ReadonlyArray<6 | 7> = [6, 7];
+
+function resolvePlanWeekdayFromDateKey(dateKey: string): 1 | 2 | 3 | 4 | 5 | 6 | 7 {
+  const date = new Date(dateKey);
+  const day = date.getDay();
+  return (day === 0 ? 7 : day) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
+}
+
+function normalizeDraftWeekdays(values: ReadonlyArray<number>): Array<1 | 2 | 3 | 4 | 5 | 6 | 7> {
+  const unique = [...new Set(values.filter((value): value is 1 | 2 | 3 | 4 | 5 | 6 | 7 => PLAN_ALL_WEEKDAYS.includes(value as 1 | 2 | 3 | 4 | 5 | 6 | 7)))];
+  unique.sort((left, right) => left - right);
+  return unique;
+}
+
+function resolveEbbinghausOffsets(preset: PlanDraft["ebbinghausPreset"]): number[] {
+  return PLAN_EBBINGHAUS_PRESET_OPTIONS.find((option) => option.value === preset)?.offsets ?? PLAN_EBBINGHAUS_PRESET_OPTIONS[0].offsets;
+}
+
+function resolveCompletionDateLimitDays(draft: PlanDraft, fallbackDay: 1 | 2 | 3 | 4 | 5 | 6 | 7): Array<1 | 2 | 3 | 4 | 5 | 6 | 7> | null {
+  if (draft.completionDateLimitMode === "anytime") {
+    return null;
+  }
+  if (draft.completionDateLimitMode === "workday") {
+    return [...PLAN_WORKDAYS];
+  }
+  if (draft.completionDateLimitMode === "weekend") {
+    return [...PLAN_WEEKENDS];
+  }
+  const normalized = normalizeDraftWeekdays(draft.completionDateLimitDays);
+  return normalized.length > 0 ? normalized : [fallbackDay];
+}
+
+function resolvePlanRepeatConfig(draft: PlanDraft, startDate: string): StudyPlan["repeatConfig"] {
+  const fallbackDay = resolvePlanWeekdayFromDateKey(startDate);
+  const hasDateRange = draft.endDate.trim().length > 0 || (isCustomWeekdayRepeatType(draft.repeatType) || draft.repeatType === "weekly-cross-day-once" || draft.repeatType === "biweekly-cross-day-once" || draft.repeatType === "monthly-cross-day-once");
+
+  const weeklyDays =
+    isCustomWeekdayRepeatType(draft.repeatType) ? (() => {
+      const normalized = normalizeDraftWeekdays(draft.repeatWeekdays);
+      return normalized.length > 0 ? normalized : [fallbackDay];
+    })() : null;
+
+  const completionDateLimitDays = isCrossDayRepeatType(draft.repeatType) ? resolveCompletionDateLimitDays(draft, fallbackDay) : null;
+
+  const parsedRequired = Math.round(Number(draft.requiredCompletionsPerPeriod));
+  const requiredCompletionsPerPeriod = isCrossDayRepeatType(draft.repeatType) && Number.isFinite(parsedRequired) && parsedRequired > 0 ? parsedRequired : 1;
+
+  const parsedMaxPerDay = Math.round(Number(draft.maxCompletionsPerDay));
+  const maxCompletionsPerDay =
+    isCrossDayRepeatType(draft.repeatType) && Number.isFinite(parsedMaxPerDay) && parsedMaxPerDay > 0 ? parsedMaxPerDay : null;
+
+  const hasAnyConfig =
+    hasDateRange ||
+    weeklyDays !== null ||
+    isEbbinghausRepeatType(draft.repeatType) ||
+    isCrossDayRepeatType(draft.repeatType);
+
+  if (!hasAnyConfig) {
+    return null;
+  }
+
+  return {
+    dateRangeStart: hasDateRange ? startDate : null,
+    dateRangeEnd: draft.endDate.trim().length > 0 ? draft.endDate : null,
+    weeklyDays,
+    ebbinghausPreset: isEbbinghausRepeatType(draft.repeatType) ? draft.ebbinghausPreset : null,
+    ebbinghausOffsets: isEbbinghausRepeatType(draft.repeatType) ? resolveEbbinghausOffsets(draft.ebbinghausPreset) : null,
+    completionDateLimitMode: isCrossDayRepeatType(draft.repeatType) ? draft.completionDateLimitMode : null,
+    completionDateLimitDays,
+    requiredCompletionsPerPeriod: isCrossDayRepeatType(draft.repeatType) ? requiredCompletionsPerPeriod : null,
+    maxCompletionsPerDay,
+  };
+}
+
+function validatePlanRepeatDraft(draft: PlanDraft, startDate: string): string | null {
+  if (draft.endDate && !isValidDateKey(draft.endDate)) {
+    return "结束日期格式无效，请重新选择。";
+  }
+
+  if (draft.endDate && draft.endDate < startDate) {
+    return "结束日期不能早于开始日期。";
+  }
+
+  if (isCustomWeekdayRepeatType(draft.repeatType) && normalizeDraftWeekdays(draft.repeatWeekdays).length === 0) {
+    return "请至少选择一个重复日期。";
+  }
+
+  if (isCrossDayRepeatType(draft.repeatType)) {
+    const parsedRequired = Math.round(Number(draft.requiredCompletionsPerPeriod));
+    if (!Number.isInteger(parsedRequired) || parsedRequired <= 0) {
+      return "完成次数必须是大于 0 的整数。";
+    }
+
+    if (draft.maxCompletionsPerDay.trim().length > 0) {
+      const parsedMaxPerDay = Math.round(Number(draft.maxCompletionsPerDay));
+      if (!Number.isInteger(parsedMaxPerDay) || parsedMaxPerDay <= 0) {
+        return "每日最多次数需要留空或填写大于 0 的整数。";
+      }
+    }
+
+    if (draft.completionDateLimitMode === "custom" && normalizeDraftWeekdays(draft.completionDateLimitDays).length === 0) {
+      return "自定义完成日期时，请至少选择一天。";
+    }
+  }
+
+  return null;
 }
 
 function buildPlanDateTime(dateKey: string, time: string): string {
@@ -473,12 +587,15 @@ function AppShell(): JSX.Element {
   const selectedManagedPlans = managedPlans.filter((plan) => selectedManagedPlanIds.includes(plan.id));
   const hasRecurringManagedSelection = selectedManagedPlans.some((plan) => plan.repeatType !== "once");
   const resolvedPlanMinutes = resolvePlanDurationMinutes(planDraft);
+  const normalizedPlanStartDate = isValidDateKey(planDraft.startDate) ? planDraft.startDate : today;
+  const planRepeatValidationMessage = validatePlanRepeatDraft(planDraft, normalizedPlanStartDate);
   const parsedPlanCustomPoints = Math.round(Number(planDraft.customPoints));
   const resolvedBatchPlanMinutes = resolveBatchDurationMinutes(batchPlanDraft.defaultDurationMinutes);
   const resolvedBatchPlanCustomStars = resolveBatchCustomStars(batchPlanDraft.customPoints);
   const canSubmitPlan =
     planDraft.category.trim().length > 0 &&
     planDraft.title.trim().length > 0 &&
+    planRepeatValidationMessage === null &&
     resolvedPlanMinutes !== null &&
     (!planDraft.useCustomPoints || (Number.isInteger(parsedPlanCustomPoints) && parsedPlanCustomPoints > 0));
   const canSubmitBatchPlan =
@@ -775,7 +892,7 @@ function AppShell(): JSX.Element {
     };
   }, [interestClassModalOpen, interestRecordModalOpen]);
 
-  function updatePlanDraft(field: keyof PlanDraft, value: string | boolean | PlanRepeatType | PlanTimeMode | PlanAttachmentDraft[]): void {
+  function updatePlanDraft<K extends keyof PlanDraft>(field: K, value: PlanDraft[K]): void {
     setPlanDraft((current) => ({ ...current, [field]: value }));
   }
 
@@ -2300,6 +2417,8 @@ function AppShell(): JSX.Element {
     const title = planDraft.title.trim();
     const category = planDraft.category.trim();
     const startDate = isValidDateKey(planDraft.startDate) ? planDraft.startDate : today;
+    const repeatValidationMessage = validatePlanRepeatDraft(planDraft, startDate);
+    const repeatConfig = resolvePlanRepeatConfig(planDraft, startDate);
     const resolvedMinutesForSave = resolvePlanDurationMinutes(planDraft);
     const startTimeForSave = planDraft.timeMode === "time-range" && parseClockToMinutes(planDraft.startTime) !== null ? planDraft.startTime : "08:00";
 
@@ -2310,6 +2429,11 @@ function AppShell(): JSX.Element {
 
     if (resolvedMinutesForSave === null) {
       setNotice("请填写有效的时长，或设置结束时间晚于开始时间的时间段。");
+      return;
+    }
+
+    if (repeatValidationMessage) {
+      setNotice(repeatValidationMessage);
       return;
     }
 
@@ -2327,6 +2451,7 @@ function AppShell(): JSX.Element {
             title,
             subject: category,
             repeatType: planDraft.repeatType,
+            repeatConfig,
             minutes: resolvedMinutesForSave,
             stars: planDraft.useCustomPoints ? parsedPlanCustomPoints : undefined,
             approvalRequired: planDraft.useCustomPoints ? planDraft.approvalRequired : false,
@@ -2352,6 +2477,7 @@ function AppShell(): JSX.Element {
           title,
           subject: category,
           repeatType: planDraft.repeatType,
+          repeatConfig,
           minutes: resolvedMinutesForSave,
           stars: planDraft.useCustomPoints ? parsedPlanCustomPoints : undefined,
           approvalRequired: planDraft.useCustomPoints ? planDraft.approvalRequired : false,

@@ -23,13 +23,47 @@ declare const __APP_LAST_UPDATE__: string;
 declare const __APP_ENV_LABEL__: string;
 
 // Static UI content is isolated here so product-copy changes do not require opening the app shell.
+function getPlanWeekdayFromDateKey(dateKey: string): 1 | 2 | 3 | 4 | 5 | 6 | 7 {
+  const parsed = new Date(dateKey);
+  const day = parsed.getDay();
+  return (day === 0 ? 7 : day) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
+}
+
+function resolveEbbinghausPresetFromPlan(plan: StudyPlan): "standard" | "gentle" | "exam" | "intensive" {
+  const preset = plan.repeatConfig?.ebbinghausPreset;
+  if (preset) {
+    return preset;
+  }
+
+  const offsets = plan.repeatConfig?.ebbinghausOffsets ?? [];
+  const normalized = [...offsets].sort((left, right) => left - right).join(",");
+  if (normalized === "0,2,6,13,29") {
+    return "gentle";
+  }
+  if (normalized === "0,1,2,4,6,9,14") {
+    return "exam";
+  }
+  if (normalized === "0,1,3,6,14,29,59") {
+    return "intensive";
+  }
+  return "standard";
+}
+
 export function createInitialPlanDraft(dateKey: string = currentDateKey()): PlanDraft {
+  const weekday = getPlanWeekdayFromDateKey(dateKey);
   return {
     startDate: dateKey,
+    endDate: "",
     category: "",
     title: "",
     content: "",
     repeatType: "once",
+    repeatWeekdays: [weekday],
+    completionDateLimitMode: "anytime",
+    completionDateLimitDays: [1, 2, 3, 4, 5],
+    requiredCompletionsPerPeriod: "1",
+    maxCompletionsPerDay: "",
+    ebbinghausPreset: "standard",
     timeMode: "duration",
     durationMinutes: "25",
     startTime: "19:00",
@@ -43,12 +77,30 @@ export function createInitialPlanDraft(dateKey: string = currentDateKey()): Plan
 
 export function createPlanDraftFromPlan(plan: StudyPlan): PlanDraft {
   const estimatedStars = Math.max(1, Math.round(plan.minutes / 10));
+  const startDate = plan.repeatConfig?.dateRangeStart ?? plan.createdAt.slice(0, 10);
+  const fallbackWeekday = getPlanWeekdayFromDateKey(startDate);
+  const completionDateLimitMode = plan.repeatConfig?.completionDateLimitMode ?? "anytime";
+  const completionDateLimitDays: PlanDraft["completionDateLimitDays"] =
+    completionDateLimitMode === "anytime"
+      ? [1, 2, 3, 4, 5]
+      : completionDateLimitMode === "workday"
+        ? [1, 2, 3, 4, 5]
+        : completionDateLimitMode === "weekend"
+          ? [6, 7]
+          : plan.repeatConfig?.completionDateLimitDays ?? [fallbackWeekday];
   return {
-    startDate: plan.createdAt.slice(0, 10),
+    startDate,
+    endDate: plan.repeatConfig?.dateRangeEnd ?? "",
     category: plan.subject,
     title: plan.title,
     content: "",
     repeatType: plan.repeatType,
+    repeatWeekdays: plan.repeatConfig?.weeklyDays ?? [fallbackWeekday],
+    completionDateLimitMode,
+    completionDateLimitDays,
+    requiredCompletionsPerPeriod: String(plan.repeatConfig?.requiredCompletionsPerPeriod ?? 1),
+    maxCompletionsPerDay: plan.repeatConfig?.maxCompletionsPerDay ? String(plan.repeatConfig.maxCompletionsPerDay) : "",
+    ebbinghausPreset: resolveEbbinghausPresetFromPlan(plan),
     timeMode: "duration",
     durationMinutes: String(plan.minutes),
     startTime: plan.createdAt.slice(11, 16) || "08:00",

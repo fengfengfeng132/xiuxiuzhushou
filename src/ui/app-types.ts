@@ -1,6 +1,9 @@
 import type {
   HabitFrequency,
+  PlanCompletionDateLimitMode as DomainPlanCompletionDateLimitMode,
+  PlanEbbinghausPreset as DomainPlanEbbinghausPreset,
   PlanRepeatType as DomainPlanRepeatType,
+  PlanWeekday as DomainPlanWeekday,
   RewardCategory,
   RewardRepeatMode,
   RewardResetPeriod,
@@ -31,6 +34,9 @@ export type Screen =
   | "study-timer";
 
 export type PlanRepeatType = DomainPlanRepeatType;
+export type PlanWeekday = DomainPlanWeekday;
+export type PlanEbbinghausPreset = DomainPlanEbbinghausPreset;
+export type PlanCompletionDateLimitMode = DomainPlanCompletionDateLimitMode;
 export type PlanTimeMode = "duration" | "time-range";
 
 export interface PlanAttachmentDraft {
@@ -42,10 +48,17 @@ export interface PlanAttachmentDraft {
 
 export interface PlanDraft {
   startDate: string;
+  endDate: string;
   category: string;
   title: string;
   content: string;
   repeatType: PlanRepeatType;
+  repeatWeekdays: PlanWeekday[];
+  completionDateLimitMode: PlanCompletionDateLimitMode;
+  completionDateLimitDays: PlanWeekday[];
+  requiredCompletionsPerPeriod: string;
+  maxCompletionsPerDay: string;
+  ebbinghausPreset: PlanEbbinghausPreset;
   timeMode: PlanTimeMode;
   durationMinutes: string;
   startTime: string;

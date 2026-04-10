@@ -30,7 +30,10 @@ import type {
   PlanCompletionReviewStatus,
   PlanCompletionMode,
   PlanCompletionRecord,
+  PlanCompletionDateLimitMode,
+  PlanEbbinghausPreset,
   PlanRepeatType,
+  PlanWeekday,
   Profile,
   Reward,
   RewardCategory,
@@ -91,8 +94,36 @@ function isPlanRepeatType(value: unknown): value is PlanRepeatType {
   );
 }
 
+function isPlanWeekday(value: unknown): value is PlanWeekday {
+  return value === 1 || value === 2 || value === 3 || value === 4 || value === 5 || value === 6 || value === 7;
+}
+
+function isPlanEbbinghausPreset(value: unknown): value is PlanEbbinghausPreset {
+  return value === "standard" || value === "gentle" || value === "exam" || value === "intensive";
+}
+
+function isPlanCompletionDateLimitMode(value: unknown): value is PlanCompletionDateLimitMode {
+  return value === "anytime" || value === "workday" || value === "weekend" || value === "custom";
+}
+
 function isPlanCompletionReviewStatus(value: unknown): value is PlanCompletionReviewStatus {
   return value === "pending" || value === "approved" || value === "adjusted" || value === "rejected";
+}
+
+const PLAN_WORKDAY_SET: readonly PlanWeekday[] = [1, 2, 3, 4, 5];
+const PLAN_WEEKEND_SET: readonly PlanWeekday[] = [6, 7];
+
+function resolveEbbinghausOffsetsForPreset(preset: PlanEbbinghausPreset): number[] {
+  switch (preset) {
+    case "gentle":
+      return [0, 2, 6, 13, 29];
+    case "exam":
+      return [0, 1, 2, 4, 6, 9, 14];
+    case "intensive":
+      return [0, 1, 3, 6, 14, 29, 59];
+    default:
+      return [0, 1, 3, 6, 14, 29];
+  }
 }
 
 function parseDateKey(dateKey: string): Date {
@@ -106,6 +137,100 @@ function parseDateKey(dateKey: string): Date {
 
 function createDateKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function isDateKey(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+function getPlanWeekdayFromDateKey(dateKey: string): PlanWeekday {
+  const jsDay = parseDateKey(dateKey).getDay();
+  return (jsDay === 0 ? 7 : jsDay) as PlanWeekday;
+}
+
+function normalizePlanWeekdays(value: unknown): PlanWeekday[] | null {
+  if (!Array.isArray(value)) {
+    return null;
+  }
+
+  const normalized = [...new Set(value.map((item) => Number(item)).filter((item): item is PlanWeekday => isPlanWeekday(item)))];
+  normalized.sort((left, right) => left - right);
+  return normalized.length > 0 ? normalized : null;
+}
+
+function normalizeEbbinghausOffsets(value: unknown): number[] | null {
+  if (!Array.isArray(value)) {
+    return null;
+  }
+
+  const normalized = [...new Set(value.map((item) => Math.round(Number(item))).filter((item) => Number.isFinite(item) && item >= 0 && item <= 365))];
+  normalized.sort((left, right) => left - right);
+  return normalized.length > 0 ? normalized : null;
+}
+
+function normalizePlanRepeatConfig(
+  value: unknown,
+  repeatType: PlanRepeatType,
+  startDateKey: string,
+): StudyPlan["repeatConfig"] {
+  const source = isObject(value) ? value : {};
+  const dateRangeStart = typeof source.dateRangeStart === "string" && isDateKey(source.dateRangeStart) ? source.dateRangeStart : null;
+  const dateRangeEnd = typeof source.dateRangeEnd === "string" && isDateKey(source.dateRangeEnd) ? source.dateRangeEnd : null;
+
+  let weeklyDays = normalizePlanWeekdays(source.weeklyDays);
+  if ((repeatType === "weekly-custom" || repeatType === "biweekly-custom") && (!weeklyDays || weeklyDays.length === 0)) {
+    weeklyDays = [getPlanWeekdayFromDateKey(startDateKey)];
+  }
+
+  const ebbinghausPreset = isPlanEbbinghausPreset(source.ebbinghausPreset) ? source.ebbinghausPreset : null;
+  let ebbinghausOffsets = normalizeEbbinghausOffsets(source.ebbinghausOffsets);
+  if (repeatType === "ebbinghaus" && (!ebbinghausOffsets || ebbinghausOffsets.length === 0)) {
+    ebbinghausOffsets = resolveEbbinghausOffsetsForPreset(ebbinghausPreset ?? "standard");
+  }
+
+  let completionDateLimitMode = isPlanCompletionDateLimitMode(source.completionDateLimitMode) ? source.completionDateLimitMode : null;
+  let completionDateLimitDays = normalizePlanWeekdays(source.completionDateLimitDays);
+  if (completionDateLimitMode === "workday") {
+    completionDateLimitDays = [...PLAN_WORKDAY_SET];
+  } else if (completionDateLimitMode === "weekend") {
+    completionDateLimitDays = [...PLAN_WEEKEND_SET];
+  } else if (completionDateLimitMode === "custom" && (!completionDateLimitDays || completionDateLimitDays.length === 0)) {
+    completionDateLimitDays = [getPlanWeekdayFromDateKey(startDateKey)];
+  } else if (completionDateLimitMode === "anytime") {
+    completionDateLimitDays = null;
+  }
+
+  const parsedRequired = Math.round(Number(source.requiredCompletionsPerPeriod));
+  const requiredCompletionsPerPeriod = Number.isFinite(parsedRequired) && parsedRequired > 0 ? parsedRequired : null;
+  const parsedMaxPerDay = Math.round(Number(source.maxCompletionsPerDay));
+  const maxCompletionsPerDay = Number.isFinite(parsedMaxPerDay) && parsedMaxPerDay > 0 ? parsedMaxPerDay : null;
+
+  const hasAnyField =
+    dateRangeStart !== null ||
+    dateRangeEnd !== null ||
+    weeklyDays !== null ||
+    ebbinghausPreset !== null ||
+    ebbinghausOffsets !== null ||
+    completionDateLimitMode !== null ||
+    completionDateLimitDays !== null ||
+    requiredCompletionsPerPeriod !== null ||
+    maxCompletionsPerDay !== null;
+
+  if (!hasAnyField) {
+    return null;
+  }
+
+  return {
+    dateRangeStart,
+    dateRangeEnd,
+    weeklyDays,
+    ebbinghausPreset,
+    ebbinghausOffsets,
+    completionDateLimitMode,
+    completionDateLimitDays,
+    requiredCompletionsPerPeriod,
+    maxCompletionsPerDay,
+  };
 }
 
 function getWeekDateKeys(dateKey: string): string[] {
@@ -123,6 +248,47 @@ function getWeekDateKeys(dateKey: string): string[] {
 
 function getStartDateKey(plan: StudyPlan): string {
   return createDateKey(new Date(plan.createdAt));
+}
+
+function getConfiguredStartDateKey(plan: StudyPlan): string {
+  return plan.repeatConfig?.dateRangeStart ?? getStartDateKey(plan);
+}
+
+function getConfiguredEndDateKey(plan: StudyPlan): string | null {
+  return plan.repeatConfig?.dateRangeEnd ?? null;
+}
+
+function getRequiredCompletionsPerPeriod(plan: StudyPlan): number {
+  const configured = plan.repeatConfig?.requiredCompletionsPerPeriod;
+  return Number.isFinite(configured) && configured && configured > 0 ? Math.round(configured) : 1;
+}
+
+function getMaxCompletionsPerDay(plan: StudyPlan): number | null {
+  const configured = plan.repeatConfig?.maxCompletionsPerDay;
+  return Number.isFinite(configured) && configured && configured > 0 ? Math.round(configured) : null;
+}
+
+function resolveAllowedCompletionWeekdays(plan: StudyPlan): PlanWeekday[] | null {
+  const mode = plan.repeatConfig?.completionDateLimitMode;
+  if (!mode || mode === "anytime") {
+    return null;
+  }
+  if (mode === "workday") {
+    return [...PLAN_WORKDAY_SET];
+  }
+  if (mode === "weekend") {
+    return [...PLAN_WEEKEND_SET];
+  }
+  const custom = plan.repeatConfig?.completionDateLimitDays;
+  return custom && custom.length > 0 ? custom : null;
+}
+
+function matchesCompletionWeekdayRule(plan: StudyPlan, dateKey: string): boolean {
+  const allowedDays = resolveAllowedCompletionWeekdays(plan);
+  if (!allowedDays) {
+    return true;
+  }
+  return allowedDays.includes(getPlanWeekdayFromDateKey(dateKey));
 }
 
 function getDayDiff(fromDateKey: string, toDateKey: string): number {
@@ -159,7 +325,7 @@ function getBiweeklyCycleStartDateKey(startDateKey: string, dateKey: string): st
 }
 
 function getPlanPeriodRange(plan: StudyPlan, dateKey: string): { startDateKey: string; endDateKey: string } | null {
-  const startDateKey = getStartDateKey(plan);
+  const startDateKey = getConfiguredStartDateKey(plan);
 
   switch (plan.repeatType) {
     case "current-week-cross-day-once": {
@@ -208,13 +374,20 @@ function getPlanPeriodRange(plan: StudyPlan, dateKey: string): { startDateKey: s
   }
 }
 
-function getEbbinghausOffsets(): number[] {
-  return [0, 1, 2, 4, 7, 15, 30];
+function getEbbinghausOffsets(plan: StudyPlan): number[] {
+  const configured = plan.repeatConfig?.ebbinghausOffsets;
+  if (configured && configured.length > 0) {
+    return configured;
+  }
+
+  const preset = plan.repeatConfig?.ebbinghausPreset ?? "standard";
+  return resolveEbbinghausOffsetsForPreset(preset);
 }
 
 export function isPlanScheduledForDate(plan: StudyPlan, dateKey: string): boolean {
-  const startDateKey = getStartDateKey(plan);
-  if (dateKey < startDateKey || plan.excludedDateKeys.includes(dateKey)) {
+  const startDateKey = getConfiguredStartDateKey(plan);
+  const endDateKey = getConfiguredEndDateKey(plan);
+  if (dateKey < startDateKey || (endDateKey !== null && dateKey > endDateKey) || plan.excludedDateKeys.includes(dateKey)) {
     return false;
   }
 
@@ -223,35 +396,42 @@ export function isPlanScheduledForDate(plan: StudyPlan, dateKey: string): boolea
     return false;
   }
 
+  const dateWeekday = getPlanWeekdayFromDateKey(dateKey);
+  const weeklyDays = plan.repeatConfig?.weeklyDays;
+  const scheduledWeekdays = weeklyDays && weeklyDays.length > 0 ? weeklyDays : [getPlanWeekdayFromDateKey(startDateKey)];
+
   switch (plan.repeatType) {
     case "once":
       return dateKey === startDateKey;
     case "daily":
       return true;
     case "weekly-custom":
-      return dayDiff % 7 === 0;
+      return scheduledWeekdays.includes(dateWeekday);
     case "biweekly-custom":
-      return dayDiff % 14 === 0;
+      if (!scheduledWeekdays.includes(dateWeekday)) {
+        return false;
+      }
+      return Math.floor(dayDiff / 7) % 2 === 0;
     case "ebbinghaus":
-      return getEbbinghausOffsets().includes(dayDiff);
+      return getEbbinghausOffsets(plan).includes(dayDiff);
     case "current-week-cross-day-once": {
       const range = getPlanPeriodRange(plan, dateKey);
-      return range !== null && dateKey >= range.startDateKey && dateKey <= range.endDateKey;
+      return range !== null && dateKey >= range.startDateKey && dateKey <= range.endDateKey && matchesCompletionWeekdayRule(plan, dateKey);
     }
     case "current-biweekly-cross-day-once": {
       const range = getPlanPeriodRange(plan, dateKey);
-      return range !== null && dateKey >= range.startDateKey && dateKey <= range.endDateKey;
+      return range !== null && dateKey >= range.startDateKey && dateKey <= range.endDateKey && matchesCompletionWeekdayRule(plan, dateKey);
     }
     case "current-month-cross-day-once": {
       const range = getPlanPeriodRange(plan, dateKey);
-      return range !== null && dateKey >= range.startDateKey && dateKey <= range.endDateKey;
+      return range !== null && dateKey >= range.startDateKey && dateKey <= range.endDateKey && matchesCompletionWeekdayRule(plan, dateKey);
     }
     case "weekly-cross-day-once":
-      return true;
+      return matchesCompletionWeekdayRule(plan, dateKey);
     case "biweekly-cross-day-once":
-      return true;
+      return matchesCompletionWeekdayRule(plan, dateKey);
     case "monthly-cross-day-once":
-      return isSameMonth(dateKey, startDateKey) || dateKey >= startDateKey;
+      return matchesCompletionWeekdayRule(plan, dateKey) && (isSameMonth(dateKey, startDateKey) || dateKey >= startDateKey);
     default:
       return false;
   }
@@ -268,10 +448,11 @@ export function isPlanCompletedForDate(plan: StudyPlan, dateKey: string): boolea
 
   const range = getPlanPeriodRange(plan, dateKey);
   if (range) {
-    return plan.completionRecords.some((record) => {
+    const completionCount = plan.completionRecords.filter((record) => {
       const recordDateKey = currentDateKey(record.completedAt);
       return recordDateKey >= range.startDateKey && recordDateKey <= range.endDateKey;
-    });
+    }).length;
+    return completionCount >= getRequiredCompletionsPerPeriod(plan);
   }
 
   return plan.completionRecords.some((record) => currentDateKey(record.completedAt) === dateKey);
@@ -621,6 +802,8 @@ function normalizePlan(value: unknown, fallbackTime: string): StudyPlan | null {
   const approvalRequired = value.approvalRequired === true && customStarsEnabled;
   const status = value.status === "done" ? "done" : "pending";
   const createdAt = typeof value.createdAt === "string" ? value.createdAt : fallbackTime;
+  const startDateKey = createDateKey(new Date(createdAt));
+  const repeatConfig = normalizePlanRepeatConfig(value.repeatConfig, repeatType, startDateKey);
   const completedAt = typeof value.completedAt === "string" ? value.completedAt : null;
   const updatedAt = normalizeEntityUpdatedAt(value.updatedAt, completedAt ?? createdAt);
   const version = normalizeEntityVersion(value.version);
@@ -656,6 +839,7 @@ function normalizePlan(value: unknown, fallbackTime: string): StudyPlan | null {
     title,
     subject,
     repeatType,
+    repeatConfig,
     minutes: Math.round(minutes),
     stars: Math.round(stars),
     customStarsEnabled,
@@ -1273,6 +1457,7 @@ export function createInitialState(now: string = new Date().toISOString()): AppS
       {
         id: "plan_math_review",
         repeatType: "once",
+        repeatConfig: null,
         title: "数学错题复盘",
         subject: "数学",
         minutes: 25,
@@ -1291,6 +1476,7 @@ export function createInitialState(now: string = new Date().toISOString()): AppS
       {
         id: "plan_english_reading",
         repeatType: "once",
+        repeatConfig: null,
         title: "英语晨读",
         subject: "英语",
         minutes: 20,
@@ -1385,6 +1571,7 @@ export function addPlan(
     title: string;
     subject: string;
     repeatType?: PlanRepeatType;
+    repeatConfig?: StudyPlan["repeatConfig"];
     minutes: number;
     stars?: number;
     customStarsEnabled?: boolean;
@@ -1395,6 +1582,7 @@ export function addPlan(
   const title = input.title.trim();
   const subject = input.subject.trim();
   const repeatType = input.repeatType ?? "once";
+  const repeatConfig = normalizePlanRepeatConfig(input.repeatConfig, repeatType, createDateKey(new Date(now)));
   const minutes = Math.max(5, Math.round(input.minutes));
   const customStarsEnabled = input.customStarsEnabled ?? input.stars !== undefined;
   const approvalRequired = input.approvalRequired === true && customStarsEnabled;
@@ -1414,6 +1602,7 @@ export function addPlan(
     title,
     subject,
     repeatType,
+    repeatConfig,
     minutes,
     stars,
     customStarsEnabled,
@@ -1438,6 +1627,7 @@ export function addPlan(
         title: plan.title,
         subject: plan.subject,
         repeatType: plan.repeatType,
+        repeatConfig: plan.repeatConfig,
         minutes: plan.minutes,
         stars: plan.stars,
         customStarsEnabled: plan.customStarsEnabled,
@@ -1470,6 +1660,7 @@ export function updatePlan(state: AppState, planId: string, input: UpdatePlanInp
   const title = input.title.trim();
   const subject = input.subject.trim();
   const repeatType = input.repeatType;
+  const repeatConfig = normalizePlanRepeatConfig(input.repeatConfig, repeatType, createDateKey(new Date(input.createdAt ?? plan.createdAt)));
   const minutes = Math.max(5, Math.round(input.minutes));
   const customStarsEnabled = input.customStarsEnabled ?? input.stars !== undefined;
   const approvalRequired = (input.approvalRequired ?? plan.approvalRequired) && customStarsEnabled;
@@ -1486,6 +1677,7 @@ export function updatePlan(state: AppState, planId: string, input: UpdatePlanInp
   plan.title = title;
   plan.subject = subject;
   plan.repeatType = repeatType;
+  plan.repeatConfig = repeatConfig;
   plan.minutes = minutes;
   plan.stars = stars;
   plan.customStarsEnabled = customStarsEnabled;
@@ -1504,6 +1696,7 @@ export function updatePlan(state: AppState, planId: string, input: UpdatePlanInp
         title: plan.title,
         subject: plan.subject,
         repeatType: plan.repeatType,
+        repeatConfig: plan.repeatConfig,
         minutes: plan.minutes,
         stars: plan.stars,
         customStarsEnabled: plan.customStarsEnabled,
@@ -2454,6 +2647,18 @@ export function completePlan(
     };
   }
 
+  const maxCompletionsPerDay = getMaxCompletionsPerDay(plan);
+  if (maxCompletionsPerDay !== null) {
+    const completedCountForDate = plan.completionRecords.filter((record) => currentDateKey(record.completedAt) === completionDateKey).length;
+    if (completedCountForDate >= maxCompletionsPerDay) {
+      return {
+        ok: false,
+        nextState: state,
+        message: `当前日期最多可完成 ${maxCompletionsPerDay} 次该任务。`,
+      };
+    }
+  }
+
   if (plan.repeatType !== "once" && isPlanCompletedForDate(plan, completionDateKey)) {
     return {
       ok: false,
@@ -3137,6 +3342,19 @@ export function evaluateInvariants(state: AppState): string[] {
         !plan.title ||
         !plan.subject ||
         !isPlanRepeatType(plan.repeatType) ||
+        (plan.repeatConfig !== null &&
+          ((plan.repeatConfig.dateRangeStart !== null && !isDateKey(plan.repeatConfig.dateRangeStart)) ||
+            (plan.repeatConfig.dateRangeEnd !== null && !isDateKey(plan.repeatConfig.dateRangeEnd)) ||
+            (plan.repeatConfig.weeklyDays !== null && plan.repeatConfig.weeklyDays.some((day) => !isPlanWeekday(day))) ||
+            (plan.repeatConfig.ebbinghausPreset !== null && !isPlanEbbinghausPreset(plan.repeatConfig.ebbinghausPreset)) ||
+            (plan.repeatConfig.ebbinghausOffsets !== null &&
+              plan.repeatConfig.ebbinghausOffsets.some((offset) => !Number.isInteger(offset) || offset < 0)) ||
+            (plan.repeatConfig.completionDateLimitMode !== null &&
+              !isPlanCompletionDateLimitMode(plan.repeatConfig.completionDateLimitMode)) ||
+            (plan.repeatConfig.completionDateLimitDays !== null &&
+              plan.repeatConfig.completionDateLimitDays.some((day) => !isPlanWeekday(day))) ||
+            (plan.repeatConfig.requiredCompletionsPerPeriod !== null && plan.repeatConfig.requiredCompletionsPerPeriod <= 0) ||
+            (plan.repeatConfig.maxCompletionsPerDay !== null && plan.repeatConfig.maxCompletionsPerDay <= 0))) ||
         (plan.approvalRequired && !plan.customStarsEnabled) ||
         !plan.updatedAt ||
         plan.version < 1,
