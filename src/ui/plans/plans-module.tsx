@@ -703,8 +703,8 @@ export function PlanPointsReviewModal({ item, draft, canSubmit, onClose, onSubmi
             </p>
           </section>
 
-          <div className="modal-actions">
-            <button type="button" className="modal-cancel" onClick={onClose}>
+          <div className="modal-actions plan-points-review-footer">
+            <button type="button" className="modal-cancel plan-points-review-cancel" onClick={onClose}>
               取消
             </button>
             <button type="submit" className="modal-submit modal-submit-primary" disabled={!canSubmit}>
