@@ -481,9 +481,12 @@ button {
 }
 
 .day-pill.is-selected span,
-.day-pill.is-selected strong,
+.day-pill.is-selected strong {
+  color: var(--ink);
+}
+
 .day-pill.is-selected small {
-  color: #fff;
+  color: var(--muted);
 }
 
 .day-pill.is-today:not(.is-selected) {
