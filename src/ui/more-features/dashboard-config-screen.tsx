@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { CSSProperties, DragEvent, JSX } from "react";
 import type { DashboardDisplayMode, DashboardModuleId } from "../../persistence/storage.js";
 import type { DashboardModuleDefinition } from "../app-types.js";
@@ -38,16 +39,38 @@ const DISPLAY_MODE_OPTIONS: Array<{
 
 function DashboardConfigRow({
   item,
+  isDragging,
+  isDropTarget,
+  onDragStartModule,
+  onDragEndModule,
+  onDragEnterModule,
+  onDragLeaveModule,
   onToggleModule,
   onMoveModule,
 }: {
   item: DashboardConfigScreenProps["moduleItems"][number];
+  isDragging: boolean;
+  isDropTarget: boolean;
+  onDragStartModule: (moduleId: DashboardModuleId) => void;
+  onDragEndModule: () => void;
+  onDragEnterModule: (moduleId: DashboardModuleId) => void;
+  onDragLeaveModule: (moduleId: DashboardModuleId) => void;
   onToggleModule: (moduleId: DashboardModuleId) => void;
   onMoveModule: (draggedId: DashboardModuleId, targetId: DashboardModuleId) => void;
 }): JSX.Element {
   function handleDragStart(event: DragEvent<HTMLButtonElement>): void {
+    const rowElement = event.currentTarget.closest(".dashboard-config-row");
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", item.id);
+    if (rowElement instanceof HTMLElement) {
+      const bounds = rowElement.getBoundingClientRect();
+      event.dataTransfer.setDragImage(rowElement, Math.min(48, bounds.width * 0.18), Math.min(22, bounds.height * 0.5));
+    }
+    onDragStartModule(item.id);
+  }
+
+  function handleDragEnd(): void {
+    onDragEndModule();
   }
 
   function handleDrop(event: DragEvent<HTMLElement>): void {
@@ -56,17 +79,27 @@ function DashboardConfigRow({
     if (!draggedId) {
       return;
     }
+    onDragEndModule();
     onMoveModule(draggedId, item.id);
   }
 
   return (
     <article
-      className={`dashboard-config-row${item.visible ? " is-visible" : ""}`}
+      className={`dashboard-config-row${item.visible ? " is-visible" : ""}${isDragging ? " is-dragging" : ""}${isDropTarget ? " is-drop-target" : ""}`}
       style={{ "--dashboard-config-accent": item.accent } as CSSProperties}
       onDragOver={(event) => event.preventDefault()}
+      onDragEnter={() => onDragEnterModule(item.id)}
+      onDragLeave={() => onDragLeaveModule(item.id)}
       onDrop={handleDrop}
     >
-      <button type="button" className="dashboard-config-handle" draggable onDragStart={handleDragStart} aria-label={`拖动调整 ${item.title} 的顺序`}>
+      <button
+        type="button"
+        className="dashboard-config-handle"
+        draggable
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        aria-label={`拖动调整 ${item.title} 的顺序`}
+      >
         <span className="dashboard-config-grip" aria-hidden="true">
           {Array.from({ length: 6 }, (_, index) => (
             <span key={index} />
@@ -110,6 +143,9 @@ export function DashboardConfigScreen({
   onRestoreDefaults,
   onSave,
 }: DashboardConfigScreenProps): JSX.Element {
+  const [draggingModuleId, setDraggingModuleId] = useState<DashboardModuleId | null>(null);
+  const [dropTargetModuleId, setDropTargetModuleId] = useState<DashboardModuleId | null>(null);
+
   return (
     <div className="dashboard-config-page">
       <header className="dashboard-config-hero">
@@ -156,7 +192,26 @@ export function DashboardConfigScreen({
 
       <div className="dashboard-config-list">
         {moduleItems.map((item) => (
-          <DashboardConfigRow key={item.id} item={item} onToggleModule={onToggleModule} onMoveModule={onMoveModule} />
+          <DashboardConfigRow
+            key={item.id}
+            item={item}
+            isDragging={draggingModuleId === item.id}
+            isDropTarget={dropTargetModuleId === item.id && draggingModuleId !== item.id}
+            onDragStartModule={(moduleId) => {
+              setDraggingModuleId(moduleId);
+              setDropTargetModuleId(moduleId);
+            }}
+            onDragEndModule={() => {
+              setDraggingModuleId(null);
+              setDropTargetModuleId(null);
+            }}
+            onDragEnterModule={setDropTargetModuleId}
+            onDragLeaveModule={(moduleId) => {
+              setDropTargetModuleId((current) => (current === moduleId ? draggingModuleId : current));
+            }}
+            onToggleModule={onToggleModule}
+            onMoveModule={onMoveModule}
+          />
         ))}
       </div>
 
