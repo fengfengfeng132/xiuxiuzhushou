@@ -224,7 +224,7 @@ function isValidDateKey(value: string): boolean {
 }
 
 function parseClockToMinutes(value: string): number | null {
-  const match = /^(\d{2}):(\d{2})$/.exec(value);
+  const match = /^(\d{2}):(\d{2})(?::\d{2})?$/.exec(value);
   if (!match) {
     return null;
   }
@@ -1651,13 +1651,18 @@ function AppShell(): JSX.Element {
 
   function openQuickCompleteModal(plan: StudyPlan): void {
     const now = new Date();
+    const plannedSeconds = Math.max(60, Math.round(plan.minutes * 60));
+    const plannedStart = new Date(now.getTime() - plannedSeconds * 1000);
+    const plannedHours = Math.floor(plannedSeconds / 3600);
+    const plannedMinutes = Math.floor((plannedSeconds % 3600) / 60);
+    const plannedRemainSeconds = plannedSeconds % 60;
     setQuickCompleteDraft({
       planId: plan.id,
       mode: "duration",
-      hours: "0",
-      minutes: "0",
-      seconds: "0",
-      actualStartTime: "",
+      hours: String(plannedHours),
+      minutes: String(plannedMinutes),
+      seconds: String(plannedRemainSeconds),
+      actualStartTime: formatClockInput(plannedStart),
       actualEndTime: formatClockInput(now),
       note: "",
       attachments: [],

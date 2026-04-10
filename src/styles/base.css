@@ -730,6 +730,7 @@ button {
   position: fixed;
   right: 20px;
   bottom: 20px;
+  z-index: 40;
   max-width: min(360px, calc(100vw - 32px));
   padding: 14px 16px;
   border-radius: 18px;
