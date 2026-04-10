@@ -3362,6 +3362,7 @@ function AppShell(): JSX.Element {
           onRenameProfile={handleRenameProfile}
           onClearProfileData={handleClearProfileData}
           onDeleteProfile={handleDeleteProfile}
+          onResetLocalData={handleReset}
         />
       );
     }
@@ -3443,7 +3444,6 @@ function AppShell(): JSX.Element {
         onOpenAddProfile={openAddProfileModal}
         onOpenProfileManagement={() => openProfileManagement("home")}
         onLogoutProfile={handleLogoutProfile}
-        onReset={handleReset}
         onMetricCardAction={handleMetricCardAction}
         onTabChange={handleTabChange}
         onOpenPointsCenter={openPointsCenter}

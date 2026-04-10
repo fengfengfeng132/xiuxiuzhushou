@@ -13,6 +13,7 @@ interface ProfileManagementScreenProps {
   onRenameProfile: (profileId: string, profileName: string) => void;
   onClearProfileData: (profileId: string, profileName: string) => void;
   onDeleteProfile: (profileId: string, profileName: string) => void;
+  onResetLocalData: () => void;
 }
 
 function formatCreatedAt(value: string): string {
@@ -41,6 +42,7 @@ export function ProfileManagementScreen({
   onRenameProfile,
   onClearProfileData,
   onDeleteProfile,
+  onResetLocalData,
 }: ProfileManagementScreenProps) {
   const [openActionProfileId, setOpenActionProfileId] = useState<string | null>(null);
   const normalizedKeyword = search.trim().toLowerCase();
@@ -166,6 +168,16 @@ export function ProfileManagementScreen({
             <p>未找到匹配的档案，请调整搜索词。</p>
           </article>
         )}
+      </section>
+
+      <section className="profile-management-danger-zone">
+        <div className="profile-management-danger-copy">
+          <h2>危险操作</h2>
+          <p>重置会清空当前本地档案学习数据并恢复默认状态，请谨慎操作。</p>
+        </div>
+        <button type="button" className="profile-management-reset-button" onClick={onResetLocalData}>
+          重置本地数据
+        </button>
       </section>
     </div>
   );

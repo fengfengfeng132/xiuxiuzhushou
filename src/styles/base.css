@@ -123,8 +123,7 @@ button {
 }
 
 .profile-chip,
-.balance-chip,
-.reset-button {
+.balance-chip {
   width: 118px;
   border-radius: 20px;
 }
@@ -203,18 +202,6 @@ button {
   font-size: 18px;
 }
 
-.reset-button {
-  min-height: 30px;
-  width: 100%;
-  border-radius: 999px;
-  padding: 0 12px;
-  font-size: 12px;
-  font-weight: 700;
-  background: rgba(75, 140, 112, 0.3);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-}
-
 .metric-strip {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
@@ -256,7 +243,6 @@ button {
 .card-action:hover,
 .inline-primary-button:hover,
 .ghost-inline-button:hover,
-.reset-button:hover,
 .profile-chip:hover {
   transform: translateY(-1px);
 }

@@ -311,6 +311,40 @@
   color: var(--state-danger);
 }
 
+.profile-management-danger-zone {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(186, 66, 66, 0.25);
+  background: rgba(255, 243, 243, 0.88);
+}
+
+.profile-management-danger-copy h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #7f2525;
+}
+
+.profile-management-danger-copy p {
+  margin: 6px 0 0;
+  color: rgba(127, 37, 37, 0.9);
+  font-size: 13px;
+}
+
+.profile-management-reset-button {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(186, 66, 66, 0.35);
+  color: #fff;
+  background: #c24949;
+  font-weight: 700;
+}
+
 .profile-management-empty-row {
   padding: 24px;
   text-align: center;

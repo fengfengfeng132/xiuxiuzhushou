@@ -24,7 +24,6 @@ interface HomeScreenProps {
   onOpenAddProfile: () => void;
   onOpenProfileManagement: () => void;
   onLogoutProfile: () => void;
-  onReset: () => void;
   onMetricCardAction: (card: MetricCard) => void;
   onTabChange: (tab: DashboardTab) => void;
   onOpenPointsCenter: () => void;
@@ -50,7 +49,6 @@ export function HomeScreen({
   onOpenAddProfile,
   onOpenProfileManagement,
   onLogoutProfile,
-  onReset,
   onMetricCardAction,
   onTabChange,
   onOpenPointsCenter,
@@ -89,9 +87,6 @@ export function HomeScreen({
             <strong>{starBalance}</strong>
             <small>默认本地保存，可在档案中开启同步</small>
           </div>
-          <button type="button" className="reset-button" onClick={onReset}>
-            重置本地数据
-          </button>
         </div>
       </header>
 
