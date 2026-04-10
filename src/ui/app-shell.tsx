@@ -666,7 +666,7 @@ function AppShell(): JSX.Element {
   const quickCompleteMinutes = Math.max(0, Math.round(Number(quickCompleteDraft.minutes) || 0));
   const quickCompleteSeconds = Math.max(0, Math.round(Number(quickCompleteDraft.seconds) || 0));
   const quickCompleteTotalSeconds = quickCompleteHours * 3600 + quickCompleteMinutes * 60 + quickCompleteSeconds;
-  const canSubmitQuickComplete = quickCompletePlanTarget !== null && quickCompletePlanTarget.status === "pending" && quickCompleteTotalSeconds > 0;
+  const canSubmitQuickComplete = quickCompletePlanTarget !== null && quickCompleteTotalSeconds > 0;
   const parsedPlanPointsReviewStars = Math.round(Number(planPointsReviewDraft.adjustedStars));
   const canSubmitPlanPointsReview =
     activePendingPlanReviewItem !== null &&

@@ -443,7 +443,7 @@ export function isPlanCompletedForDate(plan: StudyPlan, dateKey: string): boolea
   }
 
   if (plan.repeatType === "once") {
-    return plan.status === "done" && plan.completedAt !== null && currentDateKey(plan.completedAt) === dateKey;
+    return plan.status === "done";
   }
 
   const range = getPlanPeriodRange(plan, dateKey);

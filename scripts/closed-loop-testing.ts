@@ -15,6 +15,7 @@ import {
   deletePlansForDate,
   deserializeState,
   evaluateInvariants,
+  isPlanCompletedForDate,
   isPlanScheduledForDate,
   recyclePet,
   redeemReward,
@@ -148,6 +149,40 @@ function runHabitScenario(baseState: AppState): { result: ScenarioResult; state:
       details: "Habit check-in increments completions and star balance exactly once.",
     },
     state: checkInMutation.nextState,
+  };
+}
+
+function runOncePlanCompletionScheduleScenario(baseState: AppState): { result: ScenarioResult; state: AppState } {
+  const addMutation = addPlan(
+    baseState,
+    {
+      title: "跨日完成一次性任务",
+      subject: "语文",
+      repeatType: "once",
+      minutes: 15,
+    },
+    FIXED_NOW,
+  );
+  const createdPlan = addMutation.nextState.plans.find((plan) => plan.title === "跨日完成一次性任务");
+
+  assert(addMutation.ok, "One-time plan setup should succeed.");
+  assert(Boolean(createdPlan), "One-time plan should exist before completion.");
+
+  const completeMutation = completePlan(addMutation.nextState, createdPlan!.id, { durationSeconds: 15 * 60 }, "2026-03-21T09:00:00.000Z");
+  const completedPlan = completeMutation.nextState.plans.find((plan) => plan.id === createdPlan!.id);
+
+  assert(completeMutation.ok, "One-time plan completion should succeed.");
+  assert(Boolean(completedPlan), "Completed one-time plan should still exist.");
+  assert(isPlanCompletedForDate(completedPlan!, FIXED_TODAY), "One-time plan should be treated as completed on its scheduled date.");
+  assert(!isPlanScheduledForDate(completedPlan!, FIXED_TOMORROW), "One-time plan should not be scheduled on the next date.");
+
+  return {
+    result: {
+      id: "once-plan-completion-by-schedule-date",
+      passed: true,
+      details: "One-time plans remain completed on their scheduled date even when completion timestamp is on another day.",
+    },
+    state: completeMutation.nextState,
   };
 }
 
@@ -362,7 +397,11 @@ async function main(): Promise<void> {
     scenarioResults.push(scopedDeleteScenario.result);
     await writeJson("state-after-scoped-delete.json", scopedDeleteScenario.state);
 
-    const habitScenario = runHabitScenario(scopedDeleteScenario.state);
+    const oncePlanCompletionScenario = runOncePlanCompletionScheduleScenario(scopedDeleteScenario.state);
+    scenarioResults.push(oncePlanCompletionScenario.result);
+    await writeJson("state-after-once-plan-completion.json", oncePlanCompletionScenario.state);
+
+    const habitScenario = runHabitScenario(oncePlanCompletionScenario.state);
     scenarioResults.push(habitScenario.result);
     await writeJson("state-after-habit.json", habitScenario.state);
 

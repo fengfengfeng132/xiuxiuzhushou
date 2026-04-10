@@ -426,7 +426,7 @@ export function QuickCompleteModal({
   onDropFiles,
   onRemoveAttachment,
 }: QuickCompleteModalProps) {
-  if (!plan || plan.status !== "pending") {
+  if (!plan) {
     return null;
   }
 
