@@ -130,6 +130,8 @@ export interface QuickCompleteDraft {
   hours: string;
   minutes: string;
   seconds: string;
+  actualStartTime: string;
+  actualEndTime: string;
   note: string;
   attachments: QuickCompleteAttachmentDraft[];
 }

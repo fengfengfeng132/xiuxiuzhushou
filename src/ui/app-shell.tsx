@@ -238,6 +238,10 @@ function parseClockToMinutes(value: string): number | null {
   return hours * 60 + minutes;
 }
 
+function formatClockInput(date: Date): string {
+  return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
 function resolvePlanDurationMinutes(draft: PlanDraft): number | null {
   if (draft.timeMode === "duration") {
     const minutes = Math.round(Number(draft.durationMinutes));
@@ -665,7 +669,16 @@ function AppShell(): JSX.Element {
   const quickCompleteHours = Math.max(0, Math.round(Number(quickCompleteDraft.hours) || 0));
   const quickCompleteMinutes = Math.max(0, Math.round(Number(quickCompleteDraft.minutes) || 0));
   const quickCompleteSeconds = Math.max(0, Math.round(Number(quickCompleteDraft.seconds) || 0));
-  const quickCompleteTotalSeconds = quickCompleteHours * 3600 + quickCompleteMinutes * 60 + quickCompleteSeconds;
+  const quickCompleteDurationSeconds = quickCompleteHours * 3600 + quickCompleteMinutes * 60 + quickCompleteSeconds;
+  const quickCompleteActualStartMinutes = parseClockToMinutes(quickCompleteDraft.actualStartTime);
+  const quickCompleteActualEndMinutes = parseClockToMinutes(quickCompleteDraft.actualEndTime);
+  const quickCompleteActualSeconds =
+    quickCompleteActualStartMinutes !== null &&
+    quickCompleteActualEndMinutes !== null &&
+    quickCompleteActualEndMinutes > quickCompleteActualStartMinutes
+      ? (quickCompleteActualEndMinutes - quickCompleteActualStartMinutes) * 60
+      : 0;
+  const quickCompleteTotalSeconds = quickCompleteDraft.mode === "actual" ? quickCompleteActualSeconds : quickCompleteDurationSeconds;
   const canSubmitQuickComplete = quickCompletePlanTarget !== null && quickCompleteTotalSeconds > 0;
   const parsedPlanPointsReviewStars = Math.round(Number(planPointsReviewDraft.adjustedStars));
   const canSubmitPlanPointsReview =
@@ -1637,12 +1650,15 @@ function AppShell(): JSX.Element {
   }
 
   function openQuickCompleteModal(plan: StudyPlan): void {
+    const now = new Date();
     setQuickCompleteDraft({
       planId: plan.id,
       mode: "duration",
       hours: "0",
       minutes: "0",
       seconds: "0",
+      actualStartTime: "",
+      actualEndTime: formatClockInput(now),
       note: "",
       attachments: [],
     });
@@ -2934,11 +2950,22 @@ function AppShell(): JSX.Element {
       return;
     }
 
+    if (quickCompleteDraft.mode === "actual") {
+      const startMinutes = parseClockToMinutes(quickCompleteDraft.actualStartTime);
+      const endMinutes = parseClockToMinutes(quickCompleteDraft.actualEndTime);
+      if (startMinutes === null || endMinutes === null || endMinutes <= startMinutes) {
+        setNotice("实际时间需要填写开始和结束，且结束时间必须晚于开始时间。");
+        return;
+      }
+    }
+
     const attachments: PlanCompletionAttachment[] = quickCompleteDraft.attachments.map((attachment) => ({
       name: attachment.name,
       type: attachment.type,
       size: attachment.size,
     }));
+    const completionClock = quickCompleteDraft.mode === "actual" ? quickCompleteDraft.actualEndTime : formatClockInput(new Date());
+    const completionDateTime = buildPlanDateTime(selectedDateKey, completionClock);
 
     applyMutation(
       completePlan(state, quickCompletePlanTarget.id, {
@@ -2946,10 +2973,9 @@ function AppShell(): JSX.Element {
         durationSeconds: quickCompleteTotalSeconds,
         note: quickCompleteDraft.note,
         attachments,
-      }),
+      }, completionDateTime),
       () => {
         closeQuickCompleteModal();
-        setSelectedDateKey(today);
       },
     );
   }

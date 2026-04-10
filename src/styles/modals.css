@@ -300,13 +300,29 @@
   align-items: end;
 }
 
+.quick-complete-clock-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .quick-complete-time-field {
+  display: grid;
+  gap: 8px;
+}
+
+.quick-complete-clock-field {
   display: grid;
   gap: 8px;
 }
 
 .quick-complete-time-field span {
   text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.quick-complete-clock-field span {
   color: var(--muted);
   font-size: 14px;
 }
@@ -323,6 +339,19 @@
   font-size: 32px;
   font-weight: 800;
   text-align: center;
+}
+
+.quick-complete-clock-field input {
+  width: 100%;
+  min-height: 56px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font-family: "Manrope", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .quick-complete-separator {

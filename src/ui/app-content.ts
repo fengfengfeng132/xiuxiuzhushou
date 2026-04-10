@@ -157,6 +157,8 @@ export const INITIAL_QUICK_COMPLETE_DRAFT: QuickCompleteDraft = {
   hours: "0",
   minutes: "0",
   seconds: "0",
+  actualStartTime: "",
+  actualEndTime: "",
   note: "",
   attachments: [],
 };

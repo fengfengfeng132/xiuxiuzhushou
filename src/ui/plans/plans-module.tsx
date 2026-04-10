@@ -475,44 +475,59 @@ export function QuickCompleteModal({
               </button>
             </div>
 
-            <div className="quick-complete-time-grid">
-              <label className="quick-complete-time-field">
-                <span>小时</span>
-                <input type="number" min={0} max={23} step={1} value={draft.hours} onChange={(event) => onUpdateDraft("hours", event.target.value)} />
-              </label>
-              <span className="quick-complete-separator" aria-hidden="true">
-                :
-              </span>
-              <label className="quick-complete-time-field">
-                <span>分钟</span>
-                <input type="number" min={0} max={59} step={1} value={draft.minutes} onChange={(event) => onUpdateDraft("minutes", event.target.value)} />
-              </label>
-              <span className="quick-complete-separator" aria-hidden="true">
-                :
-              </span>
-              <label className="quick-complete-time-field">
-                <span>秒</span>
-                <input type="number" min={0} max={59} step={1} value={draft.seconds} onChange={(event) => onUpdateDraft("seconds", event.target.value)} />
-              </label>
-            </div>
+            {draft.mode === "duration" ? (
+              <div className="quick-complete-time-grid">
+                <label className="quick-complete-time-field">
+                  <span>小时</span>
+                  <input type="number" min={0} max={23} step={1} value={draft.hours} onChange={(event) => onUpdateDraft("hours", event.target.value)} />
+                </label>
+                <span className="quick-complete-separator" aria-hidden="true">
+                  :
+                </span>
+                <label className="quick-complete-time-field">
+                  <span>分钟</span>
+                  <input type="number" min={0} max={59} step={1} value={draft.minutes} onChange={(event) => onUpdateDraft("minutes", event.target.value)} />
+                </label>
+                <span className="quick-complete-separator" aria-hidden="true">
+                  :
+                </span>
+                <label className="quick-complete-time-field">
+                  <span>秒</span>
+                  <input type="number" min={0} max={59} step={1} value={draft.seconds} onChange={(event) => onUpdateDraft("seconds", event.target.value)} />
+                </label>
+              </div>
+            ) : (
+              <div className="quick-complete-clock-grid">
+                <label className="quick-complete-clock-field">
+                  <span>开始时间</span>
+                  <input type="time" value={draft.actualStartTime} onChange={(event) => onUpdateDraft("actualStartTime", event.target.value)} />
+                </label>
+                <label className="quick-complete-clock-field">
+                  <span>结束时间</span>
+                  <input type="time" value={draft.actualEndTime} onChange={(event) => onUpdateDraft("actualEndTime", event.target.value)} />
+                </label>
+              </div>
+            )}
 
             <div className="quick-complete-total">总计：{formatDurationSummary(totalSeconds)}</div>
 
-            <div className="quick-complete-presets">
-              <strong>常用时长</strong>
-              <div className="quick-complete-preset-grid">
-                {QUICK_COMPLETE_PRESETS.map((preset) => (
-                  <button
-                    key={preset.label}
-                    type="button"
-                    className={`quick-complete-preset${totalSeconds === preset.seconds ? " is-active" : ""}`}
-                    onClick={() => onApplyPreset(preset.seconds)}
-                  >
-                    {preset.label}
-                  </button>
-                ))}
+            {draft.mode === "duration" ? (
+              <div className="quick-complete-presets">
+                <strong>常用时长</strong>
+                <div className="quick-complete-preset-grid">
+                  {QUICK_COMPLETE_PRESETS.map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      className={`quick-complete-preset${totalSeconds === preset.seconds ? " is-active" : ""}`}
+                      onClick={() => onApplyPreset(preset.seconds)}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : null}
           </section>
 
           <label className="field-block">

@@ -125,6 +125,7 @@
   }
 
   .quick-complete-time-grid,
+  .quick-complete-clock-grid,
   .quick-complete-preset-grid,
   .wish-repeat-grid {
     grid-template-columns: 1fr;
@@ -670,7 +671,8 @@
     grid-template-columns: 1fr;
   }
 
-  .quick-complete-time-grid {
+  .quick-complete-time-grid,
+  .quick-complete-clock-grid {
     grid-template-columns: 1fr;
   }
 
