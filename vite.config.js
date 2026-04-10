@@ -2,6 +2,7 @@ import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 function readGitValue(command, fallback) {
     try {
@@ -28,7 +29,7 @@ export default defineConfig(({ command }) => {
     const environment = command === "build" ? "生产环境" : "开发环境";
     return {
         base: "./",
-        plugins: [react()],
+        plugins: [react(), tailwindcss()],
         define: {
             __APP_VERSION__: JSON.stringify(packageJson.version ?? "0.0.0"),
             __APP_COMMIT__: JSON.stringify(commit),
