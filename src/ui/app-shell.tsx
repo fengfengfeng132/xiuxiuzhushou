@@ -413,6 +413,59 @@ function reorderDashboardModuleIds(moduleIds: DashboardModuleId[], draggedId: Da
 }
 
 const PROFILE_AVATAR_COLOR_OPTIONS = ["#64A187", "#9F7F69", "#5A9B7E", "#9BA66A", "#7CAD93", "#9F7F69", "#7A9CA4", "#9BA66A"];
+const APP_DESIGN_VIEWPORT_WIDTH = 1440;
+
+function useFixedScaleViewport() {
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [scaleState, setScaleState] = useState({ height: 0, scale: 1, viewportWidth: APP_DESIGN_VIEWPORT_WIDTH });
+
+  useEffect(() => {
+    let animationFrame = 0;
+
+    const updateScale = () => {
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = window.requestAnimationFrame(() => {
+        const viewportWidth = Math.max(1, window.innerWidth || APP_DESIGN_VIEWPORT_WIDTH);
+        const scale = Math.min(1, viewportWidth / APP_DESIGN_VIEWPORT_WIDTH);
+        const height = canvasRef.current?.scrollHeight ?? 0;
+
+        setScaleState((current) => {
+          if (Math.abs(current.scale - scale) < 0.001 && current.height === height && current.viewportWidth === viewportWidth) {
+            return current;
+          }
+
+          return { height, scale, viewportWidth };
+        });
+      });
+    };
+
+    updateScale();
+    window.addEventListener("resize", updateScale);
+
+    const observer = canvasRef.current ? new ResizeObserver(updateScale) : null;
+    if (canvasRef.current) {
+      observer?.observe(canvasRef.current);
+    }
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener("resize", updateScale);
+      observer?.disconnect();
+    };
+  }, []);
+
+  const isScaledDown = scaleState.viewportWidth < APP_DESIGN_VIEWPORT_WIDTH;
+  const stageHeight = scaleState.height > 0 ? Math.ceil(scaleState.height * scaleState.scale) : undefined;
+
+  return {
+    canvasRef,
+    canvasStyle: {
+      left: isScaledDown ? "0" : "50%",
+      transform: isScaledDown ? `scale(${scaleState.scale})` : "translateX(-50%)",
+    },
+    stageStyle: stageHeight ? { minHeight: `${stageHeight}px` } : undefined,
+  };
+}
 
 function collectPendingPlanReviewItems(plans: StudyPlan[]): PendingPlanReviewItem[] {
   const pendingItems: PendingPlanReviewItem[] = [];
@@ -502,6 +555,7 @@ function createWishDraftFromReward(reward: Reward): WishDraft {
 }
 
 function AppShell(): JSX.Element {
+  const fixedScaleViewport = useFixedScaleViewport();
   const [state, setState] = useState<AppState>(() => loadAppState());
   const [selectedDateKey, setSelectedDateKey] = useState<string>(() => currentDateKey());
   const [planDraft, setPlanDraft] = useState<PlanDraft>(() => createInitialPlanDraft(currentDateKey()));
@@ -3839,165 +3893,169 @@ function AppShell(): JSX.Element {
   }
 
   return (
-    <div className="app-shell">
-      {renderScreen()}
-      <QuickCompleteModal
-        plan={quickCompletePlanTarget}
-        draft={quickCompleteDraft}
-        totalSeconds={quickCompleteTotalSeconds}
-        canSubmit={canSubmitQuickComplete}
-        fileInputRef={quickCompleteFileInputRef}
-        onClose={closeQuickCompleteModal}
-        onUpdateDraft={updateQuickCompleteDraft}
-        onApplyPreset={applyQuickCompletePreset}
-        onSubmit={handleSubmitQuickComplete}
-        onSelectFiles={handleQuickCompleteFileSelection}
-        onDropFiles={handleQuickCompleteDrop}
-        onRemoveAttachment={removeQuickCompleteAttachment}
-      />
-      <PlanPointsReviewModal
-        item={activePendingPlanReviewItem}
-        draft={planPointsReviewDraft}
-        canSubmit={canSubmitPlanPointsReview}
-        onClose={closePlanPointsReviewModal}
-        onSubmit={handleSubmitPlanPointsReview}
-        onUpdateDraft={updatePlanPointsReviewDraft}
-      />
-      <PlanDetailModal
-        plan={planDetailPlanTarget}
-        selectedDateKey={selectedDateKey}
-        completedForSelectedDate={planDetailCompletedForSelectedDate}
-        completionRecordsForSelectedDate={planDetailCompletionRecordsForSelectedDate}
-        onClose={closePlanDetailModal}
-        onEditPlan={handleEditPlanFromDetail}
-        onEditCurrentOccurrence={handleEditCurrentOccurrenceFromDetail}
-        onDeleteRepeat={handleDeleteRepeatFromDetail}
-      />
-      <HabitModal
-        open={habitModalOpen}
-        draft={habitDraft}
-        canCreate={canCreateHabit}
-        typeMenuOpen={habitTypeMenuOpen}
-        typeRef={habitTypeRef}
-        typeOption={habitType}
-        onClose={closeHabitModal}
-        onSubmit={handleCreateHabit}
-        onUpdateDraft={updateHabitDraft}
-        onToggleTypeMenu={() => setHabitTypeMenuOpen((current) => !current)}
-        onSelectFrequency={(frequency) => {
-          updateHabitDraft("frequency", frequency);
-          setHabitTypeMenuOpen(false);
-        }}
-      />
-      <HabitCheckInModal
-        habit={checkInHabitTarget}
-        draft={habitCheckInDraft}
-        resolvedPoints={resolvedCheckInPoints}
-        canSubmit={canSubmitHabitCheckIn}
-        onClose={closeHabitCheckInModal}
-        onSubmit={handleSubmitHabitCheckIn}
-        onUpdateDraft={updateHabitCheckInDraft}
-      />
-      <PlanDeleteSelectedModal
-        open={planDeleteModalOpen}
-        managedDateKey={planManagementDateKey}
-        today={today}
-        selectedCount={selectedManagedPlanIds.length}
-        hasRecurringSelection={hasRecurringManagedSelection}
-        onClose={closePlanDeleteModal}
-        onConfirmDelete={handleConfirmDeleteManagedPlans}
-      />
-      <ReadingBookModal
-        open={readingBookModalOpen}
-        mode={editingReadingBookId ? "edit" : "create"}
-        draft={readingBookDraft}
-        onClose={closeReadingBookModal}
-        onSubmit={handleSubmitReadingBook}
-        onUpdateDraft={updateReadingBookDraft}
-      />
-      <ReadingRecordModal
-        open={readingRecordModalOpen}
-        books={readingBooks}
-        draft={readingRecordDraft}
-        onClose={closeReadingRecordModal}
-        onSubmit={handleSubmitReadingRecord}
-        onUpdateDraft={updateReadingRecordDraft}
-      />
-      <InterestClassModal
-        open={interestClassModalOpen}
-        mode={editingInterestClassTarget ? "edit" : "create"}
-        draft={interestClassDraft}
-        onClose={closeInterestClassModal}
-        onSubmit={handleSubmitInterestClass}
-        onUpdateDraft={updateInterestClassDraft}
-      />
-      <InterestClassRecordModal
-        open={interestRecordModalOpen}
-        mode={editingInterestRecordTarget ? "edit" : "create"}
-        classes={interestClasses}
-        draft={interestRecordDraft}
-        onClose={closeInterestRecordModal}
-        onSubmit={handleSubmitInterestRecord}
-        onUpdateDraft={updateInterestRecordDraft}
-      />
-      <WishModal
-        open={wishModalOpen}
-        mode={editingWishId ? "edit" : "create"}
-        draft={wishDraft}
-        canSubmit={canSubmitWish}
-        onClose={closeWishModal}
-        onSubmit={handleSubmitWish}
-        onUpdateDraft={updateWishDraft}
-        onSelectIconCategory={handleSelectWishIconCategory}
-        onSelectIcon={handleSelectWishIcon}
-        onSelectCustomImage={handleWishCustomImageSelection}
-        onClearCustomImage={clearWishCustomImage}
-      />
-      <WishDeleteConfirmModal
-        open={Boolean(deletingWishId)}
-        reward={deletingWishTarget}
-        onClose={closeWishDeleteModal}
-        onConfirm={handleConfirmDeleteWish}
-      />
-      <AddProfileModal
-        open={addProfileModalOpen}
-        profileName={addProfileNameDraft}
-        avatarColor={addProfileAvatarColor}
-        avatarImage={addProfileAvatarImage}
-        colorOptions={PROFILE_AVATAR_COLOR_OPTIONS}
-        profileCount={profileWorkspace.profiles.length}
-        maxProfiles={MAX_LOCAL_PROFILES}
-        canSubmit={canSubmitAddProfile}
-        onClose={closeAddProfileModal}
-        onUpdateProfileName={setAddProfileNameDraft}
-        onSelectColor={setAddProfileAvatarColor}
-        onSelectImage={(file) => {
-          void handleAddProfileImageSelect(file);
-        }}
-        onSubmit={handleCreateProfile}
-      />
-      <SyncAccountModal
-        open={syncModalOpen}
-        settings={syncSettings}
-        password={syncPassword}
-        session={syncSession}
-        deviceId={deviceId}
-        pendingOpsCount={state.sync.pendingOps.length}
-        isBusy={syncBusy}
-        statusMessage={syncStatusMessage}
-        onClose={closeSyncAccountModal}
-        onUpdateEmail={updateSyncEmail}
-        onPasswordChange={setSyncPassword}
-        onSignIn={() => void handleSyncSignIn()}
-        onSignUp={() => void handleSyncSignUp()}
-        onRefreshSession={() => void handleSyncRefreshSession()}
-        onInitializationCheck={() => void handleSyncInitializationCheck()}
-        onPush={() => void handleSyncPushLocal()}
-        onPull={() => void handleSyncPullRemote()}
-        onBidirectionalSync={() => void handleSyncBidirectional()}
-        onSignOut={handleSyncSignOut}
-      />
-      {notice ? <div className="toast">{notice}</div> : null}
+    <div className="app-scale-stage" style={fixedScaleViewport.stageStyle}>
+      <div ref={fixedScaleViewport.canvasRef} className="app-scale-canvas" style={fixedScaleViewport.canvasStyle}>
+        <div className="app-shell">
+          {renderScreen()}
+          <QuickCompleteModal
+            plan={quickCompletePlanTarget}
+            draft={quickCompleteDraft}
+            totalSeconds={quickCompleteTotalSeconds}
+            canSubmit={canSubmitQuickComplete}
+            fileInputRef={quickCompleteFileInputRef}
+            onClose={closeQuickCompleteModal}
+            onUpdateDraft={updateQuickCompleteDraft}
+            onApplyPreset={applyQuickCompletePreset}
+            onSubmit={handleSubmitQuickComplete}
+            onSelectFiles={handleQuickCompleteFileSelection}
+            onDropFiles={handleQuickCompleteDrop}
+            onRemoveAttachment={removeQuickCompleteAttachment}
+          />
+          <PlanPointsReviewModal
+            item={activePendingPlanReviewItem}
+            draft={planPointsReviewDraft}
+            canSubmit={canSubmitPlanPointsReview}
+            onClose={closePlanPointsReviewModal}
+            onSubmit={handleSubmitPlanPointsReview}
+            onUpdateDraft={updatePlanPointsReviewDraft}
+          />
+          <PlanDetailModal
+            plan={planDetailPlanTarget}
+            selectedDateKey={selectedDateKey}
+            completedForSelectedDate={planDetailCompletedForSelectedDate}
+            completionRecordsForSelectedDate={planDetailCompletionRecordsForSelectedDate}
+            onClose={closePlanDetailModal}
+            onEditPlan={handleEditPlanFromDetail}
+            onEditCurrentOccurrence={handleEditCurrentOccurrenceFromDetail}
+            onDeleteRepeat={handleDeleteRepeatFromDetail}
+          />
+          <HabitModal
+            open={habitModalOpen}
+            draft={habitDraft}
+            canCreate={canCreateHabit}
+            typeMenuOpen={habitTypeMenuOpen}
+            typeRef={habitTypeRef}
+            typeOption={habitType}
+            onClose={closeHabitModal}
+            onSubmit={handleCreateHabit}
+            onUpdateDraft={updateHabitDraft}
+            onToggleTypeMenu={() => setHabitTypeMenuOpen((current) => !current)}
+            onSelectFrequency={(frequency) => {
+              updateHabitDraft("frequency", frequency);
+              setHabitTypeMenuOpen(false);
+            }}
+          />
+          <HabitCheckInModal
+            habit={checkInHabitTarget}
+            draft={habitCheckInDraft}
+            resolvedPoints={resolvedCheckInPoints}
+            canSubmit={canSubmitHabitCheckIn}
+            onClose={closeHabitCheckInModal}
+            onSubmit={handleSubmitHabitCheckIn}
+            onUpdateDraft={updateHabitCheckInDraft}
+          />
+          <PlanDeleteSelectedModal
+            open={planDeleteModalOpen}
+            managedDateKey={planManagementDateKey}
+            today={today}
+            selectedCount={selectedManagedPlanIds.length}
+            hasRecurringSelection={hasRecurringManagedSelection}
+            onClose={closePlanDeleteModal}
+            onConfirmDelete={handleConfirmDeleteManagedPlans}
+          />
+          <ReadingBookModal
+            open={readingBookModalOpen}
+            mode={editingReadingBookId ? "edit" : "create"}
+            draft={readingBookDraft}
+            onClose={closeReadingBookModal}
+            onSubmit={handleSubmitReadingBook}
+            onUpdateDraft={updateReadingBookDraft}
+          />
+          <ReadingRecordModal
+            open={readingRecordModalOpen}
+            books={readingBooks}
+            draft={readingRecordDraft}
+            onClose={closeReadingRecordModal}
+            onSubmit={handleSubmitReadingRecord}
+            onUpdateDraft={updateReadingRecordDraft}
+          />
+          <InterestClassModal
+            open={interestClassModalOpen}
+            mode={editingInterestClassTarget ? "edit" : "create"}
+            draft={interestClassDraft}
+            onClose={closeInterestClassModal}
+            onSubmit={handleSubmitInterestClass}
+            onUpdateDraft={updateInterestClassDraft}
+          />
+          <InterestClassRecordModal
+            open={interestRecordModalOpen}
+            mode={editingInterestRecordTarget ? "edit" : "create"}
+            classes={interestClasses}
+            draft={interestRecordDraft}
+            onClose={closeInterestRecordModal}
+            onSubmit={handleSubmitInterestRecord}
+            onUpdateDraft={updateInterestRecordDraft}
+          />
+          <WishModal
+            open={wishModalOpen}
+            mode={editingWishId ? "edit" : "create"}
+            draft={wishDraft}
+            canSubmit={canSubmitWish}
+            onClose={closeWishModal}
+            onSubmit={handleSubmitWish}
+            onUpdateDraft={updateWishDraft}
+            onSelectIconCategory={handleSelectWishIconCategory}
+            onSelectIcon={handleSelectWishIcon}
+            onSelectCustomImage={handleWishCustomImageSelection}
+            onClearCustomImage={clearWishCustomImage}
+          />
+          <WishDeleteConfirmModal
+            open={Boolean(deletingWishId)}
+            reward={deletingWishTarget}
+            onClose={closeWishDeleteModal}
+            onConfirm={handleConfirmDeleteWish}
+          />
+          <AddProfileModal
+            open={addProfileModalOpen}
+            profileName={addProfileNameDraft}
+            avatarColor={addProfileAvatarColor}
+            avatarImage={addProfileAvatarImage}
+            colorOptions={PROFILE_AVATAR_COLOR_OPTIONS}
+            profileCount={profileWorkspace.profiles.length}
+            maxProfiles={MAX_LOCAL_PROFILES}
+            canSubmit={canSubmitAddProfile}
+            onClose={closeAddProfileModal}
+            onUpdateProfileName={setAddProfileNameDraft}
+            onSelectColor={setAddProfileAvatarColor}
+            onSelectImage={(file) => {
+              void handleAddProfileImageSelect(file);
+            }}
+            onSubmit={handleCreateProfile}
+          />
+          <SyncAccountModal
+            open={syncModalOpen}
+            settings={syncSettings}
+            password={syncPassword}
+            session={syncSession}
+            deviceId={deviceId}
+            pendingOpsCount={state.sync.pendingOps.length}
+            isBusy={syncBusy}
+            statusMessage={syncStatusMessage}
+            onClose={closeSyncAccountModal}
+            onUpdateEmail={updateSyncEmail}
+            onPasswordChange={setSyncPassword}
+            onSignIn={() => void handleSyncSignIn()}
+            onSignUp={() => void handleSyncSignUp()}
+            onRefreshSession={() => void handleSyncRefreshSession()}
+            onInitializationCheck={() => void handleSyncInitializationCheck()}
+            onPush={() => void handleSyncPushLocal()}
+            onPull={() => void handleSyncPullRemote()}
+            onBidirectionalSync={() => void handleSyncBidirectional()}
+            onSignOut={handleSyncSignOut}
+          />
+          {notice ? <div className="toast">{notice}</div> : null}
+        </div>
+      </div>
     </div>
   );
 }

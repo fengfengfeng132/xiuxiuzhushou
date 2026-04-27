@@ -6,28 +6,35 @@ html {
 }
 
 :root {
-  --app-min-layout-width: 320px;
-  --app-gutter: clamp(16px, 2.8vw, 32px);
+  --app-design-viewport-width: 1440px;
+  --app-design-content-width: 1240px;
 }
 
 html,
 body {
   width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-}
-
-@media (min-width: 360px) {
-  html,
-  body {
-    overflow-x: hidden;
-  }
+  overflow-x: hidden;
 }
 
 #root {
   width: 100%;
-  min-width: var(--app-min-layout-width);
   min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+.app-scale-stage {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+.app-scale-canvas {
+  position: absolute;
+  top: 0;
+  width: var(--app-design-viewport-width);
+  transform-origin: top left;
+  will-change: transform;
 }
 
 img,
@@ -38,28 +45,9 @@ canvas {
 }
 
 .app-shell {
-  width: min(1240px, max(var(--app-min-layout-width), calc(100vw - var(--app-gutter))));
+  width: var(--app-design-content-width);
   padding-top: max(16px, env(safe-area-inset-top));
   padding-right: env(safe-area-inset-right);
   padding-left: env(safe-area-inset-left);
   padding-bottom: max(56px, calc(24px + env(safe-area-inset-bottom)));
-}
-
-@media (max-width: 640px) {
-  .app-shell {
-    width: max(var(--app-min-layout-width), calc(100vw - 16px));
-    padding-top: max(12px, env(safe-area-inset-top));
-  }
-}
-
-@media (min-width: 641px) and (max-width: 1024px) {
-  .app-shell {
-    width: max(var(--app-min-layout-width), calc(100vw - 28px));
-  }
-}
-
-@media (min-width: 1025px) and (max-width: 1536px) {
-  .app-shell {
-    width: max(var(--app-min-layout-width), calc(100vw - 40px));
-  }
 }

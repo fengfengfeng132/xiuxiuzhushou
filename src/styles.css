@@ -14,7 +14,6 @@
 @import "./styles/profile-management.css";
 @import "./styles/modals.css";
 @import "./styles/timer.css";
-@import "./styles/responsive.css";
 
 /* Global palette override: color-only refresh, no behavior changes. */
 :root {
