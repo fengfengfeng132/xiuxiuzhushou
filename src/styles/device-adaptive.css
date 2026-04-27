@@ -5,15 +5,28 @@ html {
   text-size-adjust: 100%;
 }
 
+:root {
+  --app-min-layout-width: 320px;
+  --app-gutter: clamp(16px, 2.8vw, 32px);
+}
+
 html,
 body {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: auto;
+}
+
+@media (min-width: 360px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
 }
 
 #root {
   width: 100%;
+  min-width: var(--app-min-layout-width);
   min-height: 100dvh;
 }
 
@@ -25,7 +38,7 @@ canvas {
 }
 
 .app-shell {
-  width: min(1240px, calc(100vw - clamp(16px, 2.8vw, 32px)));
+  width: min(1240px, max(var(--app-min-layout-width), calc(100vw - var(--app-gutter))));
   padding-top: max(16px, env(safe-area-inset-top));
   padding-right: env(safe-area-inset-right);
   padding-left: env(safe-area-inset-left);
@@ -34,19 +47,19 @@ canvas {
 
 @media (max-width: 640px) {
   .app-shell {
-    width: calc(100vw - 16px);
+    width: max(var(--app-min-layout-width), calc(100vw - 16px));
     padding-top: max(12px, env(safe-area-inset-top));
   }
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {
   .app-shell {
-    width: calc(100vw - 28px);
+    width: max(var(--app-min-layout-width), calc(100vw - 28px));
   }
 }
 
 @media (min-width: 1025px) and (max-width: 1536px) {
   .app-shell {
-    width: calc(100vw - 40px);
+    width: max(var(--app-min-layout-width), calc(100vw - 40px));
   }
 }
