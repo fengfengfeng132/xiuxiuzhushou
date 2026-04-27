@@ -155,7 +155,7 @@
   object-fit: contain;
   pointer-events: none;
   user-select: none;
-  filter: drop-shadow(0 10px 22px rgba(75, 140, 112, 0.2));
+  filter: drop-shadow(0 10px 22px rgba(109, 40, 217, 0.2));
 }
 
 .pet-art-video {
@@ -168,7 +168,7 @@
   object-fit: contain;
   pointer-events: none;
   user-select: none;
-  filter: drop-shadow(0 10px 22px rgba(75, 140, 112, 0.2));
+  filter: drop-shadow(0 10px 22px rgba(109, 40, 217, 0.2));
   background: transparent;
 }
 
@@ -232,7 +232,7 @@
   border-radius: 999px;
   background: var(--brand-soft);
   color: #fff;
-  box-shadow: 0 14px 24px rgba(100, 161, 135, 0.2);
+  box-shadow: 0 14px 24px rgba(139, 92, 246, 0.2);
 }
 
 .pet-card-button:disabled,
@@ -524,7 +524,7 @@
 }
 
 .pet-level-row.is-current {
-  box-shadow: 0 0 0 3px rgba(122, 156, 164, 0.08);
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.08);
 }
 
 .pet-roster-card {
@@ -539,14 +539,14 @@
 .pet-roster-row {
   padding: 14px;
   border-radius: 22px;
-  border: 1px solid rgba(95, 121, 108, 0.12);
+  border: 1px solid rgba(109, 90, 134, 0.12);
   background: rgba(255, 255, 255, 0.96);
 }
 
 .pet-roster-row.is-active {
-  border-color: rgba(122, 156, 164, 0.34);
+  border-color: rgba(129, 140, 248, 0.34);
   box-shadow:
-    0 0 0 3px rgba(122, 156, 164, 0.08),
+    0 0 0 3px rgba(129, 140, 248, 0.08),
     var(--shadow-soft);
 }
 
@@ -712,7 +712,7 @@
 @keyframes pet-action-feed {
   0% {
     transform: translateY(0);
-    box-shadow: 0 14px 24px rgba(100, 161, 135, 0.2);
+    box-shadow: 0 14px 24px rgba(139, 92, 246, 0.2);
   }
   45% {
     transform: translateY(-3px);
@@ -720,14 +720,14 @@
   }
   100% {
     transform: translateY(0);
-    box-shadow: 0 14px 24px rgba(100, 161, 135, 0.2);
+    box-shadow: 0 14px 24px rgba(139, 92, 246, 0.2);
   }
 }
 
 @keyframes pet-action-bathe {
   0% {
     transform: translateY(0) rotate(0deg);
-    box-shadow: 0 14px 24px rgba(100, 161, 135, 0.2);
+    box-shadow: 0 14px 24px rgba(139, 92, 246, 0.2);
   }
   50% {
     transform: translateY(-2px) rotate(-1.2deg);
@@ -735,7 +735,7 @@
   }
   100% {
     transform: translateY(0) rotate(0deg);
-    box-shadow: 0 14px 24px rgba(100, 161, 135, 0.2);
+    box-shadow: 0 14px 24px rgba(139, 92, 246, 0.2);
   }
 }
 

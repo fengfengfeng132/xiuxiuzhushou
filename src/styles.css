@@ -15,29 +15,29 @@
 @import "./styles/modals.css";
 @import "./styles/timer.css";
 
-/* Global palette override: color-only refresh, no behavior changes. */
+/* Purple family palette: color-only refresh, no behavior changes. */
 :root {
-  --brand: #64a386;
-  --brand-strong: #4b8c70;
-  --brand-hover: #3f7a61;
-  --brand-soft: #bcddbe;
-  --hero-bg: #cde2e8;
-  --section-bg: #e7f1e8;
-  --accent-bg: #fbfccd;
-  --page-bg: #f5f8f0;
+  --brand: #8b5cf6;
+  --brand-strong: #6d28d9;
+  --brand-hover: #5b21b6;
+  --brand-soft: #d8b4fe;
+  --hero-bg: #f3e8ff;
+  --section-bg: #f8f5ff;
+  --accent-bg: #fff1f2;
+  --page-bg: #fcf7ff;
   --card-bg: #ffffff;
-  --border: #d2e4d8;
-  --text-primary: #2f4a3f;
-  --text-secondary: #5d7769;
-  --text-muted: #879d90;
-  --text-on-brand: #f9fffb;
-  --state-success: #64a386;
-  --state-warning: #9ba66a;
-  --state-danger: #9f7f69;
-  --state-info: #7a9ca4;
-  --tone-mist: #cde2e8;
-  --tone-sage: #bcddbe;
-  --tone-butter: #fbfccd;
-  --tone-deep: #64a386;
-  --tone-deep-strong: #4b8c70;
+  --border: #e9d5ff;
+  --text-primary: #3b235a;
+  --text-secondary: #6d5a86;
+  --text-muted: #9a8aad;
+  --text-on-brand: #fff9ff;
+  --state-success: #8b5cf6;
+  --state-warning: #c084fc;
+  --state-danger: #be5877;
+  --state-info: #818cf8;
+  --tone-mist: #f3e8ff;
+  --tone-sage: #d8b4fe;
+  --tone-butter: #fff1f2;
+  --tone-deep: #8b5cf6;
+  --tone-deep-strong: #6d28d9;
 }

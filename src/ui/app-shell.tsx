@@ -412,7 +412,7 @@ function reorderDashboardModuleIds(moduleIds: DashboardModuleId[], draggedId: Da
   return nextIds;
 }
 
-const PROFILE_AVATAR_COLOR_OPTIONS = ["#64A187", "#9F7F69", "#5A9B7E", "#9BA66A", "#7CAD93", "#9F7F69", "#7A9CA4", "#9BA66A"];
+const PROFILE_AVATAR_COLOR_OPTIONS = ["#8B5CF6", "#BE5877", "#A855F7", "#A78BFA", "#C084FC", "#BE5877", "#818CF8", "#A78BFA"];
 const APP_DESIGN_VIEWPORT_WIDTH = 1440;
 
 function useFixedScaleViewport() {

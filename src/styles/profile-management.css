@@ -54,7 +54,7 @@
 
 .profile-quick-menu-head {
   padding: 12px 14px;
-  border-bottom: 1px solid rgba(122, 156, 164, 0.14);
+  border-bottom: 1px solid rgba(129, 140, 248, 0.14);
   color: var(--ink);
 }
 
@@ -72,7 +72,7 @@
   gap: 10px;
   color: var(--ink);
   background: transparent;
-  border-bottom: 1px solid rgba(122, 156, 164, 0.1);
+  border-bottom: 1px solid rgba(129, 140, 248, 0.1);
 }
 
 .profile-quick-menu-user:last-child {
@@ -100,7 +100,7 @@
 .profile-quick-menu-foot {
   display: grid;
   gap: 0;
-  border-top: 1px solid rgba(122, 156, 164, 0.14);
+  border-top: 1px solid rgba(129, 140, 248, 0.14);
 }
 
 .profile-quick-menu-foot button {
@@ -109,7 +109,7 @@
   text-align: left;
   color: var(--text-primary);
   background: transparent;
-  border-bottom: 1px solid rgba(122, 156, 164, 0.1);
+  border-bottom: 1px solid rgba(129, 140, 248, 0.1);
 }
 
 .profile-quick-menu-foot button:last-child {
@@ -157,7 +157,7 @@
 
 .profile-management-hero-copy p {
   margin: 4px 0 0;
-  color: rgba(247, 248, 242, 0.9);
+  color: rgba(252, 247, 255, 0.9);
   font-size: 16px;
 }
 
@@ -292,7 +292,7 @@
   height: 36px;
   border-radius: 10px;
   color: var(--text-primary);
-  background: rgba(46, 81, 148, 0.08);
+  background: rgba(91, 33, 182, 0.08);
   font-size: 24px;
   line-height: 1;
 }
@@ -304,7 +304,7 @@
   width: 138px;
   display: grid;
   border-radius: 12px;
-  border: 1px solid rgba(46, 81, 148, 0.14);
+  border: 1px solid rgba(91, 33, 182, 0.14);
   background: #fff;
   box-shadow: 0 16px 28px rgba(30, 53, 93, 0.2);
   z-index: 10;
@@ -316,7 +316,7 @@
   padding: 0 12px;
   background: transparent;
   color: var(--text-primary);
-  border-bottom: 1px solid rgba(46, 81, 148, 0.1);
+  border-bottom: 1px solid rgba(91, 33, 182, 0.1);
 }
 
 .profile-management-action-menu button:last-child {
@@ -335,19 +335,19 @@
   gap: 14px;
   padding: 16px 18px;
   border-radius: 18px;
-  border: 1px solid rgba(186, 66, 66, 0.25);
+  border: 1px solid rgba(190, 88, 119, 0.25);
   background: rgba(255, 243, 243, 0.88);
 }
 
 .profile-management-danger-copy h2 {
   margin: 0;
   font-size: 18px;
-  color: #7f2525;
+  color: #7F1D4B;
 }
 
 .profile-management-danger-copy p {
   margin: 6px 0 0;
-  color: rgba(127, 37, 37, 0.9);
+  color: rgba(127, 29, 75, 0.9);
   font-size: 13px;
 }
 
@@ -355,9 +355,9 @@
   min-height: 40px;
   padding: 0 16px;
   border-radius: 12px;
-  border: 1px solid rgba(186, 66, 66, 0.35);
+  border: 1px solid rgba(190, 88, 119, 0.35);
   color: #fff;
-  background: #c24949;
+  background: #BE5877;
   font-weight: 700;
 }
 
@@ -447,7 +447,7 @@
   height: 36px;
   border-radius: 999px;
   border: 2px solid transparent;
-  box-shadow: 0 8px 16px rgba(24, 40, 68, 0.14);
+  box-shadow: 0 8px 16px rgba(59, 35, 90, 0.14);
 }
 
 .add-profile-color-dot.is-active {

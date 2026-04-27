@@ -37,7 +37,7 @@
   width: 36px;
   height: 36px;
   border-radius: 12px;
-  background: rgba(95, 121, 108, 0.06);
+  background: rgba(109, 90, 134, 0.06);
   color: var(--muted);
   font-size: 24px;
   line-height: 1;
@@ -101,7 +101,7 @@
   padding: 10px;
   border-radius: 18px;
   border: 1px solid var(--line);
-  background: rgba(247, 248, 242, 0.84);
+  background: rgba(252, 247, 255, 0.84);
   max-height: 132px;
   overflow: auto;
 }
@@ -120,7 +120,7 @@
   gap: 12px;
   padding: 14px;
   border-radius: 18px;
-  background: rgba(247, 248, 242, 0.84);
+  background: rgba(252, 247, 255, 0.84);
 }
 
 .preview-card strong,
@@ -148,7 +148,7 @@
 
 .modal-submit-primary {
   background: var(--primary);
-  box-shadow: 0 18px 34px rgba(100, 161, 135, 0.22);
+  box-shadow: 0 18px 34px rgba(139, 92, 246, 0.22);
 }
 
 .modal-submit:disabled {
@@ -174,7 +174,7 @@
   gap: 12px;
   align-items: flex-start;
   padding: 18px 18px 16px;
-  border-bottom: 2px solid rgba(41, 202, 119, 0.18);
+  border-bottom: 2px solid rgba(139, 92, 246, 0.18);
   background: var(--card-bg);
 }
 
@@ -193,7 +193,7 @@
   background: var(--state-success);
   color: #fff;
   font-size: 28px;
-  box-shadow: 0 16px 28px rgba(36, 180, 100, 0.22);
+  box-shadow: 0 16px 28px rgba(139, 92, 246, 0.22);
 }
 
 .quick-complete-header-copy h2,
@@ -225,8 +225,8 @@
   gap: 14px;
   padding: 16px;
   border-radius: 20px;
-  border: 1px solid rgba(100, 161, 135, 0.16);
-  background: rgba(247, 248, 242, 0.88);
+  border: 1px solid rgba(139, 92, 246, 0.16);
+  background: rgba(252, 247, 255, 0.88);
 }
 
 .quick-complete-summary-top,
@@ -257,7 +257,7 @@
 }
 
 .quick-complete-summary-date {
-  background: rgba(100, 161, 135, 0.08);
+  background: rgba(139, 92, 246, 0.08);
   color: var(--muted);
 }
 
@@ -276,7 +276,7 @@
   gap: 10px;
   padding: 6px;
   border-radius: 16px;
-  background: rgba(95, 121, 108, 0.04);
+  background: rgba(109, 90, 134, 0.04);
 }
 
 .quick-complete-tab {
@@ -290,7 +290,7 @@
 .quick-complete-tab.is-active {
   background: #fff;
   color: var(--primary-strong);
-  box-shadow: 0 10px 22px rgba(63, 122, 97, 0.12);
+  box-shadow: 0 10px 22px rgba(109, 40, 217, 0.12);
 }
 
 .quick-complete-time-grid {
@@ -367,7 +367,7 @@
   display: grid;
   place-items: center;
   border-radius: 14px;
-  background: rgba(95, 121, 108, 0.04);
+  background: rgba(109, 90, 134, 0.04);
   color: var(--ink);
   font-weight: 700;
 }
@@ -392,8 +392,8 @@
 }
 
 .quick-complete-preset.is-active {
-  border-color: rgba(63, 122, 97, 0.38);
-  box-shadow: 0 0 0 3px rgba(63, 122, 97, 0.08);
+  border-color: rgba(109, 40, 217, 0.38);
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.08);
   color: var(--primary-strong);
 }
 
@@ -404,8 +404,8 @@
   gap: 8px;
   padding: 18px;
   border-radius: 18px;
-  border: 2px dashed rgba(151, 165, 186, 0.44);
-  background: rgba(247, 252, 246, 0.82);
+  border: 2px dashed rgba(154, 138, 173, 0.44);
+  background: rgba(252, 247, 255, 0.82);
   color: var(--ink);
   text-align: center;
 }
@@ -427,8 +427,8 @@
   align-items: center;
   padding: 12px 14px;
   border-radius: 16px;
-  background: rgba(247, 248, 242, 0.88);
-  border: 1px solid rgba(95, 121, 108, 0.08);
+  background: rgba(252, 247, 255, 0.88);
+  border: 1px solid rgba(109, 90, 134, 0.08);
 }
 
 .quick-complete-attachment-chip strong {
@@ -440,7 +440,7 @@
   width: 28px;
   height: 28px;
   border-radius: 999px;
-  background: rgba(95, 121, 108, 0.08);
+  background: rgba(109, 90, 134, 0.08);
   color: var(--muted);
   font-size: 18px;
 }
@@ -455,7 +455,7 @@
 
 .quick-complete-submit {
   background: var(--state-success);
-  box-shadow: 0 18px 34px rgba(37, 194, 110, 0.22);
+  box-shadow: 0 18px 34px rgba(139, 92, 246, 0.22);
 }
 
 .plan-points-review-modal-card {
@@ -474,7 +474,7 @@
   gap: 12px;
   align-items: center;
   padding: 16px;
-  border-bottom: 1px solid rgba(122, 156, 164, 0.22);
+  border-bottom: 1px solid rgba(129, 140, 248, 0.22);
   background: var(--card-bg);
 }
 
@@ -516,17 +516,17 @@
 }
 
 .plan-points-review-status.is-approved {
-  background: rgba(37, 194, 110, 0.14);
+  background: rgba(139, 92, 246, 0.14);
   color: var(--state-success);
 }
 
 .plan-points-review-status.is-adjusted {
-  background: rgba(241, 162, 22, 0.18);
+  background: rgba(192, 132, 252, 0.18);
   color: var(--state-warning);
 }
 
 .plan-points-review-status.is-rejected {
-  background: rgba(238, 99, 99, 0.15);
+  background: rgba(190, 88, 119, 0.15);
   color: var(--state-danger);
 }
 
@@ -548,8 +548,8 @@
   gap: 10px;
   padding: 14px;
   border-radius: 16px;
-  border: 1px solid rgba(117, 150, 210, 0.24);
-  background: rgba(247, 248, 242, 0.92);
+  border: 1px solid rgba(129, 140, 248, 0.24);
+  background: rgba(252, 247, 255, 0.92);
 }
 
 .plan-points-review-summary-top {
@@ -565,7 +565,7 @@
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  background: rgba(100, 161, 135, 0.12);
+  background: rgba(139, 92, 246, 0.12);
   color: var(--brand-strong);
   font-size: 13px;
   font-weight: 700;
@@ -596,7 +596,7 @@
   justify-items: center;
   align-content: center;
   border-radius: 14px;
-  border: 1px solid rgba(95, 121, 108, 0.12);
+  border: 1px solid rgba(109, 90, 134, 0.12);
   background: #fff;
   color: var(--ink);
 }
@@ -611,21 +611,21 @@
 }
 
 .plan-points-review-action.is-active {
-  box-shadow: 0 0 0 3px rgba(63, 122, 97, 0.1);
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.1);
 }
 
 .plan-points-review-action.is-active.is-approved {
-  border-color: rgba(37, 194, 110, 0.45);
-  background: rgba(234, 252, 242, 0.96);
+  border-color: rgba(139, 92, 246, 0.45);
+  background: rgba(248, 245, 255, 0.96);
 }
 
 .plan-points-review-action.is-active.is-adjusted {
-  border-color: rgba(241, 162, 22, 0.5);
-  background: rgba(250, 251, 204, 0.96);
+  border-color: rgba(192, 132, 252, 0.5);
+  background: rgba(255, 241, 242, 0.96);
 }
 
 .plan-points-review-action.is-active.is-rejected {
-  border-color: rgba(238, 99, 99, 0.5);
+  border-color: rgba(190, 88, 119, 0.5);
   background: rgba(251, 252, 205, 0.62);
 }
 
@@ -635,7 +635,7 @@
 }
 
 .plan-points-review-reason-required textarea {
-  border-color: rgba(241, 162, 22, 0.34);
+  border-color: rgba(192, 132, 252, 0.34);
   background: rgba(255, 251, 239, 0.92);
 }
 
@@ -656,13 +656,13 @@
   z-index: 1;
   padding-top: 8px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
-  border-top: 1px solid rgba(122, 156, 164, 0.22);
-  background: linear-gradient(180deg, rgba(245, 248, 242, 0) 0%, rgba(245, 248, 242, 0.94) 26%, var(--card-bg) 100%);
+  border-top: 1px solid rgba(129, 140, 248, 0.22);
+  background: linear-gradient(180deg, rgba(252, 247, 255, 0) 0%, rgba(252, 247, 255, 0.94) 26%, var(--card-bg) 100%);
 }
 
 .plan-points-review-cancel {
-  border: 1px solid rgba(95, 121, 108, 0.38);
-  background: rgba(100, 161, 135, 0.12);
+  border: 1px solid rgba(109, 90, 134, 0.38);
+  background: rgba(139, 92, 246, 0.12);
   color: var(--ink);
   font-weight: 700;
 }
@@ -699,7 +699,7 @@
   border-radius: 18px;
   background: var(--subject-accent, var(--brand));
   color: #fff;
-  box-shadow: 0 18px 34px rgba(95, 121, 108, 0.16);
+  box-shadow: 0 18px 34px rgba(109, 90, 134, 0.16);
 }
 
 .plan-detail-icon-card span {
@@ -752,17 +752,17 @@
 }
 
 .plan-detail-status-badge {
-  background: rgba(25, 161, 112, 0.12);
+  background: rgba(139, 92, 246, 0.12);
   color: var(--green);
 }
 
 .plan-detail-status-badge.is-pending {
-  background: rgba(95, 121, 108, 0.08);
+  background: rgba(109, 90, 134, 0.08);
   color: var(--muted);
 }
 
 .plan-detail-chip {
-  background: rgba(95, 121, 108, 0.06);
+  background: rgba(109, 90, 134, 0.06);
   color: var(--ink);
 }
 
@@ -772,7 +772,7 @@
 }
 
 .plan-detail-chip-active {
-  background: rgba(25, 161, 112, 0.12);
+  background: rgba(139, 92, 246, 0.12);
   color: var(--green);
 }
 
@@ -794,9 +794,9 @@
 .plan-detail-info-card,
 .plan-detail-record-card {
   border-radius: 22px;
-  border: 1px solid rgba(100, 161, 135, 0.14);
+  border: 1px solid rgba(139, 92, 246, 0.14);
   background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 14px 28px rgba(95, 121, 108, 0.06);
+  box-shadow: 0 14px 28px rgba(109, 90, 134, 0.06);
 }
 
 .plan-detail-info-card {
@@ -817,7 +817,7 @@
   display: grid;
   place-items: center;
   border-radius: 16px;
-  background: rgba(122, 156, 164, 0.12);
+  background: rgba(129, 140, 248, 0.12);
   color: var(--brand);
   font-size: 20px;
 }
@@ -843,12 +843,12 @@
 }
 
 .plan-detail-star-pill {
-  background: rgba(255, 199, 69, 0.2);
+  background: rgba(216, 180, 254, 0.2);
   color: var(--state-warning);
 }
 
 .plan-detail-note-pill {
-  background: rgba(255, 214, 92, 0.16);
+  background: rgba(216, 180, 254, 0.16);
   color: var(--state-warning);
 }
 
@@ -874,7 +874,7 @@
   gap: 10px;
   padding: 12px;
   border-radius: 18px;
-  border: 1px solid rgba(255, 201, 72, 0.42);
+  border: 1px solid rgba(216, 180, 254, 0.42);
   background: var(--card-bg);
 }
 
@@ -921,7 +921,7 @@
   padding: 10px 12px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(95, 121, 108, 0.08);
+  border: 1px solid rgba(109, 90, 134, 0.08);
 }
 
 .plan-detail-attachment-type {
@@ -932,7 +932,7 @@
   justify-content: center;
   padding: 0 10px;
   border-radius: 12px;
-  background: rgba(63, 122, 97, 0.1);
+  background: rgba(109, 40, 217, 0.1);
   color: var(--primary-strong);
   font-size: 13px;
   font-weight: 700;
@@ -951,7 +951,7 @@
 .plan-detail-empty-records {
   padding: 18px;
   border-radius: 18px;
-  background: rgba(247, 248, 242, 0.88);
+  background: rgba(252, 247, 255, 0.88);
   color: var(--muted);
   text-align: center;
 }
@@ -967,7 +967,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   padding: 12px 16px 14px;
-  border-top: 1px solid rgba(95, 121, 108, 0.08);
+  border-top: 1px solid rgba(109, 90, 134, 0.08);
   background: var(--card-bg);
 }
 
@@ -984,19 +984,19 @@
 .plan-detail-footer-button-danger {
   background: #fff;
   color: var(--state-warning);
-  border: 1px solid rgba(240, 143, 29, 0.5);
+  border: 1px solid rgba(168, 85, 247, 0.5);
 }
 
 .plan-detail-footer-button-secondary {
-  background: rgba(237, 252, 243, 0.92);
+  background: rgba(248, 245, 255, 0.92);
   color: var(--state-success);
-  border: 1px solid rgba(39, 191, 106, 0.34);
+  border: 1px solid rgba(139, 92, 246, 0.34);
 }
 
 .plan-detail-footer-button-primary {
   background: var(--primary);
   color: #fff;
-  box-shadow: 0 18px 34px rgba(63, 122, 97, 0.22);
+  box-shadow: 0 18px 34px rgba(109, 40, 217, 0.22);
 }
 
 .plan-delete-modal-card {
@@ -1007,7 +1007,7 @@
 
 .plan-delete-modal-head {
   padding: 18px 20px 16px;
-  border-bottom: 1px solid rgba(240, 143, 29, 0.16);
+  border-bottom: 1px solid rgba(168, 85, 247, 0.16);
   background: var(--card-bg);
 }
 
@@ -1036,7 +1036,7 @@
   justify-items: start;
   padding: 16px 18px;
   border-radius: 18px;
-  border: 1px solid rgba(95, 121, 108, 0.14);
+  border: 1px solid rgba(109, 90, 134, 0.14);
   background: rgba(248, 251, 255, 0.9);
   text-align: left;
 }
@@ -1047,7 +1047,7 @@
 }
 
 .plan-delete-option.is-danger {
-  border-color: rgba(240, 143, 29, 0.32);
+  border-color: rgba(168, 85, 247, 0.32);
   background: var(--card-bg);
 }
 
@@ -1056,8 +1056,8 @@
   gap: 8px;
   padding: 14px 16px;
   border-radius: 18px;
-  border: 1px solid rgba(240, 143, 29, 0.18);
-  background: rgba(255, 249, 236, 0.96);
+  border: 1px solid rgba(168, 85, 247, 0.18);
+  background: rgba(248, 245, 255, 0.96);
 }
 
 .sync-modal-card {
@@ -1077,8 +1077,8 @@
   gap: 4px;
   padding: 10px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(95, 121, 108, 0.08);
-  background: rgba(247, 248, 242, 0.85);
+  border: 1px solid rgba(109, 90, 134, 0.08);
+  background: rgba(252, 247, 255, 0.85);
 }
 
 .sync-status-strip strong {
@@ -1117,8 +1117,8 @@
   margin: 0;
   padding: 12px;
   border-radius: 16px;
-  border: 1px solid rgba(100, 161, 135, 0.16);
-  background: rgba(247, 248, 242, 0.84);
+  border: 1px solid rgba(139, 92, 246, 0.16);
+  background: rgba(252, 247, 255, 0.84);
 }
 
 .sync-session-card h3 {

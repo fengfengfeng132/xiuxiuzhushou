@@ -85,7 +85,7 @@
   height: 86px;
   border-radius: 26px;
   background: var(--card-bg);
-  box-shadow: inset 0 0 0 1px rgba(100, 161, 135, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.08);
 }
 
 .habit-grid {
@@ -128,13 +128,13 @@
   min-height: 34px;
   padding: 0 12px;
   border-radius: 999px;
-  background: rgba(63, 122, 97, 0.08);
+  background: rgba(109, 40, 217, 0.08);
   color: var(--primary-strong);
   font-weight: 700;
 }
 
 .habit-score.is-negative {
-  background: rgba(244, 122, 122, 0.14);
+  background: rgba(251, 113, 133, 0.14);
   color: var(--state-danger);
 }
 
@@ -155,14 +155,14 @@
   min-height: 28px;
   padding: 0 10px;
   border-radius: 999px;
-  background: rgba(95, 121, 108, 0.06);
+  background: rgba(109, 90, 134, 0.06);
   color: var(--muted);
   font-size: 13px;
   font-weight: 700;
 }
 
 .habit-badge-warning {
-  background: rgba(255, 151, 87, 0.16);
+  background: rgba(216, 180, 254, 0.16);
   color: var(--state-warning);
 }
 
@@ -178,7 +178,7 @@
   height: 10px;
   margin: 12px 0 18px;
   border-radius: 999px;
-  background: rgba(93, 119, 105, 0.12);
+  background: rgba(109, 90, 134, 0.12);
   overflow: hidden;
 }
 
@@ -189,12 +189,12 @@
 }
 
 .habit-badge-positive {
-  background: rgba(255, 207, 86, 0.22);
+  background: rgba(216, 180, 254, 0.22);
   color: var(--state-warning);
 }
 
 .habit-badge-negative {
-  background: rgba(244, 122, 122, 0.16);
+  background: rgba(251, 113, 133, 0.16);
   color: var(--state-danger);
 }
 
@@ -244,7 +244,7 @@
   height: 30px;
   border-radius: 999px;
   background: var(--brand-soft);
-  box-shadow: 0 12px 24px rgba(100, 161, 135, 0.18);
+  box-shadow: 0 12px 24px rgba(139, 92, 246, 0.18);
 }
 
 .habit-section-actions,
@@ -259,7 +259,7 @@
   padding: 24px;
   border-radius: 30px;
   border: 1px solid var(--line);
-  background: rgba(247, 252, 246, 0.88);
+  background: rgba(252, 247, 255, 0.88);
 }
 
 .habit-week-head strong {
@@ -276,7 +276,7 @@
   gap: 8px;
   font-size: 14px;
   font-weight: 600;
-  box-shadow: 0 1px 2px rgba(95, 121, 108, 0.12);
+  box-shadow: 0 1px 2px rgba(109, 90, 134, 0.12);
 }
 
 .habit-week-pill-today {
@@ -328,7 +328,7 @@
   padding: 14px 10px;
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(95, 121, 108, 0.1);
+  border: 1px solid rgba(109, 90, 134, 0.1);
   color: var(--muted);
 }
 
@@ -340,7 +340,7 @@
 
 .habit-day-pill.is-selected {
   background: var(--card-bg);
-  box-shadow: 0 20px 34px rgba(100, 161, 135, 0.24);
+  box-shadow: 0 20px 34px rgba(139, 92, 246, 0.24);
   border-color: transparent;
 }
 
@@ -353,7 +353,7 @@
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: rgba(95, 121, 108, 0.18);
+  background: rgba(109, 90, 134, 0.18);
 }
 
 .habit-day-dot.has-checkin {
@@ -380,7 +380,7 @@
   gap: 10px;
   padding: 0 14px;
   border-radius: 12px;
-  border: 2px solid rgba(100, 161, 135, 0.52);
+  border: 2px solid rgba(139, 92, 246, 0.52);
   background: #fff;
 }
 
@@ -422,8 +422,8 @@
 
 .habit-toolbar-button.is-active {
   color: var(--primary-strong);
-  border-color: rgba(100, 161, 135, 0.32);
-  box-shadow: 0 10px 24px rgba(100, 161, 135, 0.12);
+  border-color: rgba(139, 92, 246, 0.32);
+  box-shadow: 0 10px 24px rgba(139, 92, 246, 0.12);
 }
 
 .habit-layout-toggle {
@@ -448,7 +448,7 @@
 .habit-layout-option.is-active {
   background: #fff;
   color: var(--primary-strong);
-  box-shadow: 0 1px 2px rgba(95, 121, 108, 0.12);
+  box-shadow: 0 1px 2px rgba(109, 90, 134, 0.12);
 }
 
 .habit-filter-row {
@@ -476,7 +476,7 @@
   background: var(--primary);
   color: #fff;
   border-color: transparent;
-  box-shadow: 0 14px 26px rgba(100, 161, 135, 0.18);
+  box-shadow: 0 14px 26px rgba(139, 92, 246, 0.18);
 }
 
 .habit-board-cards {
@@ -500,7 +500,7 @@
   min-height: 160px;
   padding: 20px;
   border-radius: 24px;
-  border: 1px solid rgba(95, 121, 108, 0.12);
+  border: 1px solid rgba(109, 90, 134, 0.12);
   background: rgba(255, 255, 255, 0.94);
   box-shadow: var(--shadow-soft);
 }
@@ -534,13 +534,13 @@
   min-height: 32px;
   padding: 0 12px;
   border-radius: 999px;
-  background: rgba(63, 122, 97, 0.08);
+  background: rgba(109, 40, 217, 0.08);
   color: var(--primary-strong);
   font-weight: 700;
 }
 
 .habit-status-pill.is-complete {
-  background: rgba(25, 161, 112, 0.14);
+  background: rgba(139, 92, 246, 0.14);
   color: var(--green);
 }
 
@@ -568,7 +568,7 @@
   margin-bottom: 18px;
   padding: 14px 16px;
   border-radius: 20px;
-  background: rgba(247, 248, 242, 0.9);
+  background: rgba(252, 247, 255, 0.9);
   border: 1px solid var(--line);
 }
 
@@ -583,8 +583,8 @@
 }
 
 .manager-danger-button {
-  background: rgba(244, 122, 122, 0.16);
-  border: 1px solid rgba(244, 122, 122, 0.24);
+  background: rgba(251, 113, 133, 0.16);
+  border: 1px solid rgba(251, 113, 133, 0.24);
   color: var(--state-danger);
 }
 
@@ -596,16 +596,16 @@
 .habit-manager-row {
   padding: 16px 18px;
   border-radius: 22px;
-  border: 1px solid rgba(95, 121, 108, 0.12);
+  border: 1px solid rgba(109, 90, 134, 0.12);
   background: rgba(255, 255, 255, 0.92);
   box-shadow: var(--shadow-soft);
 }
 
 .habit-manager-row.is-selected {
-  border-color: rgba(63, 122, 97, 0.32);
+  border-color: rgba(109, 40, 217, 0.32);
   box-shadow:
     var(--shadow-soft),
-    0 0 0 3px rgba(63, 122, 97, 0.08);
+    0 0 0 3px rgba(109, 40, 217, 0.08);
 }
 
 .habit-manager-checkbox {
@@ -633,7 +633,7 @@
   display: grid;
   place-items: center;
   border-radius: 12px;
-  background: rgba(95, 121, 108, 0.06);
+  background: rgba(109, 90, 134, 0.06);
   color: var(--muted);
   font-size: 18px;
 }
@@ -685,7 +685,7 @@
 
 .manager-hero-copy p {
   margin: 8px 0 0;
-  color: rgba(247, 248, 242, 0.82);
+  color: rgba(252, 247, 255, 0.82);
 }
 
 .manager-actions {
@@ -760,7 +760,7 @@
   background: var(--primary);
   border-color: transparent;
   color: #fff;
-  box-shadow: 0 14px 26px rgba(100, 161, 135, 0.18);
+  box-shadow: 0 14px 26px rgba(139, 92, 246, 0.18);
 }
 
 .habit-stats-surface {
@@ -787,7 +787,7 @@
   gap: 16px;
   padding: 18px 20px;
   border-radius: 22px;
-  border: 1px solid rgba(95, 121, 108, 0.12);
+  border: 1px solid rgba(109, 90, 134, 0.12);
   background: rgba(255, 255, 255, 0.92);
   box-shadow: var(--shadow-soft);
 }
@@ -849,7 +849,7 @@
   margin-bottom: 18px;
   padding: 18px 20px;
   border-radius: 24px;
-  background: rgba(247, 248, 242, 0.84);
+  background: rgba(252, 247, 255, 0.84);
   border: 1px solid var(--line);
 }
 
@@ -885,8 +885,8 @@
 }
 
 .dropdown-trigger.is-open {
-  border-color: rgba(63, 122, 97, 0.5);
-  box-shadow: 0 0 0 4px rgba(63, 122, 97, 0.08);
+  border-color: rgba(109, 40, 217, 0.5);
+  box-shadow: 0 0 0 4px rgba(109, 40, 217, 0.08);
 }
 
 .dropdown-arrow {
@@ -915,7 +915,7 @@
 }
 
 .dropdown-option.is-selected {
-  background: rgba(63, 122, 97, 0.08);
+  background: rgba(109, 40, 217, 0.08);
 }
 
 .checkin-modal-card {
@@ -939,7 +939,7 @@
   gap: 12px;
   padding: 16px 18px;
   border-radius: 16px;
-  background: rgba(255, 231, 163, 0.22);
+  background: rgba(243, 232, 255, 0.22);
   color: var(--state-warning);
 }
 

@@ -49,7 +49,7 @@
 
 .mr-hero-title p {
   margin: 0;
-  color: rgba(247, 248, 242, 0.86);
+  color: rgba(252, 247, 255, 0.86);
   font-size: 15px;
 }
 
@@ -229,8 +229,8 @@
 }
 
 .mr-day-pill.is-current {
-  border-color: rgba(100, 161, 135, 0.32);
-  background: rgba(231, 245, 237, 0.98);
+  border-color: rgba(139, 92, 246, 0.32);
+  background: rgba(243, 232, 255, 0.98);
 }
 
 .mr-day-pill.is-current strong,
@@ -245,7 +245,7 @@
 .mr-progress-track {
   height: 14px;
   border-radius: 999px;
-  background: rgba(229, 238, 255, 0.9);
+  background: rgba(243, 232, 255, 0.9);
   overflow: hidden;
 }
 
@@ -263,7 +263,7 @@
   min-height: 32px;
   padding: 0 12px;
   border-radius: 999px;
-  background: rgba(241, 246, 255, 0.92);
+  background: rgba(248, 245, 255, 0.92);
   color: var(--brand-strong);
   font-weight: 700;
 }
@@ -289,7 +289,7 @@
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  background: rgba(247, 250, 255, 0.88);
+  background: rgba(252, 247, 255, 0.88);
 }
 
 .mr-day-group > header span {
@@ -341,7 +341,7 @@
 }
 
 .mr-task-action.is-done {
-  background: rgba(79, 189, 157, 0.2);
+  background: rgba(139, 92, 246, 0.2);
   color: var(--state-success);
 }
 
@@ -374,12 +374,12 @@
 }
 
 .mr-status-pill.is-active {
-  background: rgba(79, 189, 157, 0.2);
+  background: rgba(139, 92, 246, 0.2);
   color: var(--state-success);
 }
 
 .mr-status-pill.is-completed {
-  background: rgba(100, 161, 135, 0.16);
+  background: rgba(139, 92, 246, 0.16);
   color: var(--brand-strong);
 }
 
@@ -387,7 +387,7 @@
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: rgba(247, 252, 246, 0.96);
+  background: rgba(252, 247, 255, 0.96);
   color: var(--muted);
 }
 
@@ -441,7 +441,7 @@
   min-height: 20px;
   padding: 0 6px;
   border-radius: 999px;
-  background: rgba(100, 161, 135, 0.14);
+  background: rgba(139, 92, 246, 0.14);
   color: var(--brand);
   font-size: 12px;
   font-weight: 700;
@@ -456,17 +456,17 @@
 }
 
 .mr-article-type.is-poetry {
-  background: rgba(100, 161, 135, 0.16);
+  background: rgba(139, 92, 246, 0.16);
   color: var(--brand-strong);
 }
 
 .mr-article-type.is-classical {
-  background: rgba(122, 156, 164, 0.16);
+  background: rgba(129, 140, 248, 0.16);
   color: var(--brand-strong);
 }
 
 .mr-article-type.is-modern {
-  background: rgba(63, 191, 126, 0.16);
+  background: rgba(139, 92, 246, 0.16);
   color: var(--state-success);
 }
 
@@ -475,7 +475,7 @@
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  background: rgba(247, 252, 246, 0.96);
+  background: rgba(252, 247, 255, 0.96);
   color: var(--muted);
 }
 
@@ -510,7 +510,7 @@
   min-height: 26px;
   padding: 0 10px;
   border-radius: 999px;
-  background: rgba(247, 252, 246, 0.95);
+  background: rgba(252, 247, 255, 0.95);
 }
 
 .mr-legend-chip.is-done {
@@ -541,8 +541,8 @@
   width: 100%;
   min-height: 62px;
   border-radius: 10px;
-  border: 1px solid rgba(225, 233, 246, 0.9);
-  background: rgba(247, 250, 255, 0.9);
+  border: 1px solid rgba(233, 213, 255, 0.9);
+  background: rgba(252, 247, 255, 0.9);
   display: grid;
   place-items: center;
   gap: 4px;
@@ -554,8 +554,8 @@
 }
 
 .mr-punch-cell.is-done {
-  border-color: rgba(79, 189, 157, 0.35);
-  background: rgba(231, 249, 240, 0.92);
+  border-color: rgba(139, 92, 246, 0.35);
+  background: rgba(248, 245, 255, 0.92);
   color: var(--state-success);
 }
 
@@ -673,8 +673,8 @@
 }
 
 .mr-granularity-card.is-active {
-  border-color: rgba(100, 161, 135, 0.4);
-  background: rgba(231, 245, 237, 0.98);
+  border-color: rgba(139, 92, 246, 0.4);
+  background: rgba(243, 232, 255, 0.98);
 }
 
 .mr-granularity-tip {
@@ -760,7 +760,7 @@
 }
 
 .mr-mini-table th {
-  background: rgba(247, 252, 246, 0.92);
+  background: rgba(252, 247, 255, 0.92);
 }
 
 .mr-faq-list {
@@ -809,7 +809,7 @@
 
 .mr-guide-cta p {
   margin: 8px 0 0;
-  color: rgba(247, 248, 242, 0.88);
+  color: rgba(252, 247, 255, 0.88);
 }
 
 .mr-guide-cta-actions {
@@ -846,7 +846,7 @@
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  background: rgba(244, 248, 255, 0.92);
+  background: rgba(248, 245, 255, 0.92);
   color: var(--muted);
 }
 
@@ -868,7 +868,7 @@
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 10px 12px;
-  background: rgba(247, 252, 246, 0.92);
+  background: rgba(252, 247, 255, 0.92);
 }
 
 .mr-welcome-grid strong {

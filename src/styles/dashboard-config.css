@@ -45,7 +45,7 @@
 
 .dashboard-config-hero-copy p {
   margin: 4px 0 0;
-  color: rgba(247, 248, 242, 0.86);
+  color: rgba(252, 247, 255, 0.86);
   font-size: 14px;
 }
 
@@ -141,7 +141,7 @@
 .dashboard-config-display-option.is-active {
   border-color: var(--brand);
   background: color-mix(in srgb, var(--brand) 10%, white);
-  box-shadow: 0 16px 30px rgba(75, 140, 112, 0.14);
+  box-shadow: 0 16px 30px rgba(109, 40, 217, 0.14);
 }
 
 .dashboard-config-display-option strong {
@@ -180,7 +180,7 @@
 .dashboard-config-row.is-drop-target {
   border-color: var(--brand);
   background: color-mix(in srgb, var(--brand) 8%, white);
-  box-shadow: 0 20px 38px rgba(75, 140, 112, 0.16);
+  box-shadow: 0 20px 38px rgba(109, 40, 217, 0.16);
 }
 
 .dashboard-config-handle {
