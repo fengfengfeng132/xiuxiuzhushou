@@ -98,6 +98,7 @@ export function getSubjectStyle(subject: string): SubjectStyle {
     信息技术: { accent: "#8B5CF6", tint: "rgba(139, 92, 246, 0.16)", glow: "rgba(139, 92, 246, 0.22)" },
     运动: { accent: "#A78BFA", tint: "rgba(167, 139, 250, 0.16)", glow: "rgba(167, 139, 250, 0.22)" },
     娱乐: { accent: "#A78BFA", tint: "rgba(167, 139, 250, 0.16)", glow: "rgba(167, 139, 250, 0.22)" },
+    中阮: { accent: "#7C3AED", tint: "rgba(124, 58, 237, 0.16)", glow: "rgba(124, 58, 237, 0.22)" },
     技能: { accent: "#C084FC", tint: "rgba(192, 132, 252, 0.16)", glow: "rgba(192, 132, 252, 0.22)" },
   };
   return palette[subject] ?? { accent: "#6D5A86", tint: "rgba(109, 90, 134, 0.16)", glow: "rgba(109, 90, 134, 0.22)" };

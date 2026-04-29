@@ -198,6 +198,7 @@ export const SUBJECT_OPTIONS = [
   "信息技术",
   "运动",
   "娱乐",
+  "中阮",
   "技能",
 ];
 export const WEEKDAY_LABELS = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
